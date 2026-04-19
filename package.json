@@ -1,0 +1,12 @@
+{
+  "name": "exhibition-wall-mockup-maker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Exhibition Wall Mockup Maker by Tiago",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

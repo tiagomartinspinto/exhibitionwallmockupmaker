@@ -1,0 +1,2836 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exhibition Wall Mockup Maker by Tiago</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f2f2f0;
+      --muted: #9a9b9e;
+      --line: #292a2d;
+      --line-soft: #1f2023;
+      --paper: #070708;
+      --panel: #101113;
+      --panel-soft: #17181b;
+      --panel-deep: #0b0c0e;
+      --accent: #d7d3cb;
+      --accent-soft: rgba(215, 211, 203, 0.12);
+      --accent-blue: #b8c1cb;
+      --accent-lav: #c8c0cf;
+      --accent-2: #d6a8a8;
+      --field: #08090a;
+      --shadow: 0 18px 54px rgba(0, 0, 0, 0.62);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+      color: var(--ink);
+      cursor: pointer;
+      min-height: 40px;
+      padding: 9px 13px;
+      font-weight: 700;
+      transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+    }
+
+    button:hover {
+      background: #222327;
+      border-color: #56585e;
+    }
+
+    button.secondary {
+      background: #121316;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    button.danger {
+      background: var(--panel-soft);
+      color: var(--accent-2);
+      border-color: #5a3838;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: var(--field);
+      padding: 10px 11px;
+      min-height: 40px;
+    }
+
+    textarea {
+      min-height: 104px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      min-height: auto;
+      justify-self: start;
+    }
+
+    input[type="color"] {
+      padding: 4px;
+      cursor: pointer;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .checkbox-row {
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(330px, 400px) 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      overflow: auto;
+      max-height: 100vh;
+      padding: 22px;
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+    }
+
+    .brand {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .section {
+      display: grid;
+      gap: 13px;
+      padding: 18px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .main {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(160px, 210px) minmax(240px, 1fr);
+      align-items: start;
+      gap: 10px;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, #101113, #090a0b);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .toolbar strong {
+      display: flex;
+      align-items: center;
+      min-height: 36px;
+      font-size: 15px;
+      color: #e5e5e2;
+      grid-row: 1 / span 3;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 6px;
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+      background: rgba(6, 7, 8, 0.76);
+      grid-column: 2;
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    .view-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 6px;
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+      background: rgba(6, 7, 8, 0.76);
+      grid-column: 2;
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    .toolbar > .tabs {
+      border-color: rgba(215, 211, 203, 0.18);
+    }
+
+    .toolbar > .view-controls:nth-of-type(2) {
+      border-color: rgba(184, 193, 203, 0.16);
+    }
+
+    .toolbar > .view-controls:nth-of-type(3) {
+      border-color: rgba(200, 192, 207, 0.16);
+    }
+
+    .tab {
+      min-height: 32px;
+      padding: 6px 10px;
+      background: transparent;
+      color: var(--ink);
+      border-color: transparent;
+    }
+
+    .tab.active {
+      background: var(--accent-soft);
+      border-color: rgba(215, 211, 203, 0.38);
+      color: var(--accent);
+    }
+
+    .mini-button {
+      min-height: 30px;
+      padding: 5px 9px;
+      background: transparent;
+      color: #cfcfcb;
+      border-color: transparent;
+      font-size: 12px;
+    }
+
+    .mini-button:hover {
+      background: #202125;
+      border-color: #45474d;
+    }
+
+    .mini-button.active {
+      background: var(--accent-soft);
+      border-color: rgba(215, 211, 203, 0.38);
+      color: var(--accent);
+    }
+
+    .control-label {
+      min-width: 44px;
+      color: #7f8085;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .stage-wrap {
+      min-height: 0;
+      padding: 18px;
+      display: grid;
+    }
+
+    .stage {
+      position: relative;
+      min-height: 520px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(#0e0f11, #0e0f11) padding-box,
+        repeating-linear-gradient(0deg, transparent 0 23px, rgba(210, 210, 210, 0.045) 24px),
+        repeating-linear-gradient(90deg, transparent 0 23px, rgba(210, 210, 210, 0.045) 24px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      min-height: 520px;
+      display: block;
+      cursor: default;
+      touch-action: none;
+    }
+
+    .status {
+      position: absolute;
+      left: 14px;
+      bottom: 12px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      pointer-events: none;
+    }
+
+    .item-list {
+      display: grid;
+      gap: 9px;
+      max-height: 260px;
+      overflow: auto;
+      padding-right: 3px;
+    }
+
+    .item-row {
+      display: grid;
+      gap: 9px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+    }
+
+    .item-row.selected {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+
+    .item-row.overlap {
+      border-color: var(--accent-2);
+      background: #302321;
+    }
+
+    .item-row header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .item-row strong {
+      overflow-wrap: anywhere;
+      font-size: 14px;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .swatch {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      vertical-align: -2px;
+      margin-right: 5px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 920px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        max-height: none;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .toolbar {
+        align-items: stretch;
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar strong,
+      .tabs,
+      .view-controls {
+        grid-column: 1;
+        grid-row: auto;
+        width: 100%;
+      }
+
+      .stage-wrap {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>Exhibition Wall Mockup Maker</h1>
+        <p>by Tiago</p>
+      </div>
+
+      <section class="section">
+        <h2>Project</h2>
+        <label>Exhibition
+          <input id="projectTitle" value="Untitled exhibition">
+        </label>
+        <div class="grid-2">
+          <label>Artist
+            <input id="projectArtist" value="">
+          </label>
+          <label>Museum
+            <input id="projectMuseum" value="">
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>Wall ID
+            <input id="projectWallId" value="Wall A">
+          </label>
+          <label>Revision
+            <input id="projectRevision" value="Rev A">
+          </label>
+        </div>
+        <label>Notes
+          <textarea id="projectNotes" spellcheck="true" placeholder="Mounting, curatorial, or construction notes"></textarea>
+        </label>
+      </section>
+
+      <section class="section">
+        <h2>Exhibition Space</h2>
+        <div class="grid-2">
+          <label>Space width mm
+            <input id="spaceWidth" type="number" min="1000" step="100" value="12000">
+          </label>
+          <label>Space depth mm
+            <input id="spaceDepth" type="number" min="1000" step="100" value="8000">
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>Floor color
+            <input id="spaceFloorColor" type="color" value="#101113">
+          </label>
+          <label>Surroundings
+            <input id="spaceSurroundColor" type="color" value="#070708">
+          </label>
+        </div>
+        <label class="checkbox-row">
+          <input id="spaceCinematicLight" type="checkbox" checked>
+          Cinematic light
+        </label>
+      </section>
+
+      <section class="section">
+        <h2>Wall</h2>
+        <div id="wallTabs" class="button-row"></div>
+        <div class="button-row">
+          <button id="addWall" class="secondary" type="button">Add wall</button>
+          <button id="duplicateWall" class="secondary" type="button">Duplicate</button>
+          <button id="deleteWall" class="danger" type="button">Delete</button>
+        </div>
+        <div class="grid-2">
+          <label>Width mm
+            <input id="wallWidth" type="number" min="100" step="10" value="6000">
+          </label>
+          <label>Height mm
+            <input id="wallHeight" type="number" min="100" step="10" value="3000">
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>Depth mm
+            <input id="wallDepth" type="number" min="40" step="10" value="120">
+          </label>
+          <label>Wall color
+            <input id="wallColor" type="color" value="#f5f4ea">
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>Wall X in space mm
+            <input id="wallSpaceX" type="number" step="100" value="1000">
+          </label>
+          <label>Wall Y in space mm
+            <input id="wallSpaceY" type="number" step="100" value="1000">
+          </label>
+        </div>
+        <label>Wall rotation in space deg
+          <input id="wallSpaceRotation" type="number" step="5" value="0">
+        </label>
+      </section>
+
+      <section class="section">
+        <h2>Add Object</h2>
+        <label>Name
+          <input id="itemName" value="Artwork">
+        </label>
+        <div class="grid-2">
+          <label>Type
+            <select id="itemType">
+              <option>artwork</option>
+              <option>screen</option>
+              <option>label</option>
+              <option>text</option>
+              <option>illumination</option>
+              <option>shelf</option>
+              <option>opening</option>
+            </select>
+          </label>
+          <label>Shape
+            <select id="itemShape">
+              <option value="rect">rectangular</option>
+              <option value="circle">circular</option>
+            </select>
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>Color
+            <input id="itemColor" type="color" value="#2f6f9f">
+          </label>
+          <label>Illuminated
+            <input id="itemIlluminated" type="checkbox">
+          </label>
+        </div>
+        <label>Visible text
+          <textarea id="itemText" spellcheck="true" placeholder="Optional words shown on the object"></textarea>
+        </label>
+        <label>Artwork/image
+          <input id="itemImage" type="file" accept="image/*">
+        </label>
+        <div class="grid-2">
+          <label>X from left mm
+            <input id="itemX" type="number" step="10" value="900">
+          </label>
+          <label>Y from floor mm
+            <input id="itemY" type="number" step="10" value="900">
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>Width mm
+            <input id="itemW" type="number" min="10" step="10" value="1200">
+          </label>
+          <label>Height mm
+            <input id="itemH" type="number" min="10" step="10" value="800">
+          </label>
+        </div>
+        <button id="addItem">Add to wall</button>
+      </section>
+
+      <section class="section">
+        <h2>Objects</h2>
+        <div id="itemList" class="item-list"></div>
+        <div class="button-row">
+          <button id="clearItems" class="danger">Clear</button>
+          <button id="sample" class="secondary">Sample</button>
+        </div>
+        <p id="overlapSummary" class="small"></p>
+      </section>
+    </aside>
+
+    <main class="main">
+      <div class="toolbar">
+        <strong id="projectName">Exhibition Wall Mockup Maker by Tiago</strong>
+        <div class="tabs" role="tablist" aria-label="View mode">
+          <button class="tab active" data-view="elevation">2D measured</button>
+          <button class="tab" data-view="perspective">3D render</button>
+          <button class="tab" data-view="space2d">Space 2D</button>
+          <button class="tab" data-view="space3d">Space 3D</button>
+          <button id="exportPng" class="secondary">Export A3 PNG</button>
+          <button id="printPdf" class="secondary">Print / PDF</button>
+        </div>
+        <div class="view-controls" aria-label="View controls">
+          <span class="control-label">View</span>
+          <button id="zoomOut" class="mini-button" type="button">Zoom -</button>
+          <button id="zoomIn" class="mini-button" type="button">Zoom +</button>
+          <button id="resetView" class="mini-button" type="button">Reset</button>
+          <button id="rotateXDown" class="mini-button" type="button">X -</button>
+          <button id="rotateXUp" class="mini-button" type="button">X +</button>
+          <button id="rotateYLeft" class="mini-button" type="button">Y -</button>
+          <button id="rotateYRight" class="mini-button" type="button">Y +</button>
+          <button id="rotateZLeft" class="mini-button" type="button">Z -</button>
+          <button id="rotateZRight" class="mini-button" type="button">Z +</button>
+        </div>
+        <div class="view-controls" aria-label="Alignment controls">
+          <span class="control-label">Align</span>
+          <button id="alignLeft" class="mini-button" type="button">Left</button>
+          <button id="alignCenter" class="mini-button" type="button">Center</button>
+          <button id="alignRight" class="mini-button" type="button">Right</button>
+          <button id="alignTop" class="mini-button" type="button">Top</button>
+          <button id="alignMiddle" class="mini-button" type="button">Middle</button>
+          <button id="alignBottom" class="mini-button" type="button">Bottom</button>
+          <button id="distributeH" class="mini-button" type="button">Distribute H</button>
+          <button id="distributeV" class="mini-button" type="button">Distribute V</button>
+        </div>
+      </div>
+      <div class="stage-wrap">
+        <div class="stage">
+          <canvas id="canvas" width="1400" height="860"></canvas>
+          <div class="status">
+            <span id="scaleLabel"></span>
+            <span>Measurements in millimeters</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    window.addEventListener("error", event => {
+      document.body.innerHTML = `<main style="padding:24px;font-family:system-ui,sans-serif;line-height:1.45">
+        <h1 style="font-size:22px;margin:0 0 12px">Exhibition Wall Mockup Maker could not start</h1>
+        <p>${String(event.message || "Unknown error")}</p>
+        <p style="color:#5d655f">Try refreshing once. If this stays here, send this message to Codex.</p>
+      </main>`;
+    });
+
+    function uid() {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
+      }
+      return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    }
+
+    const state = {
+      view: "elevation",
+      selectedId: null,
+      selectedIds: [],
+      drag: null,
+      rotateDrag: null,
+      resizeDrag: null,
+      snapLines: [],
+      view2d: { zoom: 1 },
+      view3d: { zoom: 1, rotX: -10, rotY: 24, rotZ: 0 },
+      project: {
+        title: "Untitled exhibition",
+        artist: "",
+        museum: "",
+        wallId: "Wall A",
+        revision: "Rev A",
+        notes: ""
+      },
+      space: { width: 12000, depth: 8000, floorColor: "#101113", surroundColor: "#070708", cinematicLight: true },
+      activeWallId: "wall-a",
+      walls: [],
+      wall: { width: 6000, height: 3000, depth: 120, color: "#f5f4ea" },
+      items: [
+        { id: uid(), name: "Artwork", type: "artwork", shape: "rect", text: "", illuminated: false, x: 900, y: 900, width: 1200, height: 800, color: "#2f6f9f" },
+        { id: uid(), name: "Wall label", type: "label", shape: "rect", text: "Intro text", illuminated: false, x: 2400, y: 1700, width: 900, height: 220, color: "#eff6ff" },
+        { id: uid(), name: "Halo light", type: "illumination", shape: "circle", text: "", illuminated: true, x: 3200, y: 2050, width: 420, height: 420, color: "#f7d154" },
+        { id: uid(), name: "Screen", type: "screen", shape: "rect", text: "", illuminated: false, x: 3600, y: 650, width: 1800, height: 900, color: "#151515" }
+      ]
+    };
+
+    const els = {
+      canvas: document.querySelector("#canvas"),
+      wallWidth: document.querySelector("#wallWidth"),
+      wallHeight: document.querySelector("#wallHeight"),
+      wallDepth: document.querySelector("#wallDepth"),
+      wallColor: document.querySelector("#wallColor"),
+      spaceWidth: document.querySelector("#spaceWidth"),
+      spaceDepth: document.querySelector("#spaceDepth"),
+      spaceFloorColor: document.querySelector("#spaceFloorColor"),
+      spaceSurroundColor: document.querySelector("#spaceSurroundColor"),
+      spaceCinematicLight: document.querySelector("#spaceCinematicLight"),
+      wallSpaceX: document.querySelector("#wallSpaceX"),
+      wallSpaceY: document.querySelector("#wallSpaceY"),
+      wallSpaceRotation: document.querySelector("#wallSpaceRotation"),
+      wallTabs: document.querySelector("#wallTabs"),
+      addWall: document.querySelector("#addWall"),
+      duplicateWall: document.querySelector("#duplicateWall"),
+      deleteWall: document.querySelector("#deleteWall"),
+      projectTitle: document.querySelector("#projectTitle"),
+      projectArtist: document.querySelector("#projectArtist"),
+      projectMuseum: document.querySelector("#projectMuseum"),
+      projectWallId: document.querySelector("#projectWallId"),
+      projectRevision: document.querySelector("#projectRevision"),
+      projectNotes: document.querySelector("#projectNotes"),
+      itemName: document.querySelector("#itemName"),
+      itemType: document.querySelector("#itemType"),
+      itemShape: document.querySelector("#itemShape"),
+      itemColor: document.querySelector("#itemColor"),
+      itemIlluminated: document.querySelector("#itemIlluminated"),
+      itemText: document.querySelector("#itemText"),
+      itemImage: document.querySelector("#itemImage"),
+      itemX: document.querySelector("#itemX"),
+      itemY: document.querySelector("#itemY"),
+      itemW: document.querySelector("#itemW"),
+      itemH: document.querySelector("#itemH"),
+      itemList: document.querySelector("#itemList"),
+      overlapSummary: document.querySelector("#overlapSummary"),
+      scaleLabel: document.querySelector("#scaleLabel"),
+      projectName: document.querySelector("#projectName"),
+      zoomOut: document.querySelector("#zoomOut"),
+      zoomIn: document.querySelector("#zoomIn"),
+      resetView: document.querySelector("#resetView"),
+      rotateXDown: document.querySelector("#rotateXDown"),
+      rotateXUp: document.querySelector("#rotateXUp"),
+      rotateYLeft: document.querySelector("#rotateYLeft"),
+      rotateYRight: document.querySelector("#rotateYRight"),
+      rotateZLeft: document.querySelector("#rotateZLeft"),
+      rotateZRight: document.querySelector("#rotateZRight"),
+      alignLeft: document.querySelector("#alignLeft"),
+      alignCenter: document.querySelector("#alignCenter"),
+      alignRight: document.querySelector("#alignRight"),
+      alignTop: document.querySelector("#alignTop"),
+      alignMiddle: document.querySelector("#alignMiddle"),
+      alignBottom: document.querySelector("#alignBottom"),
+      distributeH: document.querySelector("#distributeH"),
+      distributeV: document.querySelector("#distributeV"),
+      printPdf: document.querySelector("#printPdf")
+    };
+
+    const screenCtx = els.canvas.getContext("2d");
+
+    let activeCanvas = els.canvas;
+    let activeCtx = screenCtx;
+
+    function makeWall(name, wall = {}, items = [], placement = {}) {
+      return {
+        id: uid(),
+        name,
+        wall: { width: 6000, height: 3000, depth: 120, color: "#f5f4ea", ...wall },
+        items: items.map(normalizeItem),
+        placement: { x: 1000, y: 1000, rotation: 0, ...placement }
+      };
+    }
+
+    function ensureWalls() {
+      if (!Array.isArray(state.walls) || !state.walls.length) {
+        const first = makeWall("Wall A", state.wall, state.items, { x: 1000, y: 1200, rotation: 0 });
+        first.id = state.activeWallId || "wall-a";
+        state.walls = [first];
+        state.activeWallId = first.id;
+      }
+      if (!state.walls.some(wall => wall.id === state.activeWallId)) {
+        state.activeWallId = state.walls[0].id;
+      }
+      loadActiveWall();
+    }
+
+    function activeWallRecord() {
+      return state.walls.find(wall => wall.id === state.activeWallId) || state.walls[0];
+    }
+
+    function syncActiveWallRecord() {
+      const record = activeWallRecord();
+      if (!record) return;
+      record.wall = state.wall;
+      record.items = state.items;
+      record.placement = {
+        x: number(els.wallSpaceX?.value, record.placement?.x ?? 1000),
+        y: number(els.wallSpaceY?.value, record.placement?.y ?? 1000),
+        rotation: number(els.wallSpaceRotation?.value, record.placement?.rotation ?? 0)
+      };
+    }
+
+    function loadActiveWall() {
+      const record = activeWallRecord();
+      if (!record) return;
+      state.wall = record.wall;
+      state.items = record.items;
+    }
+
+    function number(value, fallback) {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : fallback;
+    }
+
+    function syncWallFromInputs() {
+      state.wall.width = Math.max(100, number(els.wallWidth.value, state.wall.width));
+      state.wall.height = Math.max(100, number(els.wallHeight.value, state.wall.height));
+      state.wall.depth = Math.max(40, number(els.wallDepth.value, state.wall.depth));
+      state.wall.color = els.wallColor.value || state.wall.color;
+      const record = activeWallRecord();
+      if (record) {
+        record.placement.x = number(els.wallSpaceX.value, record.placement.x);
+        record.placement.y = number(els.wallSpaceY.value, record.placement.y);
+        record.placement.rotation = number(els.wallSpaceRotation.value, record.placement.rotation);
+      }
+      syncActiveWallRecord();
+      save();
+      render();
+    }
+
+    function syncInputsFromWall() {
+      const record = activeWallRecord();
+      els.wallWidth.value = state.wall.width;
+      els.wallHeight.value = state.wall.height;
+      els.wallDepth.value = state.wall.depth;
+      els.wallColor.value = state.wall.color;
+      els.wallSpaceX.value = record?.placement?.x ?? 0;
+      els.wallSpaceY.value = record?.placement?.y ?? 0;
+      els.wallSpaceRotation.value = record?.placement?.rotation ?? 0;
+    }
+
+    function syncSpaceFromInputs() {
+      state.space.width = Math.max(1000, number(els.spaceWidth.value, state.space.width));
+      state.space.depth = Math.max(1000, number(els.spaceDepth.value, state.space.depth));
+      state.space.floorColor = els.spaceFloorColor.value || state.space.floorColor;
+      state.space.surroundColor = els.spaceSurroundColor.value || state.space.surroundColor;
+      state.space.cinematicLight = Boolean(els.spaceCinematicLight.checked);
+      save();
+      render();
+    }
+
+    function syncInputsFromSpace() {
+      els.spaceWidth.value = state.space.width;
+      els.spaceDepth.value = state.space.depth;
+      els.spaceFloorColor.value = state.space.floorColor || "#101113";
+      els.spaceSurroundColor.value = state.space.surroundColor || "#070708";
+      els.spaceCinematicLight.checked = state.space.cinematicLight !== false;
+    }
+
+    function syncProjectFromInputs() {
+      state.project.title = els.projectTitle.value || "Untitled exhibition";
+      state.project.artist = els.projectArtist.value || "";
+      state.project.museum = els.projectMuseum.value || "";
+      state.project.wallId = els.projectWallId.value || "";
+      state.project.revision = els.projectRevision.value || "";
+      state.project.notes = els.projectNotes.value || "";
+      els.projectName.textContent = `${state.project.title} ${state.project.wallId ? `| ${state.project.wallId}` : ""}`;
+      save();
+      render();
+    }
+
+    function syncInputsFromProject() {
+      els.projectTitle.value = state.project.title || "";
+      els.projectArtist.value = state.project.artist || "";
+      els.projectMuseum.value = state.project.museum || "";
+      els.projectWallId.value = state.project.wallId || "";
+      els.projectRevision.value = state.project.revision || "";
+      els.projectNotes.value = state.project.notes || "";
+      els.projectName.textContent = `${state.project.title || "Untitled exhibition"} ${state.project.wallId ? `| ${state.project.wallId}` : ""}`;
+    }
+
+    function addItem(item) {
+      state.items.push({
+        id: uid(),
+        name: item.name || titleCase(item.type || "object"),
+        type: item.type || "artwork",
+        shape: item.shape || "rect",
+        text: item.text || "",
+        image: item.image || "",
+        illuminated: Boolean(item.illuminated),
+        x: Math.max(0, number(item.x, 0)),
+        y: Math.max(0, number(item.y, 0)),
+        width: Math.max(10, number(item.width, 100)),
+        height: Math.max(10, number(item.height, 100)),
+        color: item.color || colorForType(item.type)
+      });
+      syncActiveWallRecord();
+      save();
+      render();
+    }
+
+    function titleCase(text) {
+      return String(text).replace(/\b\w/g, letter => letter.toUpperCase());
+    }
+
+    function colorForType(type) {
+      const colors = {
+        artwork: "#2f6f9f",
+        screen: "#151515",
+        label: "#eff6ff",
+        text: "#ffffff",
+        illumination: "#f7d154",
+        shelf: "#7b5d46",
+        opening: "#d8ddd6"
+      };
+      return colors[String(type).toLowerCase()] || "#2f6f9f";
+    }
+
+    function normalizeItem(item) {
+      return {
+        shape: "rect",
+        text: "",
+        image: "",
+        illuminated: item.type === "illumination",
+        ...item
+      };
+    }
+
+    function itemCode(item) {
+      const normalized = normalizeItem(item);
+      const prefixes = { artwork: "A", screen: "S", label: "T", text: "T", illumination: "L", shelf: "SH", opening: "O" };
+      const sameType = state.items.filter(candidate => normalizeItem(candidate).type === normalized.type);
+      const index = sameType.findIndex(candidate => candidate.id === item.id) + 1;
+      return `${prefixes[normalized.type] || "O"}${String(Math.max(1, index)).padStart(2, "0")}`;
+    }
+
+    const imageCache = new Map();
+
+    function cachedImage(src) {
+      if (!src) return null;
+      if (imageCache.has(src)) return imageCache.get(src);
+      const image = new Image();
+      image.src = src;
+      imageCache.set(src, image);
+      image.onload = () => render();
+      return image;
+    }
+
+    function selectedIds() {
+      if (Array.isArray(state.selectedIds) && state.selectedIds.length) return state.selectedIds;
+      return state.selectedId ? [state.selectedId] : [];
+    }
+
+    function isSelected(id) {
+      return selectedIds().includes(id);
+    }
+
+    function setSelection(ids) {
+      state.selectedIds = [...new Set(ids)].filter(id => state.items.some(item => item.id === id));
+      state.selectedId = state.selectedIds[0] || null;
+    }
+
+    function toggleSelection(id) {
+      const current = new Set(selectedIds());
+      if (current.has(id)) {
+        current.delete(id);
+      } else {
+        current.add(id);
+      }
+      setSelection([...current]);
+    }
+
+    function selectedItems() {
+      const ids = new Set(selectedIds());
+      return state.items.filter(item => ids.has(item.id));
+    }
+
+    function renderWallTabs() {
+      els.wallTabs.innerHTML = "";
+      state.walls.forEach((wall, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `mini-button${wall.id === state.activeWallId ? " active" : ""}`;
+        button.textContent = wall.name || `Wall ${index + 1}`;
+        button.dataset.wallTab = wall.id;
+        els.wallTabs.append(button);
+      });
+    }
+
+    function switchWall(id) {
+      syncActiveWallRecord();
+      state.activeWallId = id;
+      loadActiveWall();
+      setSelection([]);
+      syncInputsFromWall();
+      save();
+      render();
+    }
+
+    function addWall() {
+      syncActiveWallRecord();
+      const label = `Wall ${String.fromCharCode(65 + state.walls.length)}`;
+      const wall = makeWall(label, { width: 4000, height: state.wall.height, depth: state.wall.depth, color: state.wall.color }, [], { x: 1000 + state.walls.length * 700, y: 2200, rotation: 0 });
+      state.walls.push(wall);
+      state.activeWallId = wall.id;
+      loadActiveWall();
+      setSelection([]);
+      syncInputsFromWall();
+      save();
+      render();
+    }
+
+    function duplicateWall() {
+      const current = activeWallRecord();
+      if (!current) return;
+      syncActiveWallRecord();
+      const clone = makeWall(`${current.name} copy`, { ...current.wall }, current.items.map(item => ({ ...item, id: uid() })), {
+        x: current.placement.x + 600,
+        y: current.placement.y + 600,
+        rotation: current.placement.rotation
+      });
+      state.walls.push(clone);
+      state.activeWallId = clone.id;
+      loadActiveWall();
+      setSelection([]);
+      syncInputsFromWall();
+      save();
+      render();
+    }
+
+    function deleteWall() {
+      if (state.walls.length <= 1) return;
+      state.walls = state.walls.filter(wall => wall.id !== state.activeWallId);
+      state.activeWallId = state.walls[0].id;
+      loadActiveWall();
+      setSelection([]);
+      syncInputsFromWall();
+      save();
+      render();
+    }
+
+    function resizeCanvas() {
+      const rect = els.canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      els.canvas.width = Math.max(700, Math.floor(rect.width * ratio));
+      els.canvas.height = Math.max(520, Math.floor(rect.height * ratio));
+      activeCanvas = els.canvas;
+      activeCtx = screenCtx;
+      activeCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      render();
+    }
+
+    function clear() {
+      const ratio = activeCanvas === els.canvas ? (window.devicePixelRatio || 1) : 1;
+      const width = activeCanvas.width / ratio;
+      const height = activeCanvas.height / ratio;
+      activeCtx.clearRect(0, 0, width, height);
+      return { width, height };
+    }
+
+    function elevationGeometry(width, height, options = {}) {
+      const pad = options.pad ?? 78;
+      const zoom = options.fit ? 1 : state.view2d.zoom;
+      const scale = Math.min((width - pad * 2) / state.wall.width, (height - pad * 2) / state.wall.height) * zoom;
+      const wallW = state.wall.width * scale;
+      const wallH = state.wall.height * scale;
+      return {
+        scale,
+        x: (width - wallW) / 2,
+        y: (height - wallH) / 2,
+        w: wallW,
+        h: wallH
+      };
+    }
+
+    function mmX(geom, value) {
+      return geom.x + value * geom.scale;
+    }
+
+    function mmY(geom, value) {
+      return geom.y + geom.h - value * geom.scale;
+    }
+
+    function drawLine(x1, y1, x2, y2, color = "#333", dash = []) {
+      activeCtx.save();
+      activeCtx.strokeStyle = color;
+      activeCtx.lineWidth = 1;
+      activeCtx.setLineDash(dash);
+      activeCtx.beginPath();
+      activeCtx.moveTo(x1, y1);
+      activeCtx.lineTo(x2, y2);
+      activeCtx.stroke();
+      activeCtx.restore();
+    }
+
+    function drawText(text, x, y, options = {}) {
+      activeCtx.save();
+      let value = String(text);
+      activeCtx.fillStyle = options.color || "#1d1d1d";
+      activeCtx.font = `${options.weight || 700} ${options.size || 12}px Inter, system-ui, sans-serif`;
+      activeCtx.textAlign = options.align || "center";
+      activeCtx.textBaseline = options.baseline || "middle";
+      activeCtx.lineJoin = "round";
+      if (options.maxWidth) {
+        const original = value;
+        let limit = original.length;
+        while (limit > 4 && activeCtx.measureText(value).width > options.maxWidth) {
+          limit -= 1;
+          value = `${original.slice(0, limit).trim()}...`;
+        }
+      }
+      if (options.rotate) {
+        activeCtx.translate(x, y);
+        activeCtx.rotate(options.rotate);
+        if (options.halo) {
+          activeCtx.strokeStyle = options.halo;
+          activeCtx.lineWidth = options.haloWidth || 2;
+          activeCtx.strokeText(value, 0, 0);
+        }
+        activeCtx.fillText(value, 0, 0);
+      } else {
+        if (options.halo) {
+          activeCtx.strokeStyle = options.halo;
+          activeCtx.lineWidth = options.haloWidth || 2;
+          activeCtx.strokeText(value, x, y);
+        }
+        activeCtx.fillText(value, x, y);
+      }
+      activeCtx.restore();
+    }
+
+    function drawDimension(x1, y1, x2, y2, label, offset = 18, vertical = false, color = "#4b5750") {
+      if (vertical) {
+        drawLine(x1, y1, x2, y2, color);
+        drawLine(x1 - 5, y1, x1 + 5, y1, color);
+        drawLine(x2 - 5, y2, x2 + 5, y2, color);
+        drawText(label, x1 - offset, (y1 + y2) / 2, { rotate: -Math.PI / 2, color, halo: contrastHalo(color) });
+      } else {
+        drawLine(x1, y1, x2, y2, color);
+        drawLine(x1, y1 - 5, x1, y1 + 5, color);
+        drawLine(x2, y2 - 5, x2, y2 + 5, color);
+        drawText(label, (x1 + x2) / 2, y1 - offset, { color, halo: contrastHalo(color) });
+      }
+    }
+
+    function textWidth(text, size = 12, weight = 700) {
+      activeCtx.save();
+      activeCtx.font = `${weight} ${size}px Inter, system-ui, sans-serif`;
+      const width = activeCtx.measureText(String(text)).width;
+      activeCtx.restore();
+      return width;
+    }
+
+    function clampPoint(point, width, height, margin = 18) {
+      return {
+        x: clamp(point.x, margin, width - margin),
+        y: clamp(point.y, margin, height - margin)
+      };
+    }
+
+    function drawLeaderLabel(lines, anchor, labelPoint, options = {}) {
+      const color = options.color || "#1d1d1d";
+      const halo = options.halo || contrastHalo(color);
+      const size = options.size || 11;
+      const gap = size + 4;
+      drawLine(anchor.x, anchor.y, labelPoint.x, labelPoint.y, color, [3, 3]);
+      lines.forEach((line, index) => {
+        drawText(line, labelPoint.x, labelPoint.y + index * gap, {
+          color,
+          halo,
+          size,
+          weight: index === 0 ? 700 : 600,
+          maxWidth: options.maxWidth || 150
+        });
+      });
+    }
+
+    function drawObjectLabel(item, box, canvasSize, options = {}) {
+      const textColor = contrastText(item.color);
+      const sizeLine = `${item.width} x ${item.height}`;
+      const positionLine = `x ${Math.round(item.x)}, y ${Math.round(item.y)}`;
+      const nameLine = `${itemCode(item)} ${options.label || item.name}`;
+      const minWidth = Math.max(textWidth(nameLine, 11), textWidth(sizeLine, 10), textWidth(positionLine, 10)) + 14;
+      const minHeight = options.includePosition ? 48 : 34;
+      const anchor = options.anchor || { x: box.x + box.w / 2, y: box.y + box.h / 2 };
+      const cramped = box.w < minWidth || box.h < minHeight || box.x < 8 || box.y < 8 || box.x + box.w > canvasSize.width - 8 || box.y + box.h > canvasSize.height - 8;
+
+      if (!cramped) {
+        drawText(nameLine, anchor.x, anchor.y - (options.includePosition ? 14 : 8), { color: textColor, size: options.selected ? 13 : 11, weight: options.selected ? 700 : 600, halo: contrastHalo(textColor), maxWidth: Math.max(42, box.w - 10) });
+        drawText(sizeLine, anchor.x, anchor.y + (options.includePosition ? 2 : 9), { color: textColor, size: 10, weight: 600, halo: contrastHalo(textColor), maxWidth: Math.max(42, box.w - 10) });
+        if (options.includePosition) {
+          drawText(positionLine, anchor.x, anchor.y + 17, { color: textColor, size: 10, weight: 600, halo: contrastHalo(textColor), maxWidth: Math.max(42, box.w - 10) });
+        }
+        return false;
+      }
+
+      const preferRight = box.x + box.w / 2 < canvasSize.width * 0.62;
+      const labelPoint = clampPoint({
+        x: preferRight ? box.x + box.w + 82 : box.x - 82,
+        y: box.y + box.h / 2 - 16
+      }, canvasSize.width, canvasSize.height, 42);
+      drawLeaderLabel(options.includePosition ? [nameLine, sizeLine, positionLine] : [nameLine, sizeLine], anchor, labelPoint, {
+        color: options.calloutColor || "#26362f",
+        halo: contrastHalo(options.calloutColor || "#26362f"),
+        size: 10,
+        maxWidth: 150
+      });
+      return true;
+    }
+
+    function guideColor(strong = false) {
+      if (strong) return contrastText(state.wall.color);
+      return isDark(state.wall.color) ? "rgba(255,255,255,0.58)" : "rgba(22,22,22,0.46)";
+    }
+
+    function drawPositionGuides(geom, item, box, options = {}) {
+      const color = guideColor(options.strong);
+      const labelColor = contrastText(state.wall.color);
+      const halo = contrastHalo(labelColor);
+      const bottomY = box.y + box.h;
+      const leftX = box.x;
+      const floorY = geom.y + geom.h;
+      const wallLeftX = geom.x;
+
+      drawLine(leftX, floorY, leftX, bottomY, color, [4, 4]);
+      drawLine(wallLeftX, bottomY, leftX, bottomY, color, [4, 4]);
+      drawText(`x ${Math.round(item.x)}`, (wallLeftX + leftX) / 2, bottomY - 8, {
+        color: labelColor,
+        size: options.strong ? 11 : 10,
+        weight: 600,
+        halo,
+        maxWidth: Math.max(46, Math.abs(leftX - wallLeftX) - 6)
+      });
+      drawText(`y ${Math.round(item.y)}`, leftX + 18, (floorY + bottomY) / 2, {
+        rotate: -Math.PI / 2,
+        color: labelColor,
+        size: options.strong ? 11 : 10,
+        weight: 600,
+        halo,
+        maxWidth: Math.max(46, Math.abs(floorY - bottomY) - 6)
+      });
+    }
+
+    function contrastText(hex) {
+      return isDark(hex) ? "#ffffff" : "#161616";
+    }
+
+    function contrastHalo(color) {
+      const normalized = String(color).toLowerCase();
+      if (normalized === "#ffffff" || normalized === "white") return "rgba(0,0,0,0.24)";
+      if (isDark(normalized)) return "rgba(255,255,255,0.42)";
+      return "rgba(0,0,0,0.22)";
+    }
+
+    function itemBounds(item) {
+      return {
+        left: item.x,
+        right: item.x + item.width,
+        bottom: item.y,
+        top: item.y + item.height
+      };
+    }
+
+    function itemsOverlap(a, b) {
+      const ab = itemBounds(a);
+      const bb = itemBounds(b);
+      return ab.left < bb.right && ab.right > bb.left && ab.bottom < bb.top && ab.top > bb.bottom;
+    }
+
+    function overlapIds() {
+      const ids = new Set();
+      for (let i = 0; i < state.items.length; i += 1) {
+        for (let j = i + 1; j < state.items.length; j += 1) {
+          if (itemsOverlap(state.items[i], state.items[j])) {
+            ids.add(state.items[i].id);
+            ids.add(state.items[j].id);
+          }
+        }
+      }
+      return ids;
+    }
+
+    function clampItemToWall(item) {
+      item.x = Math.max(0, Math.min(state.wall.width - item.width, item.x));
+      item.y = Math.max(0, Math.min(state.wall.height - item.height, item.y));
+    }
+
+    function drawItemShape(item, x, y, w, h, options = {}) {
+      activeCtx.save();
+      if (item.illuminated || item.type === "illumination") {
+        const glow = activeCtx.createRadialGradient(x + w / 2, y + h / 2, 0, x + w / 2, y + h / 2, Math.max(w, h));
+        glow.addColorStop(0, "rgba(247, 209, 84, 0.36)");
+        glow.addColorStop(1, "rgba(247, 209, 84, 0)");
+        activeCtx.fillStyle = glow;
+        activeCtx.fillRect(x - w * 0.45, y - h * 0.45, w * 1.9, h * 1.9);
+      }
+
+      activeCtx.fillStyle = item.color;
+      activeCtx.strokeStyle = options.stroke || "#1f2924";
+      activeCtx.lineWidth = options.lineWidth || 1.5;
+      if (item.shape === "circle") {
+        activeCtx.beginPath();
+        activeCtx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+        activeCtx.fill();
+        drawItemImage(item, x, y, w, h);
+        activeCtx.stroke();
+      } else {
+        activeCtx.fillRect(x, y, w, h);
+        drawItemImage(item, x, y, w, h);
+        activeCtx.strokeRect(x, y, w, h);
+      }
+      activeCtx.restore();
+    }
+
+    function drawItemImage(item, x, y, w, h) {
+      const image = cachedImage(item.image);
+      if (!image || !image.complete || !image.naturalWidth) return;
+      activeCtx.save();
+      if (item.shape === "circle") {
+        activeCtx.beginPath();
+        activeCtx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+        activeCtx.clip();
+      } else {
+        activeCtx.beginPath();
+        activeCtx.rect(x, y, w, h);
+        activeCtx.clip();
+      }
+      const ratio = Math.max(w / image.naturalWidth, h / image.naturalHeight);
+      const drawW = image.naturalWidth * ratio;
+      const drawH = image.naturalHeight * ratio;
+      activeCtx.drawImage(image, x + (w - drawW) / 2, y + (h - drawH) / 2, drawW, drawH);
+      activeCtx.restore();
+    }
+
+    function drawProjectedImage(item, points, options = {}) {
+      const image = cachedImage(item.image);
+      if (!image || !image.complete || !image.naturalWidth) return false;
+      const xs = points.map(point => point.x);
+      const ys = points.map(point => point.y);
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+      const w = Math.max(1, maxX - minX);
+      const h = Math.max(1, maxY - minY);
+      activeCtx.save();
+      if (item.shape === "circle") {
+        const center = options.center || points.reduce((acc, point) => ({ x: acc.x + point.x / points.length, y: acc.y + point.y / points.length }), { x: 0, y: 0 });
+        const rx = Math.max(5, Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y) / 2);
+        const ry = Math.max(5, Math.hypot(points[3].x - points[0].x, points[3].y - points[0].y) / 2);
+        activeCtx.beginPath();
+        activeCtx.ellipse(center.x, center.y, rx, ry, options.rotation || 0, 0, Math.PI * 2);
+        activeCtx.clip();
+      } else {
+        activeCtx.beginPath();
+        activeCtx.moveTo(points[0].x, points[0].y);
+        points.slice(1).forEach(point => activeCtx.lineTo(point.x, point.y));
+        activeCtx.closePath();
+        activeCtx.clip();
+      }
+      const ratio = Math.max(w / image.naturalWidth, h / image.naturalHeight);
+      const drawW = image.naturalWidth * ratio;
+      const drawH = image.naturalHeight * ratio;
+      activeCtx.drawImage(image, minX + (w - drawW) / 2, minY + (h - drawH) / 2, drawW, drawH);
+      activeCtx.restore();
+      return true;
+    }
+
+    function pointInItem(point, item, geom) {
+      const x = mmX(geom, item.x);
+      const y = mmY(geom, item.y + item.height);
+      const w = item.width * geom.scale;
+      const h = item.height * geom.scale;
+      if (item.shape === "circle") {
+        const dx = (point.x - (x + w / 2)) / (w / 2);
+        const dy = (point.y - (y + h / 2)) / (h / 2);
+        return dx * dx + dy * dy <= 1;
+      }
+      return point.x >= x && point.x <= x + w && point.y >= y && point.y <= y + h;
+    }
+
+    function selectedSingleItem() {
+      const ids = selectedIds();
+      if (ids.length !== 1) return null;
+      return state.items.find(item => item.id === ids[0]) || null;
+    }
+
+    function resizeHandleAt(point, geom) {
+      const item = selectedSingleItem();
+      if (!item) return null;
+      const x = mmX(geom, item.x);
+      const y = mmY(geom, item.y + item.height);
+      const w = item.width * geom.scale;
+      const h = item.height * geom.scale;
+      const handle = { x: x + w, y: y + h };
+      if (Math.abs(point.x - handle.x) <= 10 && Math.abs(point.y - handle.y) <= 10) return item;
+      return null;
+    }
+
+    function snapValue(value, targets, threshold = 18) {
+      let best = { value, line: null, distance: threshold + 1 };
+      targets.forEach(target => {
+        const distance = Math.abs(value - target.value);
+        if (distance < best.distance && distance <= threshold) best = { value: target.value, line: target.line, distance };
+      });
+      return best;
+    }
+
+    function snapTargets(excludeIds = []) {
+      const exclude = new Set(excludeIds);
+      const vertical = [
+        { value: 0, line: { axis: "x", value: 0 } },
+        { value: state.wall.width / 2, line: { axis: "x", value: state.wall.width / 2 } },
+        { value: state.wall.width, line: { axis: "x", value: state.wall.width } }
+      ];
+      const horizontal = [
+        { value: 0, line: { axis: "y", value: 0 } },
+        { value: state.wall.height / 2, line: { axis: "y", value: state.wall.height / 2 } },
+        { value: state.wall.height, line: { axis: "y", value: state.wall.height } }
+      ];
+      state.items.forEach(item => {
+        if (exclude.has(item.id)) return;
+        vertical.push({ value: item.x, line: { axis: "x", value: item.x } }, { value: item.x + item.width / 2, line: { axis: "x", value: item.x + item.width / 2 } }, { value: item.x + item.width, line: { axis: "x", value: item.x + item.width } });
+        horizontal.push({ value: item.y, line: { axis: "y", value: item.y } }, { value: item.y + item.height / 2, line: { axis: "y", value: item.y + item.height / 2 } }, { value: item.y + item.height, line: { axis: "y", value: item.y + item.height } });
+      });
+      return { vertical, horizontal };
+    }
+
+    function drawSnapLines(geom) {
+      (state.snapLines || []).forEach(line => {
+        if (line.axis === "x") {
+          const x = mmX(geom, line.value);
+          drawLine(x, geom.y, x, geom.y + geom.h, "#a8c7dd", [6, 5]);
+        } else {
+          const y = mmY(geom, line.value);
+          drawLine(geom.x, y, geom.x + geom.w, y, "#c2b7d8", [6, 5]);
+        }
+      });
+    }
+
+    function drawElevation() {
+      const { width, height } = clear();
+      const geom = elevationGeometry(width, height);
+      const wallMark = contrastText(state.wall.color);
+      const overlaps = overlapIds();
+      const canvasSize = { width, height };
+      activeCtx.fillStyle = activeCanvas === els.canvas ? sceneSurroundColor() : "#f9fbf7";
+      activeCtx.fillRect(0, 0, width, height);
+      activeCtx.fillStyle = state.wall.color;
+      activeCtx.strokeStyle = "#35363a";
+      activeCtx.lineWidth = 2;
+      activeCtx.fillRect(geom.x, geom.y, geom.w, geom.h);
+      activeCtx.strokeRect(geom.x, geom.y, geom.w, geom.h);
+
+      drawDimension(geom.x, geom.y + geom.h + 34, geom.x + geom.w, geom.y + geom.h + 34, `${state.wall.width} mm`, 14);
+      drawDimension(geom.x - 34, geom.y, geom.x - 34, geom.y + geom.h, `${state.wall.height} mm`, 18, true);
+      drawSnapLines(geom);
+
+      state.items.forEach(item => {
+        item = normalizeItem(item);
+        const x = mmX(geom, item.x);
+        const y = mmY(geom, item.y + item.height);
+        const w = item.width * geom.scale;
+        const h = item.height * geom.scale;
+        const invalid = item.x + item.width > state.wall.width || item.y + item.height > state.wall.height;
+        const overlap = overlaps.has(item.id);
+        const selected = isSelected(item.id);
+        const showFullMeasures = selected || overlap;
+        const stroke = invalid || overlap ? "#b3261e" : selected ? "#d7d3cb" : "#1f2924";
+
+        drawItemShape(item, x, y, w, h, { stroke, lineWidth: invalid || overlap || selected ? 3 : 1.5 });
+        drawPositionGuides(geom, item, { x, y, w, h }, { strong: showFullMeasures });
+
+        if (item.type === "screen") {
+          activeCtx.fillStyle = "rgba(255,255,255,0.12)";
+          activeCtx.fillRect(x + 8, y + 8, Math.max(0, w - 16), Math.max(0, h - 16));
+        }
+
+        const textColor = contrastText(item.color);
+        const label = selected && item.text ? `${item.name}: ${item.text}` : item.name;
+        drawObjectLabel(item, { x, y, w, h }, canvasSize, {
+          label,
+          selected,
+          includePosition: true,
+          calloutColor: wallMark
+        });
+        if (overlap) {
+          drawText("OVERLAP", x + w / 2, y - 18, { color: "#b3261e", size: 12, halo: "rgba(255,255,255,0.9)" });
+        }
+        if (showFullMeasures) {
+          drawDimension(x, y - 12, x + w, y - 12, `${item.width} mm`, 8, false, wallMark);
+          drawDimension(x + w + 12, y, x + w + 12, y + h, `${item.height} mm`, 12, true, wallMark);
+        }
+        if (selected && selectedIds().length === 1) {
+          activeCtx.fillStyle = "#d7d3cb";
+          activeCtx.strokeStyle = "#090a0b";
+          activeCtx.lineWidth = 2;
+          activeCtx.fillRect(x + w - 5, y + h - 5, 10, 10);
+          activeCtx.strokeRect(x + w - 5, y + h - 5, 10, 10);
+        }
+      });
+
+      els.scaleLabel.textContent = `2D zoom ${Math.round(state.view2d.zoom * 100)}% | 1 px = ${Math.round(1 / geom.scale)} mm`;
+    }
+
+    function validHexColor(value, fallback) {
+      return /^#[0-9a-f]{6}$/i.test(String(value || "")) ? value : fallback;
+    }
+
+    function sceneFloorColor() {
+      return validHexColor(state.space.floorColor, "#101113");
+    }
+
+    function sceneSurroundColor() {
+      return validHexColor(state.space.surroundColor, "#070708");
+    }
+
+    function applyCinematicLight(width, height) {
+      if (state.space.cinematicLight === false) return;
+      activeCtx.save();
+      const key = activeCtx.createRadialGradient(width * 0.36, height * 0.12, 0, width * 0.36, height * 0.12, width * 0.72);
+      key.addColorStop(0, "rgba(255, 226, 166, 0.28)");
+      key.addColorStop(0.42, "rgba(255, 226, 166, 0.09)");
+      key.addColorStop(1, "rgba(255, 226, 166, 0)");
+      activeCtx.fillStyle = key;
+      activeCtx.fillRect(0, 0, width, height);
+
+      const fill = activeCtx.createLinearGradient(width * 0.82, 0, width * 0.16, height);
+      fill.addColorStop(0, "rgba(168, 199, 221, 0.12)");
+      fill.addColorStop(1, "rgba(0, 0, 0, 0)");
+      activeCtx.fillStyle = fill;
+      activeCtx.fillRect(0, 0, width, height);
+
+      const vignette = activeCtx.createRadialGradient(width / 2, height / 2, width * 0.18, width / 2, height / 2, width * 0.72);
+      vignette.addColorStop(0, "rgba(0, 0, 0, 0)");
+      vignette.addColorStop(1, "rgba(0, 0, 0, 0.34)");
+      activeCtx.fillStyle = vignette;
+      activeCtx.fillRect(0, 0, width, height);
+      activeCtx.restore();
+    }
+
+    function drawPreviewLabel(label, center, color, maxWidth = 130) {
+      const textColor = contrastText(color);
+      drawText(label, center.x, center.y, {
+        color: textColor,
+        halo: contrastHalo(textColor),
+        haloWidth: 3,
+        size: 11,
+        weight: 700,
+        maxWidth
+      });
+    }
+
+    function projectedArea(points) {
+      let area = 0;
+      points.forEach((point, index) => {
+        const next = points[(index + 1) % points.length];
+        area += point.x * next.y - point.y * next.x;
+      });
+      return area / 2;
+    }
+
+    function visibleFace(points) {
+      return projectedArea(points) < -0.5;
+    }
+
+    function queueLabel(queue, label) {
+      const size = label.size || 11;
+      const weight = label.weight || 700;
+      const maxWidth = label.maxWidth || 140;
+      const rawWidth = Math.min(maxWidth, textWidth(label.text, size, weight) + 18);
+      const rawHeight = size + 12;
+      const candidates = [
+        { x: label.x, y: label.y },
+        { x: label.x, y: label.y - rawHeight - 4 },
+        { x: label.x, y: label.y + rawHeight + 4 },
+        { x: label.x + rawWidth * 0.58, y: label.y },
+        { x: label.x - rawWidth * 0.58, y: label.y }
+      ];
+      const picked = candidates.find(candidate => {
+        const box = {
+          left: candidate.x - rawWidth / 2,
+          right: candidate.x + rawWidth / 2,
+          top: candidate.y - rawHeight / 2,
+          bottom: candidate.y + rawHeight / 2
+        };
+        return !queue.some(existing => !(box.right < existing.box.left || box.left > existing.box.right || box.bottom < existing.box.top || box.top > existing.box.bottom));
+      });
+      if (!picked) return;
+      queue.push({
+        ...label,
+        x: picked.x,
+        y: picked.y,
+        box: {
+          left: picked.x - rawWidth / 2,
+          right: picked.x + rawWidth / 2,
+          top: picked.y - rawHeight / 2,
+          bottom: picked.y + rawHeight / 2
+        }
+      });
+    }
+
+    function drawQueuedLabels(queue) {
+      queue.forEach(label => {
+        drawText(label.text, label.x, label.y, {
+          color: label.color,
+          halo: label.halo,
+          haloWidth: label.haloWidth || 4,
+          size: label.size,
+          weight: label.weight,
+          maxWidth: label.maxWidth
+        });
+      });
+    }
+
+    function drawManagedLabel(queue, label) {
+      const before = queue.length;
+      queueLabel(queue, label);
+      if (queue.length > before) {
+        const picked = queue[queue.length - 1];
+        drawText(picked.text, picked.x, picked.y, {
+          color: picked.color,
+          halo: picked.halo,
+          haloWidth: picked.haloWidth || 4,
+          size: picked.size,
+          weight: picked.weight,
+          maxWidth: picked.maxWidth
+        });
+      }
+    }
+
+    function drawPerspective() {
+      const { width, height } = clear();
+      const surround = activeCanvas === els.canvas ? sceneSurroundColor() : "#eef3ea";
+      const floorColor = activeCanvas === els.canvas ? sceneFloorColor() : "#e4ebe0";
+      activeCtx.fillStyle = surround;
+      activeCtx.fillRect(0, 0, width, height);
+
+      const baseScale = Math.min((width * 0.68) / state.wall.width, (height * 0.58) / state.wall.height);
+      const scale = baseScale * state.view3d.zoom;
+      const cx = width / 2;
+      const cy = height / 2 + 28;
+      const depth = Math.max(state.wall.depth, state.wall.width * 0.07);
+      const rotX = (state.view3d.rotX ?? state.view3d.pitch ?? -10) * Math.PI / 180;
+      const rotY = (state.view3d.rotY ?? state.view3d.yaw ?? 24) * Math.PI / 180;
+      const rotZ = (state.view3d.rotZ ?? state.view3d.roll ?? 0) * Math.PI / 180;
+      const camera = 8500;
+
+      function rotatePoint(point) {
+        let x = point.x - state.wall.width / 2;
+        let y = point.y - state.wall.height / 2;
+        let z = point.z - depth / 2;
+
+        const cosY = Math.cos(rotY);
+        const sinY = Math.sin(rotY);
+        [x, z] = [x * cosY + z * sinY, -x * sinY + z * cosY];
+
+        const cosX = Math.cos(rotX);
+        const sinX = Math.sin(rotX);
+        [y, z] = [y * cosX - z * sinX, y * sinX + z * cosX];
+
+        const cosZ = Math.cos(rotZ);
+        const sinZ = Math.sin(rotZ);
+        [x, y] = [x * cosZ - y * sinZ, x * sinZ + y * cosZ];
+
+        return { x, y, z };
+      }
+
+      function project(point) {
+        const rotated = rotatePoint(point);
+        const perspective = camera / (camera - rotated.z);
+        return {
+          x: cx + rotated.x * scale * perspective,
+          y: cy - rotated.y * scale * perspective,
+          z: rotated.z,
+          perspective
+        };
+      }
+
+      function face(points, fill, stroke, name) {
+        const projected = points.map(project);
+        return {
+          points: projected,
+          fill,
+          stroke,
+          name,
+          z: projected.reduce((sum, point) => sum + point.z, 0) / projected.length
+        };
+      }
+
+      function drawFace(faceDef) {
+        polygon(faceDef.points.map(point => [point.x, point.y]), faceDef.fill, faceDef.stroke);
+      }
+
+      function centerOf(points) {
+        return points.reduce((acc, point) => ({
+          x: acc.x + point.x / points.length,
+          y: acc.y + point.y / points.length
+        }), { x: 0, y: 0 });
+      }
+
+      const frontZ = depth;
+      const backZ = 0;
+      const floorY = -180;
+      const floor = face([
+        { x: -600, y: floorY, z: -depth * 1.7 },
+        { x: state.wall.width + 600, y: floorY, z: -depth * 1.7 },
+        { x: state.wall.width + 600, y: floorY, z: depth * 2.6 },
+        { x: -600, y: floorY, z: depth * 2.6 }
+      ], floorColor, activeCanvas === els.canvas ? shade(floorColor, 38) : "#b4bfb2", "floor");
+      const faces = [
+        floor,
+        face([{ x: state.wall.width, y: 0, z: backZ }, { x: 0, y: 0, z: backZ }, { x: 0, y: state.wall.height, z: backZ }, { x: state.wall.width, y: state.wall.height, z: backZ }], activeCanvas === els.canvas ? "#1d1e21" : "#d1d9cf", activeCanvas === els.canvas ? "#4b4d52" : "#7e897f", "back"),
+        face([{ x: 0, y: state.wall.height, z: frontZ }, { x: state.wall.width, y: state.wall.height, z: frontZ }, { x: state.wall.width, y: state.wall.height, z: backZ }, { x: 0, y: state.wall.height, z: backZ }], activeCanvas === els.canvas ? "#25262a" : "#dfe7db", activeCanvas === els.canvas ? "#4b4d52" : "#7e897f", "top"),
+        face([{ x: state.wall.width, y: 0, z: frontZ }, { x: state.wall.width, y: 0, z: backZ }, { x: state.wall.width, y: state.wall.height, z: backZ }, { x: state.wall.width, y: state.wall.height, z: frontZ }], activeCanvas === els.canvas ? "#202125" : "#c9d3c5", activeCanvas === els.canvas ? "#4b4d52" : "#7e897f", "right"),
+        face([{ x: 0, y: 0, z: backZ }, { x: 0, y: 0, z: frontZ }, { x: 0, y: state.wall.height, z: frontZ }, { x: 0, y: state.wall.height, z: backZ }], activeCanvas === els.canvas ? "#202125" : "#c9d3c5", activeCanvas === els.canvas ? "#4b4d52" : "#7e897f", "left"),
+        face([{ x: 0, y: 0, z: frontZ }, { x: state.wall.width, y: 0, z: frontZ }, { x: state.wall.width, y: state.wall.height, z: frontZ }, { x: 0, y: state.wall.height, z: frontZ }], state.wall.color, "#303137", "front")
+      ];
+      const frontFace = faces.find(faceDef => faceDef.name === "front");
+      const frontIsVisible = frontFace ? visibleFace(frontFace.points) : true;
+
+      const renderables = faces.map(faceDef => ({
+        z: faceDef.z,
+        draw: () => {
+          drawFace(faceDef);
+        }
+      }));
+
+      if (frontIsVisible) state.items.forEach(rawItem => {
+        const item = normalizeItem(rawItem);
+        const z = frontZ + 24;
+        const projected = [
+          { x: item.x, y: item.y, z },
+          { x: item.x + item.width, y: item.y, z },
+          { x: item.x + item.width, y: item.y + item.height, z },
+          { x: item.x, y: item.y + item.height, z }
+        ].map(project);
+        const rendered = {
+          item,
+          points: projected,
+          z: projected.reduce((sum, point) => sum + point.z, 0) / projected.length,
+          center: centerOf(projected)
+        };
+        renderables.push({
+          z: rendered.z,
+          draw: () => {
+        const item = rendered.item;
+        activeCtx.save();
+        if (item.illuminated || item.type === "illumination") {
+          const c = rendered.center;
+          const glow = activeCtx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 72 * state.view3d.zoom);
+          glow.addColorStop(0, "rgba(247, 209, 84, 0.36)");
+          glow.addColorStop(1, "rgba(247, 209, 84, 0)");
+          activeCtx.fillStyle = glow;
+          activeCtx.fillRect(c.x - 110, c.y - 110, 220, 220);
+        }
+        activeCtx.restore();
+
+        if (item.shape === "circle") {
+          const c = rendered.center;
+          const rx = Math.max(5, Math.hypot(rendered.points[1].x - rendered.points[0].x, rendered.points[1].y - rendered.points[0].y) / 2);
+          const ry = Math.max(5, Math.hypot(rendered.points[3].x - rendered.points[0].x, rendered.points[3].y - rendered.points[0].y) / 2);
+          activeCtx.beginPath();
+          activeCtx.ellipse(c.x, c.y, rx, ry, (state.view3d.rotZ ?? state.view3d.roll ?? 0) * Math.PI / 180, 0, Math.PI * 2);
+          activeCtx.fillStyle = item.color;
+          activeCtx.fill();
+          activeCtx.strokeStyle = "#1f2924";
+          activeCtx.lineWidth = 1.5;
+          activeCtx.stroke();
+        } else {
+          polygon(rendered.points.map(point => [point.x, point.y]), item.color, "#1f2924");
+        }
+        drawProjectedImage(item, rendered.points, {
+          center: rendered.center,
+          rotation: (state.view3d.rotZ ?? state.view3d.roll ?? 0) * Math.PI / 180
+        });
+          }
+        });
+      });
+
+      renderables.sort((a, b) => a.z - b.z).forEach(renderable => renderable.draw());
+      applyCinematicLight(width, height);
+      drawAxisGizmo(width, height, rotY, rotX, rotZ);
+      els.scaleLabel.textContent = `3D zoom ${Math.round(state.view3d.zoom * 100)}% | X ${Math.round(state.view3d.rotX ?? state.view3d.pitch ?? -10)} deg | Y ${Math.round(state.view3d.rotY ?? state.view3d.yaw ?? 24)} deg | Z ${Math.round(state.view3d.rotZ ?? state.view3d.roll ?? 0)} deg`;
+    }
+
+    function spaceGeometry(width, height) {
+      const pad = 82;
+      const scale = Math.min((width - pad * 2) / state.space.width, (height - pad * 2) / state.space.depth);
+      const w = state.space.width * scale;
+      const h = state.space.depth * scale;
+      return { scale, x: (width - w) / 2, y: (height - h) / 2, w, h };
+    }
+
+    function spacePoint(geom, x, y) {
+      return { x: geom.x + x * geom.scale, y: geom.y + geom.h - y * geom.scale };
+    }
+
+    function wallSpaceEndpoints(wall) {
+      const placement = wall.placement || { x: 0, y: 0, rotation: 0 };
+      const angle = (placement.rotation || 0) * Math.PI / 180;
+      const dx = Math.cos(angle) * wall.wall.width;
+      const dy = Math.sin(angle) * wall.wall.width;
+      return {
+        a: { x: placement.x, y: placement.y },
+        b: { x: placement.x + dx, y: placement.y + dy }
+      };
+    }
+
+    function drawSpace2D() {
+      const { width, height } = clear();
+      const geom = spaceGeometry(width, height);
+      activeCtx.fillStyle = activeCanvas === els.canvas ? sceneSurroundColor() : "#f9fbf7";
+      activeCtx.fillRect(0, 0, width, height);
+      activeCtx.fillStyle = activeCanvas === els.canvas ? shade(sceneFloorColor(), -18) : "#ffffff";
+      activeCtx.strokeStyle = activeCanvas === els.canvas ? shade(sceneFloorColor(), 52) : "#7e897f";
+      activeCtx.lineWidth = 2;
+      activeCtx.fillRect(geom.x, geom.y, geom.w, geom.h);
+      activeCtx.strokeRect(geom.x, geom.y, geom.w, geom.h);
+      drawText(`${state.space.width} mm`, geom.x + geom.w / 2, geom.y + geom.h + 34, { color: activeCanvas === els.canvas ? "#dbe8df" : "#26362f", halo: contrastHalo("#ffffff"), size: 13 });
+      drawText(`${state.space.depth} mm`, geom.x - 34, geom.y + geom.h / 2, { rotate: -Math.PI / 2, color: activeCanvas === els.canvas ? "#dbe8df" : "#26362f", halo: contrastHalo("#ffffff"), size: 13 });
+
+      state.walls.forEach((wall, index) => {
+        const ends = wallSpaceEndpoints(wall);
+        const a = spacePoint(geom, ends.a.x, ends.a.y);
+        const b = spacePoint(geom, ends.b.x, ends.b.y);
+        const selected = wall.id === state.activeWallId;
+        drawLine(a.x, a.y, b.x, b.y, selected ? "#d7d3cb" : "#b8c1cb");
+        activeCtx.lineWidth = selected ? 8 : 5;
+        activeCtx.strokeStyle = selected ? "#d7d3cb" : "#b8c1cb";
+        activeCtx.beginPath();
+        activeCtx.moveTo(a.x, a.y);
+        activeCtx.lineTo(b.x, b.y);
+        activeCtx.stroke();
+        const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+        drawText(wall.name || `Wall ${index + 1}`, mid.x, mid.y - 18, { color: selected ? "#d7d3cb" : "#e5e5e2", halo: "rgba(0,0,0,0.32)", size: 12 });
+        drawText(`${wall.wall.width} mm`, mid.x, mid.y + 18, { color: "#e5e5e2", halo: "rgba(0,0,0,0.32)", size: 10, weight: 600 });
+      });
+      els.scaleLabel.textContent = `Space 2D | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | drag walls to move`;
+    }
+
+    function drawSpace3D() {
+      const { width, height } = clear();
+      const surround = activeCanvas === els.canvas ? sceneSurroundColor() : "#eef3ea";
+      const floorColor = activeCanvas === els.canvas ? sceneFloorColor() : "#e4ebe0";
+      activeCtx.fillStyle = surround;
+      activeCtx.fillRect(0, 0, width, height);
+
+      const rotX = (state.view3d.rotX ?? state.view3d.pitch ?? -10) * Math.PI / 180;
+      const rotY = (state.view3d.rotY ?? state.view3d.yaw ?? 24) * Math.PI / 180;
+      const rotZ = (state.view3d.rotZ ?? state.view3d.roll ?? 0) * Math.PI / 180;
+      const maxWallHeight = Math.max(...state.walls.map(wall => wall.wall.height), state.wall.height, 2800);
+      const roomScale = Math.min((width * 0.62) / state.space.width, (height * 0.58) / Math.max(state.space.depth, maxWallHeight)) * state.view3d.zoom;
+      const cx = width / 2;
+      const cy = height / 2 + 88;
+      const camera = 16000;
+
+      function rotateRoomPoint(point) {
+        let x = point.x - state.space.width / 2;
+        let y = point.y - maxWallHeight / 2;
+        let z = point.z - state.space.depth / 2;
+
+        const cosY = Math.cos(rotY);
+        const sinY = Math.sin(rotY);
+        [x, z] = [x * cosY + z * sinY, -x * sinY + z * cosY];
+
+        const cosX = Math.cos(rotX);
+        const sinX = Math.sin(rotX);
+        [y, z] = [y * cosX - z * sinX, y * sinX + z * cosX];
+
+        const cosZ = Math.cos(rotZ);
+        const sinZ = Math.sin(rotZ);
+        [x, y] = [x * cosZ - y * sinZ, x * sinZ + y * cosZ];
+
+        return { x, y, z };
+      }
+
+      function projectRoom(point) {
+        const rotated = rotateRoomPoint(point);
+        const perspective = camera / (camera - rotated.z);
+        return {
+          x: cx + rotated.x * roomScale * perspective,
+          y: cy - rotated.y * roomScale * perspective,
+          z: rotated.z,
+          perspective
+        };
+      }
+
+      function centerOf(points) {
+        return points.reduce((acc, point) => ({
+          x: acc.x + point.x / points.length,
+          y: acc.y + point.y / points.length
+        }), { x: 0, y: 0 });
+      }
+
+      function face3d(points, fill, stroke, drawExtra) {
+        const projected = points.map(projectRoom);
+        return {
+          points: projected,
+          fill,
+          stroke,
+          z: projected.reduce((sum, point) => sum + point.z, 0) / projected.length,
+          drawExtra
+        };
+      }
+
+      const faces = [
+        face3d([
+          { x: 0, y: 0, z: 0 },
+          { x: state.space.width, y: 0, z: 0 },
+          { x: state.space.width, y: 0, z: state.space.depth },
+          { x: 0, y: 0, z: state.space.depth }
+        ], floorColor, shade(floorColor, 44))
+      ];
+
+      state.walls.forEach((wall, index) => {
+        const ends = wallSpaceEndpoints(wall);
+        const wallHeight = wall.wall.height;
+        const angle = ((wall.placement && wall.placement.rotation) || 0) * Math.PI / 180;
+        const ux = Math.cos(angle);
+        const uy = Math.sin(angle);
+        const nx = -Math.sin(angle);
+        const ny = Math.cos(angle);
+        const halfDepth = Math.max(30, number(wall.wall.depth, 120) / 2);
+        const edgeStroke = wall.id === state.activeWallId ? "#d7d3cb" : "#303137";
+        const frontA = { x: ends.a.x + nx * halfDepth, z: ends.a.y + ny * halfDepth };
+        const frontB = { x: ends.b.x + nx * halfDepth, z: ends.b.y + ny * halfDepth };
+        const backA = { x: ends.a.x - nx * halfDepth, z: ends.a.y - ny * halfDepth };
+        const backB = { x: ends.b.x - nx * halfDepth, z: ends.b.y - ny * halfDepth };
+        const wallFace = [
+          { x: frontA.x, y: 0, z: frontA.z },
+          { x: frontB.x, y: 0, z: frontB.z },
+          { x: frontB.x, y: wallHeight, z: frontB.z },
+          { x: frontA.x, y: wallHeight, z: frontA.z }
+        ];
+        const wallBack = [
+          { x: backB.x, y: 0, z: backB.z },
+          { x: backA.x, y: 0, z: backA.z },
+          { x: backA.x, y: wallHeight, z: backA.z },
+          { x: backB.x, y: wallHeight, z: backB.z }
+        ];
+        const wallTop = [
+          { x: frontA.x, y: wallHeight, z: frontA.z },
+          { x: frontB.x, y: wallHeight, z: frontB.z },
+          { x: backB.x, y: wallHeight, z: backB.z },
+          { x: backA.x, y: wallHeight, z: backA.z }
+        ];
+        const wallLeft = [
+          { x: backA.x, y: 0, z: backA.z },
+          { x: frontA.x, y: 0, z: frontA.z },
+          { x: frontA.x, y: wallHeight, z: frontA.z },
+          { x: backA.x, y: wallHeight, z: backA.z }
+        ];
+        const wallRight = [
+          { x: frontB.x, y: 0, z: frontB.z },
+          { x: backB.x, y: 0, z: backB.z },
+          { x: backB.x, y: wallHeight, z: backB.z },
+          { x: frontB.x, y: wallHeight, z: frontB.z }
+        ];
+        const wallBackDef = face3d(wallBack, shade(wall.wall.color, -34), edgeStroke);
+        const wallFaceDef = face3d(wallFace, wall.wall.color, edgeStroke);
+        faces.push(wallBackDef);
+        faces.push(face3d(wallTop, shade(wall.wall.color, -18), edgeStroke));
+        faces.push(face3d(wallLeft, shade(wall.wall.color, -26), edgeStroke));
+        faces.push(face3d(wallRight, shade(wall.wall.color, -26), edgeStroke));
+        faces.push(wallFaceDef);
+
+        if (!visibleFace(wallFaceDef.points)) return;
+        (wall.items || []).forEach(rawItem => {
+          const item = normalizeItem(rawItem);
+          const offset = halfDepth + 32;
+          const left = item.x;
+          const right = item.x + item.width;
+          const bottom = item.y;
+          const top = item.y + item.height;
+          const points = [
+            { x: ends.a.x + ux * left + nx * offset, y: bottom, z: ends.a.y + uy * left + ny * offset },
+            { x: ends.a.x + ux * right + nx * offset, y: bottom, z: ends.a.y + uy * right + ny * offset },
+            { x: ends.a.x + ux * right + nx * offset, y: top, z: ends.a.y + uy * right + ny * offset },
+            { x: ends.a.x + ux * left + nx * offset, y: top, z: ends.a.y + uy * left + ny * offset }
+          ];
+          faces.push(face3d(points, item.shape === "circle" ? "rgba(0,0,0,0)" : item.color, item.shape === "circle" ? "rgba(0,0,0,0)" : "#1f2924", projected => {
+            const center = centerOf(projected);
+            if (item.illuminated || item.type === "illumination") {
+              const glow = activeCtx.createRadialGradient(center.x, center.y, 0, center.x, center.y, 74 * state.view3d.zoom);
+              glow.addColorStop(0, "rgba(247, 209, 84, 0.34)");
+              glow.addColorStop(1, "rgba(247, 209, 84, 0)");
+              activeCtx.fillStyle = glow;
+              activeCtx.fillRect(center.x - 120, center.y - 120, 240, 240);
+            }
+            if (item.shape === "circle") {
+              const rx = Math.max(5, Math.hypot(projected[1].x - projected[0].x, projected[1].y - projected[0].y) / 2);
+              const ry = Math.max(5, Math.hypot(projected[3].x - projected[0].x, projected[3].y - projected[0].y) / 2);
+              activeCtx.beginPath();
+              activeCtx.ellipse(center.x, center.y, rx, ry, rotZ, 0, Math.PI * 2);
+              activeCtx.fillStyle = item.color;
+              activeCtx.fill();
+              activeCtx.strokeStyle = "#1f2924";
+              activeCtx.lineWidth = 1.3;
+              activeCtx.stroke();
+            }
+            drawProjectedImage(item, projected, {
+              center,
+              rotation: rotZ
+            });
+          }));
+        });
+      });
+
+      const sortedFaces = faces.sort((a, b) => a.z - b.z);
+      sortedFaces.forEach(face => {
+        polygon(face.points.map(point => [point.x, point.y]), face.fill, face.stroke);
+        if (typeof face.drawExtra === "function") face.drawExtra(face.points);
+      });
+
+      applyCinematicLight(width, height);
+      drawAxisGizmo(width, height, rotY, rotX, rotZ);
+      els.scaleLabel.textContent = `Space 3D | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | X ${Math.round(state.view3d.rotX ?? -10)} deg | Y ${Math.round(state.view3d.rotY ?? 24)} deg | Z ${Math.round(state.view3d.rotZ ?? 0)} deg`;
+    }
+
+    function drawAxisGizmo(width, height, yaw, pitch, roll) {
+      const origin = { x: width - 82, y: height - 76 };
+      const axes = [
+        { label: "X", color: "#b3261e", point: { x: 1, y: 0, z: 0 } },
+        { label: "Y", color: "#d7d3cb", point: { x: 0, y: 1, z: 0 } },
+        { label: "Z", color: "#315a9d", point: { x: 0, y: 0, z: 1 } }
+      ];
+      function rotateUnit(point) {
+        let { x, y, z } = point;
+        [x, z] = [x * Math.cos(yaw) + z * Math.sin(yaw), -x * Math.sin(yaw) + z * Math.cos(yaw)];
+        [y, z] = [y * Math.cos(pitch) - z * Math.sin(pitch), y * Math.sin(pitch) + z * Math.cos(pitch)];
+        [x, y] = [x * Math.cos(roll) - y * Math.sin(roll), x * Math.sin(roll) + y * Math.cos(roll)];
+        return { x: origin.x + x * 34, y: origin.y - y * 34 };
+      }
+      axes.forEach(axis => {
+        const end = rotateUnit(axis.point);
+        drawLine(origin.x, origin.y, end.x, end.y, axis.color);
+        activeCtx.save();
+        activeCtx.fillStyle = axis.color;
+        activeCtx.beginPath();
+        activeCtx.arc(end.x, end.y, 3.5, 0, Math.PI * 2);
+        activeCtx.fill();
+        activeCtx.restore();
+      });
+    }
+
+    function polygon(points, fill, stroke) {
+      activeCtx.beginPath();
+      activeCtx.moveTo(points[0][0], points[0][1]);
+      points.slice(1).forEach(point => activeCtx.lineTo(point[0], point[1]));
+      activeCtx.closePath();
+      activeCtx.fillStyle = fill;
+      activeCtx.fill();
+      activeCtx.strokeStyle = stroke;
+      activeCtx.stroke();
+    }
+
+    function shade(hex, amount) {
+      const color = hex.replace("#", "");
+      const num = parseInt(color, 16);
+      const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+      const g = Math.max(0, Math.min(255, ((num >> 8) & 255) + amount));
+      const b = Math.max(0, Math.min(255, (num & 255) + amount));
+      return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, "0")}`;
+    }
+
+    function isDark(hex) {
+      const color = hex.replace("#", "");
+      const num = parseInt(color, 16);
+      const r = num >> 16;
+      const g = (num >> 8) & 255;
+      const b = num & 255;
+      return (r * 299 + g * 587 + b * 114) / 1000 < 135;
+    }
+
+    function renderItemList() {
+      els.itemList.innerHTML = "";
+      const overlaps = overlapIds();
+      const count = selectedIds().length;
+      const overlapText = overlaps.size ? `${overlaps.size} object${overlaps.size === 1 ? "" : "s"} need overlap attention.` : "No overlaps detected.";
+      els.overlapSummary.textContent = `${overlapText} ${count} selected. Shift-click objects to select more than one.`;
+      if (!state.items.length) {
+        const empty = document.createElement("p");
+        empty.className = "small";
+        empty.textContent = "No objects yet.";
+        els.itemList.append(empty);
+        return;
+      }
+
+      state.items.forEach(item => {
+        item = normalizeItem(item);
+        const row = document.createElement("article");
+        row.className = `item-row${isSelected(item.id) ? " selected" : ""}${overlaps.has(item.id) ? " overlap" : ""}`;
+        row.dataset.select = item.id;
+        row.innerHTML = `
+          <header>
+            <strong><span class="swatch" style="background:${item.color}"></span>${itemCode(item)} ${escapeHtml(item.name)}</strong>
+            <button class="danger" type="button" data-remove="${item.id}">Remove</button>
+          </header>
+          <div class="small">${item.type}, ${item.shape === "circle" ? "circular" : "rectangular"}${item.illuminated ? ", illuminated" : ""} | x ${Math.round(item.x)}, y ${Math.round(item.y)} | ${item.width} x ${item.height} mm${overlaps.has(item.id) ? " | OVERLAP" : ""}</div>
+        `;
+        els.itemList.append(row);
+      });
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[char]);
+    }
+
+    function render(options = {}) {
+      if (!options.skipList) renderItemList();
+      renderWallTabs();
+      if (state.view === "elevation") {
+        drawElevation();
+      } else if (state.view === "perspective") {
+        drawPerspective();
+      } else if (state.view === "space2d") {
+        drawSpace2D();
+      } else {
+        drawSpace3D();
+      }
+    }
+
+    function applyLayout(layout) {
+      if (layout.wall) {
+        state.wall = {
+          ...state.wall,
+          width: number(layout.wall.width, state.wall.width),
+          height: number(layout.wall.height, state.wall.height),
+          depth: number(layout.wall.depth, state.wall.depth),
+          color: layout.wall.color || state.wall.color
+        };
+      }
+      if (Array.isArray(layout.items)) {
+        state.items = layout.items.map(item => ({
+          id: uid(),
+          name: item.name || titleCase(item.type || "Object"),
+          type: item.type || "artwork",
+          x: number(item.x, 0),
+          y: number(item.y, 0),
+          width: Math.max(10, number(item.width, 100)),
+          height: Math.max(10, number(item.height, 100)),
+          color: item.color || colorForType(item.type)
+        }));
+      }
+      syncInputsFromWall();
+      save();
+      render();
+    }
+
+    function pointerPosition(event) {
+      const rect = els.canvas.getBoundingClientRect();
+      return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+      };
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function normalizeDegrees(value) {
+      const normalized = Number(value) % 360;
+      return normalized < 0 ? normalized + 360 : normalized;
+    }
+
+    function zoomView(amount) {
+      if (state.view === "elevation") {
+        state.view2d.zoom = clamp(Number((state.view2d.zoom + amount).toFixed(2)), 0.45, 3.5);
+      } else {
+        state.view3d.zoom = clamp(Number((state.view3d.zoom + amount).toFixed(2)), 0.55, 3);
+      }
+      save();
+      render();
+    }
+
+    function resetView() {
+      if (state.view === "elevation") {
+        state.view2d.zoom = 1;
+      } else {
+        state.view3d.zoom = 1;
+        state.view3d.rotX = -10;
+        state.view3d.rotY = 24;
+        state.view3d.rotZ = 0;
+        delete state.view3d.yaw;
+        delete state.view3d.pitch;
+        delete state.view3d.roll;
+      }
+      save();
+      render();
+    }
+
+    function rotate3d(axis, amount) {
+      state.view3d.rotX = state.view3d.rotX ?? state.view3d.pitch ?? -10;
+      state.view3d.rotY = state.view3d.rotY ?? state.view3d.yaw ?? 24;
+      state.view3d.rotZ = state.view3d.rotZ ?? state.view3d.roll ?? 0;
+      if (axis === "x") state.view3d.rotX = normalizeDegrees(state.view3d.rotX + amount);
+      if (axis === "y") state.view3d.rotY = normalizeDegrees(state.view3d.rotY + amount);
+      if (axis === "z") state.view3d.rotZ = normalizeDegrees(state.view3d.rotZ + amount);
+      save();
+      render();
+    }
+
+    function selectionBounds(items) {
+      return items.reduce((bounds, item) => ({
+        left: Math.min(bounds.left, item.x),
+        right: Math.max(bounds.right, item.x + item.width),
+        bottom: Math.min(bounds.bottom, item.y),
+        top: Math.max(bounds.top, item.y + item.height)
+      }), { left: Infinity, right: -Infinity, bottom: Infinity, top: -Infinity });
+    }
+
+    function alignSelection(mode) {
+      const items = selectedItems();
+      if (items.length < 2) return;
+      const bounds = selectionBounds(items);
+      const centerX = (bounds.left + bounds.right) / 2;
+      const centerY = (bounds.bottom + bounds.top) / 2;
+
+      items.forEach(item => {
+        if (mode === "left") item.x = bounds.left;
+        if (mode === "center") item.x = Math.round(centerX - item.width / 2);
+        if (mode === "right") item.x = bounds.right - item.width;
+        if (mode === "bottom") item.y = bounds.bottom;
+        if (mode === "middle") item.y = Math.round(centerY - item.height / 2);
+        if (mode === "top") item.y = bounds.top - item.height;
+        clampItemToWall(item);
+      });
+      save();
+      render();
+    }
+
+    function distributeSelection(axis) {
+      const items = selectedItems();
+      if (items.length < 3) return;
+      const sorted = [...items].sort((a, b) => axis === "h" ? a.x - b.x : a.y - b.y);
+      const first = sorted[0];
+      const last = sorted[sorted.length - 1];
+      const start = axis === "h" ? first.x + first.width / 2 : first.y + first.height / 2;
+      const end = axis === "h" ? last.x + last.width / 2 : last.y + last.height / 2;
+      const gap = (end - start) / (sorted.length - 1);
+      sorted.forEach((item, index) => {
+        const center = Math.round(start + gap * index);
+        if (axis === "h") item.x = center - item.width / 2;
+        if (axis === "v") item.y = center - item.height / 2;
+        clampItemToWall(item);
+      });
+      save();
+      render();
+    }
+
+    function itemAtPoint(point) {
+      const width = els.canvas.width / (window.devicePixelRatio || 1);
+      const height = els.canvas.height / (window.devicePixelRatio || 1);
+      const geom = elevationGeometry(width, height);
+      for (let i = state.items.length - 1; i >= 0; i -= 1) {
+        if (pointInItem(point, normalizeItem(state.items[i]), geom)) {
+          return { item: state.items[i], geom };
+        }
+      }
+      return { item: null, geom };
+    }
+
+    function wallAtSpacePoint(point) {
+      const width = els.canvas.width / (window.devicePixelRatio || 1);
+      const height = els.canvas.height / (window.devicePixelRatio || 1);
+      const geom = spaceGeometry(width, height);
+      for (let i = state.walls.length - 1; i >= 0; i -= 1) {
+        const wall = state.walls[i];
+        const ends = wallSpaceEndpoints(wall);
+        const a = spacePoint(geom, ends.a.x, ends.a.y);
+        const b = spacePoint(geom, ends.b.x, ends.b.y);
+        const lengthSq = (b.x - a.x) ** 2 + (b.y - a.y) ** 2;
+        const t = lengthSq ? Math.max(0, Math.min(1, ((point.x - a.x) * (b.x - a.x) + (point.y - a.y) * (b.y - a.y)) / lengthSq)) : 0;
+        const closest = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+        if (Math.hypot(point.x - closest.x, point.y - closest.y) <= 14) return { wall, geom };
+      }
+      return { wall: null, geom };
+    }
+
+    function startDrag(event) {
+      if (state.view === "space2d") {
+        const point = pointerPosition(event);
+        const { wall, geom } = wallAtSpacePoint(point);
+        if (!wall) return;
+        syncActiveWallRecord();
+        state.activeWallId = wall.id;
+        loadActiveWall();
+        syncInputsFromWall();
+        state.drag = {
+          type: "spaceWall",
+          id: wall.id,
+          offsetX: (point.x - geom.x) / geom.scale - wall.placement.x,
+          offsetY: (geom.y + geom.h - point.y) / geom.scale - wall.placement.y
+        };
+        if (typeof els.canvas.setPointerCapture === "function") {
+          els.canvas.setPointerCapture(event.pointerId);
+        }
+        render();
+        return;
+      }
+      if (state.view === "perspective" || state.view === "space3d") {
+        state.rotateDrag = {
+          startX: event.clientX,
+          startY: event.clientY,
+          startRotY: state.view3d.rotY ?? state.view3d.yaw ?? 24,
+          startRotX: state.view3d.rotX ?? state.view3d.pitch ?? -10,
+          startRotZ: state.view3d.rotZ ?? state.view3d.roll ?? 0
+        };
+        if (typeof els.canvas.setPointerCapture === "function") {
+          els.canvas.setPointerCapture(event.pointerId);
+        }
+        return;
+      }
+      if (state.view !== "elevation") return;
+      const point = pointerPosition(event);
+      const canvasWidth = els.canvas.width / (window.devicePixelRatio || 1);
+      const canvasHeight = els.canvas.height / (window.devicePixelRatio || 1);
+      const handleGeom = elevationGeometry(canvasWidth, canvasHeight);
+      const resizeItem = resizeHandleAt(point, handleGeom);
+      if (resizeItem) {
+        state.resizeDrag = {
+          id: resizeItem.id,
+          startX: point.x,
+          startY: point.y,
+          width: resizeItem.width,
+          height: resizeItem.height
+        };
+        if (typeof els.canvas.setPointerCapture === "function") {
+          els.canvas.setPointerCapture(event.pointerId);
+        }
+        return;
+      }
+      const { item, geom } = itemAtPoint(point);
+      if (!item) {
+        if (!event.shiftKey) setSelection([]);
+        render();
+        return;
+      }
+      if (event.shiftKey) {
+        toggleSelection(item.id);
+      } else if (!isSelected(item.id)) {
+        setSelection([item.id]);
+      }
+      const draggedItems = selectedItems();
+      state.drag = {
+        id: item.id,
+        offsetX: (point.x - mmX(geom, item.x)) / geom.scale,
+        offsetY: (mmY(geom, item.y + item.height) + item.height * geom.scale - point.y) / geom.scale,
+        starts: draggedItems.map(candidate => ({ id: candidate.id, x: candidate.x, y: candidate.y })),
+        bounds: selectionBounds(draggedItems),
+        originX: item.x,
+        originY: item.y
+      };
+      if (typeof els.canvas.setPointerCapture === "function") {
+        els.canvas.setPointerCapture(event.pointerId);
+      }
+      render();
+    }
+
+    function moveDrag(event) {
+      if (state.rotateDrag && (state.view === "perspective" || state.view === "space3d")) {
+        if (event.shiftKey) {
+          state.view3d.rotZ = normalizeDegrees(state.rotateDrag.startRotZ + (event.clientX - state.rotateDrag.startX) * 0.32);
+        } else {
+          state.view3d.rotY = normalizeDegrees(state.rotateDrag.startRotY + (event.clientX - state.rotateDrag.startX) * 0.28);
+          state.view3d.rotX = normalizeDegrees(state.rotateDrag.startRotX - (event.clientY - state.rotateDrag.startY) * 0.22);
+        }
+        render();
+        return;
+      }
+      if (state.resizeDrag && state.view === "elevation") {
+        const item = state.items.find(candidate => candidate.id === state.resizeDrag.id);
+        if (!item) return;
+        const width = els.canvas.width / (window.devicePixelRatio || 1);
+        const height = els.canvas.height / (window.devicePixelRatio || 1);
+        const geom = elevationGeometry(width, height);
+        const point = pointerPosition(event);
+        const deltaW = (point.x - state.resizeDrag.startX) / geom.scale;
+        const deltaH = -(point.y - state.resizeDrag.startY) / geom.scale;
+        let nextW = Math.max(50, Math.round(state.resizeDrag.width + deltaW));
+        let nextH = Math.max(50, Math.round(state.resizeDrag.height + deltaH));
+        const targets = snapTargets([item.id]);
+        const snappedRight = snapValue(item.x + nextW, targets.vertical);
+        const snappedTop = snapValue(item.y + nextH, targets.horizontal);
+        state.snapLines = [];
+        if (snappedRight.line) {
+          nextW = Math.round(snappedRight.value - item.x);
+          state.snapLines.push(snappedRight.line);
+        }
+        if (snappedTop.line) {
+          nextH = Math.round(snappedTop.value - item.y);
+          state.snapLines.push(snappedTop.line);
+        }
+        item.width = Math.max(50, Math.min(state.wall.width - item.x, nextW));
+        item.height = Math.max(50, Math.min(state.wall.height - item.y, nextH));
+        render();
+        return;
+      }
+      if (state.drag && state.drag.type === "spaceWall") {
+        const wall = state.walls.find(candidate => candidate.id === state.drag.id);
+        if (!wall) return;
+        const width = els.canvas.width / (window.devicePixelRatio || 1);
+        const height = els.canvas.height / (window.devicePixelRatio || 1);
+        const geom = spaceGeometry(width, height);
+        const point = pointerPosition(event);
+        wall.placement.x = Math.round((point.x - geom.x) / geom.scale - state.drag.offsetX);
+        wall.placement.y = Math.round((geom.y + geom.h - point.y) / geom.scale - state.drag.offsetY);
+        wall.placement.x = clamp(wall.placement.x, 0, state.space.width);
+        wall.placement.y = clamp(wall.placement.y, 0, state.space.depth);
+        if (wall.id === state.activeWallId) syncInputsFromWall();
+        render();
+        return;
+      }
+      if (!state.drag || state.view !== "elevation") return;
+      if (state.view !== "elevation") return;
+      const item = state.items.find(candidate => candidate.id === state.drag.id);
+      if (!item) return;
+      const width = els.canvas.width / (window.devicePixelRatio || 1);
+      const height = els.canvas.height / (window.devicePixelRatio || 1);
+      const geom = elevationGeometry(width, height);
+      const point = pointerPosition(event);
+      const nextX = Math.round((point.x - geom.x) / geom.scale - state.drag.offsetX);
+      const nextY = Math.round((geom.y + geom.h - point.y) / geom.scale - state.drag.offsetY);
+      let deltaX = nextX - state.drag.originX;
+      let deltaY = nextY - state.drag.originY;
+      const dragged = state.drag.starts || [{ id: item.id, x: item.x, y: item.y }];
+      if (state.drag.bounds) {
+        deltaX = clamp(deltaX, -state.drag.bounds.left, state.wall.width - state.drag.bounds.right);
+        deltaY = clamp(deltaY, -state.drag.bounds.bottom, state.wall.height - state.drag.bounds.top);
+        const targets = snapTargets(dragged.map(start => start.id));
+        const leftSnap = snapValue(state.drag.bounds.left + deltaX, targets.vertical);
+        const rightSnap = snapValue(state.drag.bounds.right + deltaX, targets.vertical);
+        const bottomSnap = snapValue(state.drag.bounds.bottom + deltaY, targets.horizontal);
+        const topSnap = snapValue(state.drag.bounds.top + deltaY, targets.horizontal);
+        state.snapLines = [];
+        const bestX = leftSnap.line && (!rightSnap.line || leftSnap.distance <= rightSnap.distance) ? leftSnap : rightSnap;
+        const bestY = bottomSnap.line && (!topSnap.line || bottomSnap.distance <= topSnap.distance) ? bottomSnap : topSnap;
+        if (bestX.line) {
+          deltaX += bestX.value - (bestX === leftSnap ? state.drag.bounds.left + deltaX : state.drag.bounds.right + deltaX);
+          state.snapLines.push(bestX.line);
+        }
+        if (bestY.line) {
+          deltaY += bestY.value - (bestY === bottomSnap ? state.drag.bounds.bottom + deltaY : state.drag.bounds.top + deltaY);
+          state.snapLines.push(bestY.line);
+        }
+      }
+      dragged.forEach(start => {
+        const candidate = state.items.find(entry => entry.id === start.id);
+        if (!candidate) return;
+        candidate.x = Math.round(start.x + deltaX);
+        candidate.y = Math.round(start.y + deltaY);
+      });
+      render();
+    }
+
+    function stopDrag(event) {
+      if (state.rotateDrag) {
+        state.rotateDrag = null;
+        if (event.pointerId !== undefined && typeof els.canvas.hasPointerCapture === "function" && els.canvas.hasPointerCapture(event.pointerId)) {
+          els.canvas.releasePointerCapture(event.pointerId);
+        }
+        save();
+        render();
+        return;
+      }
+      if (state.resizeDrag) {
+        state.resizeDrag = null;
+        state.snapLines = [];
+        if (event.pointerId !== undefined && typeof els.canvas.hasPointerCapture === "function" && els.canvas.hasPointerCapture(event.pointerId)) {
+          els.canvas.releasePointerCapture(event.pointerId);
+        }
+        save();
+        render();
+        return;
+      }
+      if (!state.drag) return;
+      state.drag = null;
+      state.snapLines = [];
+      if (event.pointerId !== undefined && typeof els.canvas.hasPointerCapture === "function" && els.canvas.hasPointerCapture(event.pointerId)) {
+        els.canvas.releasePointerCapture(event.pointerId);
+      }
+      save();
+      render();
+    }
+
+    function save() {
+      syncActiveWallRecord();
+      localStorage.setItem("wall-mockup-maker", JSON.stringify(state));
+    }
+
+    function load() {
+      const saved = localStorage.getItem("wall-mockup-maker");
+      if (!saved) return;
+      try {
+        const parsed = JSON.parse(saved);
+        state.view = parsed.view || state.view;
+        state.view2d = { ...state.view2d, ...parsed.view2d };
+        state.view3d = { ...state.view3d, ...parsed.view3d };
+        state.view3d.rotX = state.view3d.rotX ?? state.view3d.pitch ?? -10;
+        state.view3d.rotY = state.view3d.rotY ?? state.view3d.yaw ?? 24;
+        state.view3d.rotZ = state.view3d.rotZ ?? state.view3d.roll ?? 0;
+        delete state.view3d.yaw;
+        delete state.view3d.pitch;
+        delete state.view3d.roll;
+        state.space = { ...state.space, ...parsed.space };
+        if (state.space.floorColor === "#1d2a23") state.space.floorColor = "#101113";
+        if (state.space.surroundColor === "#202821") state.space.surroundColor = "#070708";
+        state.project = { ...state.project, ...parsed.project };
+        state.activeWallId = parsed.activeWallId || state.activeWallId;
+        state.walls = Array.isArray(parsed.walls) ? parsed.walls.map((wall, index) => ({
+          id: wall.id || uid(),
+          name: wall.name || `Wall ${index + 1}`,
+          wall: { width: 6000, height: 3000, depth: 120, color: "#f5f4ea", ...wall.wall },
+          items: Array.isArray(wall.items) ? wall.items.map(normalizeItem) : [],
+          placement: { x: 1000, y: 1000, rotation: 0, ...wall.placement }
+        })) : state.walls;
+        if (!state.walls.length) {
+          state.wall = { ...state.wall, ...parsed.wall };
+          state.items = Array.isArray(parsed.items) ? parsed.items.map(normalizeItem) : state.items;
+        }
+        ensureWalls();
+        setSelection([]);
+        state.drag = null;
+        state.rotateDrag = null;
+        state.resizeDrag = null;
+        state.snapLines = [];
+      } catch {
+        localStorage.removeItem("wall-mockup-maker");
+      }
+    }
+
+    function download(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function drawSchedule(x, y, width) {
+      const rowH = 34;
+      const columns = [
+        { label: "ID", width: 90 },
+        { label: "Name", width: 520 },
+        { label: "Type", width: 260 },
+        { label: "Size", width: 260 },
+        { label: "Position", width: 280 },
+        { label: "Notes", width: width - 1410 }
+      ];
+      let colX = x;
+      drawText("Object schedule", x, y - 36, { align: "left", color: "#161616", size: 25, halo: null });
+      activeCtx.fillStyle = "#edf2ec";
+      activeCtx.fillRect(x, y, width, rowH);
+      columns.forEach(column => {
+        drawText(column.label, colX + 10, y + rowH / 2, { align: "left", color: "#161616", size: 16, halo: null });
+        colX += column.width;
+      });
+      state.items.slice(0, 12).forEach((rawItem, index) => {
+        const item = normalizeItem(rawItem);
+        const rowY = y + rowH * (index + 1);
+        activeCtx.fillStyle = index % 2 ? "#ffffff" : "#f8faf6";
+        activeCtx.fillRect(x, rowY, width, rowH);
+        activeCtx.strokeStyle = "#d6ddd4";
+        activeCtx.strokeRect(x, rowY, width, rowH);
+        const values = [
+          itemCode(item),
+          item.name,
+          item.type,
+          `${item.width} x ${item.height}`,
+          `x ${Math.round(item.x)}, y ${Math.round(item.y)}`,
+          item.text || (item.illuminated ? "Illuminated" : "")
+        ];
+        colX = x;
+        columns.forEach((column, columnIndex) => {
+          drawText(values[columnIndex], colX + 10, rowY + rowH / 2, {
+            align: "left",
+            color: "#26312b",
+            size: 15,
+            weight: 600,
+            halo: null,
+            maxWidth: column.width - 18
+          });
+          colX += column.width;
+        });
+      });
+    }
+
+    function createA3Canvas() {
+      const previousCanvas = activeCanvas;
+      const previousCtx = activeCtx;
+      const previousView = state.view;
+      const previousZoom2d = state.view2d.zoom;
+      const previousZoom3d = state.view3d.zoom;
+      const a3 = {
+        width: 4961,
+        height: 3508,
+        margin: 220,
+        header: 250
+      };
+      const exportCanvas = document.createElement("canvas");
+      exportCanvas.width = a3.width;
+      exportCanvas.height = a3.height;
+      activeCanvas = exportCanvas;
+      activeCtx = exportCanvas.getContext("2d");
+      activeCtx.setTransform(1, 0, 0, 1, 0, 0);
+      activeCtx.fillStyle = "#ffffff";
+      activeCtx.fillRect(0, 0, a3.width, a3.height);
+
+      const titles = {
+        elevation: "2D measured wall layout",
+        perspective: "3D wall preview",
+        space2d: "2D exhibition space plan",
+        space3d: "3D exhibition space preview"
+      };
+      const title = titles[state.view] || "Exhibition preview";
+      drawText("Exhibition Wall Mockup Maker", a3.margin, 86, { align: "left", baseline: "middle", color: "#161616", size: 42, halo: null });
+      drawText(`by Tiago | ${title}`, a3.margin, 142, { align: "left", baseline: "middle", color: "#5d655f", size: 25, weight: 600, halo: null });
+      drawText(`${state.project.title || "Untitled exhibition"}${state.project.artist ? ` | ${state.project.artist}` : ""}${state.project.museum ? ` | ${state.project.museum}` : ""}`, a3.margin, 190, { align: "left", baseline: "middle", color: "#5d655f", size: 23, weight: 600, halo: null });
+      drawText(`${state.project.wallId || "Wall"} | ${state.project.revision || "Rev A"} | Wall ${state.wall.width} x ${state.wall.height} mm | depth ${state.wall.depth} mm | A3 300 dpi`, a3.margin, 232, { align: "left", baseline: "middle", color: "#5d655f", size: 21, weight: 600, halo: null });
+      if (state.project.notes) drawText(state.project.notes, a3.width - a3.margin, 142, { align: "right", baseline: "middle", color: "#5d655f", size: 18, weight: 600, halo: null, maxWidth: 1250 });
+      drawLine(a3.margin, 242, a3.width - a3.margin, 242, "#c8cfc8");
+
+      const drawingX = a3.margin;
+      const drawingY = a3.header + a3.margin / 2;
+      const drawingW = a3.width - a3.margin * 2;
+      const scheduleH = 520;
+      const drawingH = a3.height - drawingY - a3.margin - scheduleH;
+      const drawingCanvas = document.createElement("canvas");
+      drawingCanvas.width = drawingW;
+      drawingCanvas.height = drawingH;
+
+      activeCanvas = drawingCanvas;
+      activeCtx = drawingCanvas.getContext("2d");
+      activeCtx.setTransform(1, 0, 0, 1, 0, 0);
+      if (previousView === "elevation") {
+        state.view2d.zoom = 1;
+        drawElevation();
+      } else if (previousView === "perspective") {
+        state.view3d.zoom = Math.max(1.15, previousZoom3d);
+        drawPerspective();
+      } else if (previousView === "space2d") {
+        state.view2d.zoom = 1;
+        drawSpace2D();
+      } else {
+        state.view3d.zoom = Math.max(1.05, previousZoom3d);
+        drawSpace3D();
+      }
+
+      activeCanvas = exportCanvas;
+      activeCtx = exportCanvas.getContext("2d");
+      activeCtx.drawImage(drawingCanvas, drawingX, drawingY);
+      drawSchedule(drawingX, drawingY + drawingH + 110, drawingW);
+
+      state.view = previousView;
+      state.view2d.zoom = previousZoom2d;
+      state.view3d.zoom = previousZoom3d;
+      activeCanvas = previousCanvas;
+      activeCtx = previousCtx;
+      activeCtx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
+      render();
+      return exportCanvas;
+    }
+
+    function exportA3Png() {
+      const previousView = state.view;
+      const exportCanvas = createA3Canvas();
+      const link = document.createElement("a");
+      link.download = `wall-mockup-a3-${previousView}.png`;
+      link.href = exportCanvas.toDataURL("image/png");
+      link.click();
+    }
+
+    function printA3Pdf() {
+      const dataUrl = createA3Canvas().toDataURL("image/png");
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) return;
+      printWindow.document.write(`
+        <!doctype html>
+        <html>
+          <head>
+            <title>${escapeHtml(state.project.title || "Exhibition Wall Mockup Maker")}</title>
+            <style>
+              @page { size: A3 landscape; margin: 0; }
+              html, body { margin: 0; background: #fff; }
+              img { width: 100vw; height: 100vh; object-fit: contain; display: block; }
+            </style>
+          </head>
+          <body>
+            <img src="${dataUrl}" onload="window.focus(); window.print();">
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+
+    document.querySelectorAll("#wallWidth,#wallHeight,#wallDepth,#wallColor,#wallSpaceX,#wallSpaceY,#wallSpaceRotation").forEach(input => {
+      input.addEventListener("input", syncWallFromInputs);
+    });
+
+    document.querySelectorAll("#spaceWidth,#spaceDepth,#spaceFloorColor,#spaceSurroundColor,#spaceCinematicLight").forEach(input => {
+      input.addEventListener("input", syncSpaceFromInputs);
+      input.addEventListener("change", syncSpaceFromInputs);
+    });
+
+    els.wallTabs.addEventListener("click", event => {
+      const button = event.target.closest("[data-wall-tab]");
+      if (button) switchWall(button.dataset.wallTab);
+    });
+
+    els.addWall.addEventListener("click", addWall);
+    els.duplicateWall.addEventListener("click", duplicateWall);
+    els.deleteWall.addEventListener("click", deleteWall);
+
+    document.querySelectorAll("#projectTitle,#projectArtist,#projectMuseum,#projectWallId,#projectRevision,#projectNotes").forEach(input => {
+      input.addEventListener("input", syncProjectFromInputs);
+    });
+
+    els.itemImage.addEventListener("change", event => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) {
+        els.itemImage.dataset.image = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        els.itemImage.dataset.image = String(reader.result || "");
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.querySelector("#addItem").addEventListener("click", () => {
+      addItem({
+        name: els.itemName.value,
+        type: els.itemType.value,
+        shape: els.itemShape.value,
+        color: els.itemColor.value,
+        illuminated: els.itemIlluminated.checked || els.itemType.value === "illumination",
+        text: els.itemText.value,
+        image: els.itemImage.dataset.image || "",
+        x: els.itemX.value,
+        y: els.itemY.value,
+        width: els.itemW.value,
+        height: els.itemH.value
+      });
+      els.itemImage.value = "";
+      els.itemImage.dataset.image = "";
+    });
+
+    document.querySelector("#clearItems").addEventListener("click", () => {
+      state.items = [];
+      setSelection([]);
+      save();
+      render();
+    });
+
+    document.querySelector("#sample").addEventListener("click", () => {
+      state.wall = { width: 6000, height: 3000, depth: 120, color: "#f5f4ea" };
+      state.items = [
+        { id: uid(), name: "Artwork", type: "artwork", shape: "rect", text: "", illuminated: false, x: 900, y: 900, width: 1200, height: 800, color: "#2f6f9f" },
+        { id: uid(), name: "Wall label", type: "label", shape: "rect", text: "Intro text", illuminated: false, x: 2400, y: 1700, width: 900, height: 220, color: "#eff6ff" },
+        { id: uid(), name: "Round light", type: "illumination", shape: "circle", text: "", illuminated: true, x: 3300, y: 2050, width: 420, height: 420, color: "#f7d154" },
+        { id: uid(), name: "Screen", type: "screen", shape: "rect", text: "", illuminated: false, x: 3600, y: 650, width: 1800, height: 900, color: "#151515" }
+      ];
+      setSelection([]);
+      syncInputsFromWall();
+      save();
+      render();
+    });
+
+    els.itemList.addEventListener("click", event => {
+      const button = event.target.closest("[data-remove]");
+      if (button) {
+        state.items = state.items.filter(item => item.id !== button.dataset.remove);
+        setSelection(selectedIds().filter(id => id !== button.dataset.remove));
+        save();
+        render();
+        return;
+      }
+      const row = event.target.closest("[data-select]");
+      if (row) {
+        if (event.shiftKey) {
+          toggleSelection(row.dataset.select);
+        } else {
+          setSelection([row.dataset.select]);
+        }
+        render();
+      }
+    });
+
+    els.itemType.addEventListener("change", () => {
+      els.itemColor.value = colorForType(els.itemType.value);
+      if (els.itemType.value === "illumination") {
+        els.itemShape.value = "circle";
+        els.itemIlluminated.checked = true;
+      }
+    });
+
+    document.querySelectorAll(".tab[data-view]").forEach(button => {
+      button.addEventListener("click", () => {
+        state.view = button.dataset.view;
+        document.querySelectorAll(".tab[data-view]").forEach(tab => tab.classList.toggle("active", tab === button));
+        save();
+        render();
+      });
+    });
+
+    els.zoomOut.addEventListener("click", () => zoomView(-0.15));
+    els.zoomIn.addEventListener("click", () => zoomView(0.15));
+    els.resetView.addEventListener("click", resetView);
+    els.rotateXDown.addEventListener("click", () => rotate3d("x", -10));
+    els.rotateXUp.addEventListener("click", () => rotate3d("x", 10));
+    els.rotateYLeft.addEventListener("click", () => rotate3d("y", -12));
+    els.rotateYRight.addEventListener("click", () => rotate3d("y", 12));
+    els.rotateZLeft.addEventListener("click", () => rotate3d("z", -10));
+    els.rotateZRight.addEventListener("click", () => rotate3d("z", 10));
+    els.alignLeft.addEventListener("click", () => alignSelection("left"));
+    els.alignCenter.addEventListener("click", () => alignSelection("center"));
+    els.alignRight.addEventListener("click", () => alignSelection("right"));
+    els.alignTop.addEventListener("click", () => alignSelection("top"));
+    els.alignMiddle.addEventListener("click", () => alignSelection("middle"));
+    els.alignBottom.addEventListener("click", () => alignSelection("bottom"));
+    els.distributeH.addEventListener("click", () => distributeSelection("h"));
+    els.distributeV.addEventListener("click", () => distributeSelection("v"));
+
+    document.querySelector("#exportPng").addEventListener("click", () => {
+      exportA3Png();
+    });
+
+    els.printPdf.addEventListener("click", printA3Pdf);
+
+    window.addEventListener("resize", resizeCanvas);
+    els.canvas.addEventListener("pointerdown", startDrag);
+    els.canvas.addEventListener("pointermove", moveDrag);
+    els.canvas.addEventListener("pointerup", stopDrag);
+    els.canvas.addEventListener("pointercancel", stopDrag);
+    els.canvas.addEventListener("wheel", event => {
+      event.preventDefault();
+      zoomView(event.deltaY < 0 ? 0.12 : -0.12);
+    }, { passive: false });
+
+    load();
+    ensureWalls();
+    syncInputsFromWall();
+    syncInputsFromSpace();
+    syncInputsFromProject();
+    document.querySelectorAll(".tab[data-view]").forEach(tab => tab.classList.toggle("active", tab.dataset.view === state.view));
+    resizeCanvas();
+  </script>
+</body>
+</html>
