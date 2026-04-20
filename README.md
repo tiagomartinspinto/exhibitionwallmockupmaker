@@ -1,7 +1,7 @@
 <<<<<<< HEAD
 # Exhibition Wall Mockup Maker
 
-by Tiago.
+by @tiagomartinspinto.
 
 Web app for creating measured exhibition wall mockups with 2D construction guides, clean 3D previews, object alignment tools, and A3 PNG export.
 
@@ -33,7 +33,7 @@ Render will provide the `PORT` environment variable automatically.
 ## What works now
 
 - Wall width, height, depth, and color in millimeters.
-- Project metadata for exhibition, artist, museum, wall ID, revision, and notes.
+- Project title for the exhibition.
 - Exhibition space dimensions for room-level planning.
 - Floor, surrounding, and cinematic light controls for preview scenes.
 - Multiple wall tabs in one project.
@@ -60,7 +60,7 @@ Render will provide the `PORT` environment variable automatically.
 
 ## Good next steps
 
-- Export a print-ready PDF with scale, object schedule, and notes.
+- Export a print-ready PDF with scale and object schedule.
 - Save multiple projects.
 - Add wall openings/doors as editable space-planning elements.
 =======

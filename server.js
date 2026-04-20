@@ -56,5 +56,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(port, "0.0.0.0", () => {
-  console.log(`Exhibition Wall Mockup Maker by Tiago running on port ${port}`);
+  console.log(`Exhibition Wall Mockup Maker by @tiagomartinspinto running on port ${port}`);
 });

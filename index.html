@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Exhibition Wall Mockup Maker by Tiago</title>
+  <title>Exhibition Wall Mockup Maker by @tiagomartinspinto</title>
   <style>
     :root {
       color-scheme: dark;
@@ -22,6 +22,51 @@
       --accent-2: #d6a8a8;
       --field: #08090a;
       --shadow: 0 18px 54px rgba(0, 0, 0, 0.62);
+      --button-hover: #222327;
+      --button-hover-border: #56585e;
+      --button-secondary: #121316;
+      --danger-border: #5a3838;
+      --toolbar-bg: linear-gradient(180deg, #101113, #090a0b);
+      --toolbar-title: #e5e5e2;
+      --chrome-bg: rgba(6, 7, 8, 0.76);
+      --mini-text: #cfcfcb;
+      --mini-hover: #202125;
+      --mini-hover-border: #45474d;
+      --control-label: #7f8085;
+      --stage-bg: #0e0f11;
+      --stage-grid: rgba(210, 210, 210, 0.045);
+    }
+
+    body[data-theme="light"] {
+      color-scheme: light;
+      --ink: #17181b;
+      --muted: #5f6268;
+      --line: #d3d5d9;
+      --line-soft: #e0e2e6;
+      --paper: #f0f1f3;
+      --panel: #f8f8f9;
+      --panel-soft: #eceef1;
+      --panel-deep: #ffffff;
+      --accent: #1e232b;
+      --accent-soft: rgba(30, 35, 43, 0.09);
+      --accent-blue: #60748a;
+      --accent-lav: #80708e;
+      --accent-2: #9d4646;
+      --field: #ffffff;
+      --shadow: 0 18px 42px rgba(42, 45, 50, 0.18);
+      --button-hover: #e2e4e8;
+      --button-hover-border: #aeb2ba;
+      --button-secondary: #f4f5f7;
+      --danger-border: #cda3a3;
+      --toolbar-bg: linear-gradient(180deg, #ffffff, #e8eaed);
+      --toolbar-title: #1d1f24;
+      --chrome-bg: rgba(255, 255, 255, 0.76);
+      --mini-text: #2e333b;
+      --mini-hover: #dde0e5;
+      --mini-hover-border: #b8bdc5;
+      --control-label: #696d75;
+      --stage-bg: #f7f8f9;
+      --stage-grid: rgba(32, 34, 38, 0.055);
     }
 
     * {
@@ -34,6 +79,8 @@
       color: var(--ink);
       background: var(--paper);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     button,
@@ -56,12 +103,12 @@
     }
 
     button:hover {
-      background: #222327;
-      border-color: #56585e;
+      background: var(--button-hover);
+      border-color: var(--button-hover-border);
     }
 
     button.secondary {
-      background: #121316;
+      background: var(--button-secondary);
       color: var(--ink);
       border-color: var(--line);
     }
@@ -69,7 +116,7 @@
     button.danger {
       background: var(--panel-soft);
       color: var(--accent-2);
-      border-color: #5a3838;
+      border-color: var(--danger-border);
     }
 
     input,
@@ -82,6 +129,8 @@
       background: var(--field);
       padding: 10px 11px;
       min-height: 40px;
+      user-select: text;
+      -webkit-user-select: text;
     }
 
     textarea {
@@ -116,9 +165,18 @@
     }
 
     .app {
+      position: relative;
       display: grid;
       grid-template-columns: minmax(330px, 400px) 1fr;
       min-height: 100vh;
+    }
+
+    body.sidebar-collapsed .app {
+      grid-template-columns: 1fr;
+    }
+
+    body.sidebar-collapsed .sidebar {
+      display: none;
     }
 
     .sidebar {
@@ -135,6 +193,13 @@
       margin-bottom: 20px;
     }
 
+    .brand-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
     .brand h1 {
       margin: 0;
       font-size: 26px;
@@ -146,6 +211,15 @@
       margin: 0;
       color: var(--muted);
       line-height: 1.45;
+    }
+
+    .brand a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .brand a:hover {
+      text-decoration: underline;
     }
 
     .section {
@@ -179,7 +253,24 @@
       flex-wrap: wrap;
     }
 
+    .wall-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .icon-button {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 7px 9px;
+      font-size: 12px;
+    }
+
     .main {
+      position: relative;
       min-width: 0;
       display: grid;
       grid-template-rows: auto 1fr;
@@ -187,47 +278,74 @@
 
     .toolbar {
       display: grid;
-      grid-template-columns: minmax(160px, 210px) minmax(240px, 1fr);
+      grid-template-columns: minmax(220px, 1fr) auto;
       align-items: start;
-      gap: 10px;
-      padding: 14px 16px;
-      background: linear-gradient(180deg, #101113, #090a0b);
+      gap: 8px;
+      padding: 12px 14px;
+      background: var(--toolbar-bg);
       border-bottom: 1px solid var(--line);
     }
 
     .toolbar strong {
       display: flex;
       align-items: center;
-      min-height: 36px;
+      min-height: 24px;
       font-size: 15px;
-      color: #e5e5e2;
-      grid-row: 1 / span 3;
+      color: var(--toolbar-title);
     }
 
     .tabs {
       display: flex;
-      gap: 6px;
+      gap: 4px;
       flex-wrap: wrap;
       align-items: center;
-      padding: 6px;
+      padding: 4px;
       border: 1px solid var(--line-soft);
       border-radius: 8px;
-      background: rgba(6, 7, 8, 0.76);
-      grid-column: 2;
+      background: var(--chrome-bg);
       width: fit-content;
       max-width: 100%;
+    }
+
+    .toolbar-tools {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .panel-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .panel-toggle::before {
+      content: "-";
+      width: 16px;
+      height: 16px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 800;
+      opacity: 0.86;
+    }
+
+    .panel-toggle[aria-pressed="true"]::before {
+      content: "+";
     }
 
     .view-controls {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       flex-wrap: wrap;
-      padding: 6px;
+      padding: 4px;
       border: 1px solid var(--line-soft);
       border-radius: 8px;
-      background: rgba(6, 7, 8, 0.76);
-      grid-column: 2;
+      background: var(--chrome-bg);
       width: fit-content;
       max-width: 100%;
     }
@@ -246,10 +364,12 @@
 
     .tab {
       min-height: 32px;
-      padding: 6px 10px;
+      padding: 6px 9px;
       background: transparent;
       color: var(--ink);
       border-color: transparent;
+      font-size: 12px;
+      letter-spacing: 0;
     }
 
     .tab.active {
@@ -260,16 +380,17 @@
 
     .mini-button {
       min-height: 30px;
-      padding: 5px 9px;
+      min-width: 30px;
+      padding: 5px 8px;
       background: transparent;
-      color: #cfcfcb;
+      color: var(--mini-text);
       border-color: transparent;
       font-size: 12px;
     }
 
     .mini-button:hover {
-      background: #202125;
-      border-color: #45474d;
+      background: var(--mini-hover);
+      border-color: var(--mini-hover-border);
     }
 
     .mini-button.active {
@@ -278,12 +399,166 @@
       color: var(--accent);
     }
 
-    .control-label {
-      min-width: 44px;
-      color: #7f8085;
+    .theme-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 5px 9px;
+      background: transparent;
+      color: var(--ink);
+      border-color: transparent;
       font-size: 12px;
+      letter-spacing: 0;
+    }
+
+    .switch-track {
+      position: relative;
+      width: 38px;
+      height: 20px;
+      border-radius: 8px;
+      background: rgba(148, 148, 148, 0.34);
+      border: 1px solid var(--line-soft);
+      flex: 0 0 auto;
+    }
+
+    .switch-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 12px;
+      height: 12px;
+      border-radius: 5px;
+      background: var(--muted);
+      transition: transform 160ms ease, background 160ms ease;
+    }
+
+    .theme-switch[aria-checked="true"] .switch-track {
+      background: var(--accent-soft);
+      border-color: rgba(215, 211, 203, 0.32);
+    }
+
+    .theme-switch[aria-checked="true"] .switch-thumb {
+      transform: translateX(18px);
+      background: var(--accent);
+    }
+
+    .align-icon {
+      position: relative;
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      vertical-align: middle;
+    }
+
+    .align-icon::before,
+    .align-icon::after {
+      content: "";
+      position: absolute;
+      display: block;
+      border-radius: 2px;
+      background: currentColor;
+    }
+
+    .align-left::before,
+    .align-right::before,
+    .align-center::before {
+      top: 2px;
+      width: 2px;
+      height: 14px;
+      opacity: 0.58;
+    }
+
+    .align-left::before { left: 2px; }
+    .align-right::before { right: 2px; }
+    .align-center::before { left: 8px; }
+
+    .align-left::after,
+    .align-right::after,
+    .align-center::after {
+      top: 4px;
+      width: 10px;
+      height: 10px;
+      box-shadow: 0 0 0 1px currentColor inset;
+      background: transparent;
+    }
+
+    .align-left::after { left: 5px; }
+    .align-right::after { right: 5px; }
+    .align-center::after { left: 4px; }
+
+    .align-top::before,
+    .align-middle::before,
+    .align-bottom::before {
+      left: 2px;
+      width: 14px;
+      height: 2px;
+      opacity: 0.58;
+    }
+
+    .align-top::before { top: 2px; }
+    .align-middle::before { top: 8px; }
+    .align-bottom::before { bottom: 2px; }
+
+    .align-top::after,
+    .align-middle::after,
+    .align-bottom::after {
+      left: 4px;
+      width: 10px;
+      height: 10px;
+      box-shadow: 0 0 0 1px currentColor inset;
+      background: transparent;
+    }
+
+    .align-top::after { top: 5px; }
+    .align-middle::after { top: 4px; }
+    .align-bottom::after { bottom: 5px; }
+
+    .distribute-h::before,
+    .distribute-v::before {
+      opacity: 0.58;
+      background: currentColor;
+    }
+
+    .distribute-h::before {
+      left: 1px;
+      top: 8px;
+      width: 16px;
+      height: 2px;
+    }
+
+    .distribute-h::after {
+      left: 2px;
+      top: 4px;
+      width: 3px;
+      height: 10px;
+      background: currentColor;
+      box-shadow: 6px 0 0 currentColor, 12px 0 0 currentColor;
+    }
+
+    .distribute-v::before {
+      left: 8px;
+      top: 1px;
+      width: 2px;
+      height: 16px;
+    }
+
+    .distribute-v::after {
+      left: 4px;
+      top: 2px;
+      width: 10px;
+      height: 3px;
+      background: currentColor;
+      box-shadow: 0 6px 0 currentColor, 0 12px 0 currentColor;
+    }
+
+    .control-label {
+      min-width: 0;
+      padding: 0 6px 0 4px;
+      color: var(--control-label);
+      font-size: 11px;
       font-weight: 700;
-      text-transform: uppercase;
+      text-transform: none;
       letter-spacing: 0;
     }
 
@@ -299,11 +574,35 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       background:
-        linear-gradient(#0e0f11, #0e0f11) padding-box,
-        repeating-linear-gradient(0deg, transparent 0 23px, rgba(210, 210, 210, 0.045) 24px),
-        repeating-linear-gradient(90deg, transparent 0 23px, rgba(210, 210, 210, 0.045) 24px);
+        linear-gradient(var(--stage-bg), var(--stage-bg)) padding-box,
+        repeating-linear-gradient(0deg, transparent 0 23px, var(--stage-grid) 24px),
+        repeating-linear-gradient(90deg, transparent 0 23px, var(--stage-grid) 24px);
       box-shadow: var(--shadow);
       overflow: hidden;
+    }
+
+    .stage-panel-toggle {
+      position: absolute;
+      top: 278px;
+      left: -16px;
+      z-index: 8;
+      width: 32px;
+      min-width: 32px;
+      height: 28px;
+      min-height: 28px;
+      padding: 0;
+      color: var(--muted);
+      background: color-mix(in srgb, var(--panel) 88%, transparent);
+      border-color: var(--line);
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+    }
+
+    body.sidebar-collapsed .stage-panel-toggle {
+      left: 12px;
+      color: var(--accent);
+      border-color: rgba(215, 211, 203, 0.38);
     }
 
     canvas {
@@ -399,15 +698,14 @@
       }
 
       .toolbar {
-        align-items: stretch;
         grid-template-columns: 1fr;
+        align-items: stretch;
       }
 
       .toolbar strong,
       .tabs,
+      .toolbar-tools,
       .view-controls {
-        grid-column: 1;
-        grid-row: auto;
         width: 100%;
       }
 
@@ -421,38 +719,24 @@
   <div class="app">
     <aside class="sidebar">
       <div class="brand">
-        <h1>Exhibition Wall Mockup Maker</h1>
-        <p>by Tiago</p>
+        <div class="brand-top">
+          <h1>Exhibition Wall Mockup Maker</h1>
+          <button id="themeToggle" class="theme-switch" type="button" role="switch" aria-checked="true" title="Toggle dark mode">
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+            <span class="switch-label">Dark mode</span>
+          </button>
+        </div>
+        <p>by <a href="https://github.com/tiagomartinspinto" target="_blank" rel="noreferrer">@tiagomartinspinto</a></p>
       </div>
 
       <section class="section">
-        <h2>Project</h2>
         <label>Exhibition
           <input id="projectTitle" value="Untitled exhibition">
-        </label>
-        <div class="grid-2">
-          <label>Artist
-            <input id="projectArtist" value="">
-          </label>
-          <label>Museum
-            <input id="projectMuseum" value="">
-          </label>
-        </div>
-        <div class="grid-2">
-          <label>Wall ID
-            <input id="projectWallId" value="Wall A">
-          </label>
-          <label>Revision
-            <input id="projectRevision" value="Rev A">
-          </label>
-        </div>
-        <label>Notes
-          <textarea id="projectNotes" spellcheck="true" placeholder="Mounting, curatorial, or construction notes"></textarea>
         </label>
       </section>
 
       <section class="section">
-        <h2>Exhibition Space</h2>
+        <h2>Exhibition Room</h2>
         <div class="grid-2">
           <label>Space width mm
             <input id="spaceWidth" type="number" min="1000" step="100" value="12000">
@@ -478,11 +762,15 @@
       <section class="section">
         <h2>Wall</h2>
         <div id="wallTabs" class="button-row"></div>
-        <div class="button-row">
-          <button id="addWall" class="secondary" type="button">Add wall</button>
-          <button id="duplicateWall" class="secondary" type="button">Duplicate</button>
-          <button id="deleteWall" class="danger" type="button">Delete</button>
+        <div class="wall-actions">
+          <button id="addWall" class="secondary icon-button" type="button" aria-label="Add wall" title="Add wall">Add</button>
+          <button id="duplicateWall" class="secondary icon-button" type="button" aria-label="Duplicate wall" title="Duplicate wall">Copy</button>
+          <button id="deleteWall" class="danger icon-button" type="button" aria-label="Delete wall" title="Delete wall">Delete</button>
+          <button id="resetWall" class="secondary icon-button" type="button" aria-label="Reset wall" title="Reset wall">Reset</button>
         </div>
+        <label>Wall name
+          <input id="wallName" value="Wall A">
+        </label>
         <div class="grid-2">
           <label>Width mm
             <input id="wallWidth" type="number" min="100" step="10" value="6000">
@@ -499,6 +787,7 @@
             <input id="wallColor" type="color" value="#f5f4ea">
           </label>
         </div>
+        <p class="small">Space position is used only for Plan and Room views. You can also drag walls directly in Plan.</p>
         <div class="grid-2">
           <label>Wall X in space mm
             <input id="wallSpaceX" type="number" step="100" value="1000">
@@ -520,13 +809,12 @@
         <div class="grid-2">
           <label>Type
             <select id="itemType">
-              <option>artwork</option>
-              <option>screen</option>
-              <option>label</option>
-              <option>text</option>
-              <option>illumination</option>
-              <option>shelf</option>
-              <option>opening</option>
+              <option value="title">Title text</option>
+              <option value="text">Explanatory text</option>
+              <option value="screen">Screen / moving image</option>
+              <option value="graphic">Printed graphic / still visual</option>
+              <option value="object">Physical object / prototype</option>
+              <option value="support">Support / display hardware</option>
             </select>
           </label>
           <label>Shape
@@ -547,7 +835,7 @@
         <label>Visible text
           <textarea id="itemText" spellcheck="true" placeholder="Optional words shown on the object"></textarea>
         </label>
-        <label>Artwork/image
+        <label>Image
           <input id="itemImage" type="file" accept="image/*">
         </label>
         <div class="grid-2">
@@ -581,38 +869,43 @@
     </aside>
 
     <main class="main">
+      <button id="sidebarToggle" class="stage-panel-toggle panel-toggle secondary" type="button" aria-pressed="false" aria-label="Hide left panel" title="Hide left panel"></button>
       <div class="toolbar">
-        <strong id="projectName">Exhibition Wall Mockup Maker by Tiago</strong>
+        <strong id="projectName">Exhibition Wall Mockup Maker</strong>
         <div class="tabs" role="tablist" aria-label="View mode">
-          <button class="tab active" data-view="elevation">2D measured</button>
-          <button class="tab" data-view="perspective">3D render</button>
-          <button class="tab" data-view="space2d">Space 2D</button>
-          <button class="tab" data-view="space3d">Space 3D</button>
-          <button id="exportPng" class="secondary">Export A3 PNG</button>
-          <button id="printPdf" class="secondary">Print / PDF</button>
+          <button class="tab active" data-view="elevation" title="2D measured wall">2D</button>
+          <button class="tab" data-view="perspective" title="Wall 3D preview">3D</button>
+          <button class="tab" data-view="space2d" title="Space floor plan">Floor plan</button>
+          <button class="tab" data-view="space3d" title="Space 3D preview">3D Room</button>
+          <button id="exportWallPdf" class="secondary" title="PDF from active wall 2D measured preview">Wall PDF</button>
+          <button id="exportRoomPdf" class="secondary" title="PDF from exhibition space top view">Room PDF</button>
         </div>
-        <div class="view-controls" aria-label="View controls">
-          <span class="control-label">View</span>
-          <button id="zoomOut" class="mini-button" type="button">Zoom -</button>
-          <button id="zoomIn" class="mini-button" type="button">Zoom +</button>
-          <button id="resetView" class="mini-button" type="button">Reset</button>
-          <button id="rotateXDown" class="mini-button" type="button">X -</button>
-          <button id="rotateXUp" class="mini-button" type="button">X +</button>
-          <button id="rotateYLeft" class="mini-button" type="button">Y -</button>
-          <button id="rotateYRight" class="mini-button" type="button">Y +</button>
-          <button id="rotateZLeft" class="mini-button" type="button">Z -</button>
-          <button id="rotateZRight" class="mini-button" type="button">Z +</button>
-        </div>
-        <div class="view-controls" aria-label="Alignment controls">
-          <span class="control-label">Align</span>
-          <button id="alignLeft" class="mini-button" type="button">Left</button>
-          <button id="alignCenter" class="mini-button" type="button">Center</button>
-          <button id="alignRight" class="mini-button" type="button">Right</button>
-          <button id="alignTop" class="mini-button" type="button">Top</button>
-          <button id="alignMiddle" class="mini-button" type="button">Middle</button>
-          <button id="alignBottom" class="mini-button" type="button">Bottom</button>
-          <button id="distributeH" class="mini-button" type="button">Distribute H</button>
-          <button id="distributeV" class="mini-button" type="button">Distribute V</button>
+        <div class="toolbar-tools">
+          <div class="view-controls" aria-label="View controls">
+            <span class="control-label">View</span>
+            <button id="toolSelect" class="mini-button active" type="button" title="Select and move objects">Select</button>
+            <button id="toolHand" class="mini-button" type="button" title="Pan the 2D preview">Hand</button>
+            <button id="zoomOut" class="mini-button" type="button" title="Zoom out">-</button>
+            <button id="zoomIn" class="mini-button" type="button" title="Zoom in">+</button>
+            <button id="resetView" class="mini-button" type="button" title="Reset view">Reset</button>
+            <button id="rotateXDown" class="mini-button" type="button" title="Rotate X backward">X-</button>
+            <button id="rotateXUp" class="mini-button" type="button" title="Rotate X forward">X+</button>
+            <button id="rotateYLeft" class="mini-button" type="button" title="Rotate Y left">Y-</button>
+            <button id="rotateYRight" class="mini-button" type="button" title="Rotate Y right">Y+</button>
+            <button id="rotateZLeft" class="mini-button" type="button" title="Rotate Z left">Z-</button>
+            <button id="rotateZRight" class="mini-button" type="button" title="Rotate Z right">Z+</button>
+          </div>
+          <div class="view-controls" aria-label="Alignment controls">
+            <span class="control-label">Align</span>
+            <button id="alignLeft" class="mini-button" type="button" title="Align left" aria-label="Align left"><span class="align-icon align-left"></span></button>
+            <button id="alignCenter" class="mini-button" type="button" title="Align center" aria-label="Align center"><span class="align-icon align-center"></span></button>
+            <button id="alignRight" class="mini-button" type="button" title="Align right" aria-label="Align right"><span class="align-icon align-right"></span></button>
+            <button id="alignTop" class="mini-button" type="button" title="Align top" aria-label="Align top"><span class="align-icon align-top"></span></button>
+            <button id="alignMiddle" class="mini-button" type="button" title="Align middle" aria-label="Align middle"><span class="align-icon align-middle"></span></button>
+            <button id="alignBottom" class="mini-button" type="button" title="Align bottom" aria-label="Align bottom"><span class="align-icon align-bottom"></span></button>
+            <button id="distributeH" class="mini-button" type="button" title="Distribute horizontally" aria-label="Distribute horizontally"><span class="align-icon distribute-h"></span></button>
+            <button id="distributeV" class="mini-button" type="button" title="Distribute vertically" aria-label="Distribute vertically"><span class="align-icon distribute-v"></span></button>
+          </div>
         </div>
       </div>
       <div class="stage-wrap">
@@ -620,7 +913,6 @@
           <canvas id="canvas" width="1400" height="860"></canvas>
           <div class="status">
             <span id="scaleLabel"></span>
-            <span>Measurements in millimeters</span>
           </div>
         </div>
       </div>
@@ -648,33 +940,32 @@
       selectedId: null,
       selectedIds: [],
       drag: null,
+      panDrag: null,
       rotateDrag: null,
       resizeDrag: null,
       snapLines: [],
-      view2d: { zoom: 1 },
+      tool: "select",
+      theme: "dark",
+      view2d: { zoom: 1, panX: 0, panY: 0 },
       view3d: { zoom: 1, rotX: -10, rotY: 24, rotZ: 0 },
       project: {
-        title: "Untitled exhibition",
-        artist: "",
-        museum: "",
-        wallId: "Wall A",
-        revision: "Rev A",
-        notes: ""
+        title: "Untitled exhibition"
       },
       space: { width: 12000, depth: 8000, floorColor: "#101113", surroundColor: "#070708", cinematicLight: true },
       activeWallId: "wall-a",
       walls: [],
       wall: { width: 6000, height: 3000, depth: 120, color: "#f5f4ea" },
       items: [
-        { id: uid(), name: "Artwork", type: "artwork", shape: "rect", text: "", illuminated: false, x: 900, y: 900, width: 1200, height: 800, color: "#2f6f9f" },
-        { id: uid(), name: "Wall label", type: "label", shape: "rect", text: "Intro text", illuminated: false, x: 2400, y: 1700, width: 900, height: 220, color: "#eff6ff" },
-        { id: uid(), name: "Halo light", type: "illumination", shape: "circle", text: "", illuminated: true, x: 3200, y: 2050, width: 420, height: 420, color: "#f7d154" },
+        { id: uid(), name: "Artwork", type: "graphic", shape: "rect", text: "", illuminated: false, x: 900, y: 900, width: 1200, height: 800, color: "#2f6f9f" },
+        { id: uid(), name: "Wall text", type: "text", shape: "rect", text: "Intro text", illuminated: false, x: 2400, y: 1700, width: 900, height: 220, color: "#eff6ff" },
+        { id: uid(), name: "Halo light", type: "object", shape: "circle", text: "", illuminated: true, x: 3200, y: 2050, width: 420, height: 420, color: "#f7d154" },
         { id: uid(), name: "Screen", type: "screen", shape: "rect", text: "", illuminated: false, x: 3600, y: 650, width: 1800, height: 900, color: "#151515" }
       ]
     };
 
     const els = {
       canvas: document.querySelector("#canvas"),
+      wallName: document.querySelector("#wallName"),
       wallWidth: document.querySelector("#wallWidth"),
       wallHeight: document.querySelector("#wallHeight"),
       wallDepth: document.querySelector("#wallDepth"),
@@ -691,12 +982,8 @@
       addWall: document.querySelector("#addWall"),
       duplicateWall: document.querySelector("#duplicateWall"),
       deleteWall: document.querySelector("#deleteWall"),
+      resetWall: document.querySelector("#resetWall"),
       projectTitle: document.querySelector("#projectTitle"),
-      projectArtist: document.querySelector("#projectArtist"),
-      projectMuseum: document.querySelector("#projectMuseum"),
-      projectWallId: document.querySelector("#projectWallId"),
-      projectRevision: document.querySelector("#projectRevision"),
-      projectNotes: document.querySelector("#projectNotes"),
       itemName: document.querySelector("#itemName"),
       itemType: document.querySelector("#itemType"),
       itemShape: document.querySelector("#itemShape"),
@@ -712,6 +999,8 @@
       overlapSummary: document.querySelector("#overlapSummary"),
       scaleLabel: document.querySelector("#scaleLabel"),
       projectName: document.querySelector("#projectName"),
+      toolSelect: document.querySelector("#toolSelect"),
+      toolHand: document.querySelector("#toolHand"),
       zoomOut: document.querySelector("#zoomOut"),
       zoomIn: document.querySelector("#zoomIn"),
       resetView: document.querySelector("#resetView"),
@@ -729,7 +1018,8 @@
       alignBottom: document.querySelector("#alignBottom"),
       distributeH: document.querySelector("#distributeH"),
       distributeV: document.querySelector("#distributeV"),
-      printPdf: document.querySelector("#printPdf")
+      themeToggle: document.querySelector("#themeToggle"),
+      sidebarToggle: document.querySelector("#sidebarToggle")
     };
 
     const screenCtx = els.canvas.getContext("2d");
@@ -767,6 +1057,7 @@
     function syncActiveWallRecord() {
       const record = activeWallRecord();
       if (!record) return;
+      record.name = els.wallName?.value || record.name || "Wall";
       record.wall = state.wall;
       record.items = state.items;
       record.placement = {
@@ -789,11 +1080,12 @@
     }
 
     function syncWallFromInputs() {
+      const record = activeWallRecord();
+      if (record) record.name = els.wallName.value || record.name;
       state.wall.width = Math.max(100, number(els.wallWidth.value, state.wall.width));
       state.wall.height = Math.max(100, number(els.wallHeight.value, state.wall.height));
       state.wall.depth = Math.max(40, number(els.wallDepth.value, state.wall.depth));
       state.wall.color = els.wallColor.value || state.wall.color;
-      const record = activeWallRecord();
       if (record) {
         record.placement.x = number(els.wallSpaceX.value, record.placement.x);
         record.placement.y = number(els.wallSpaceY.value, record.placement.y);
@@ -806,6 +1098,7 @@
 
     function syncInputsFromWall() {
       const record = activeWallRecord();
+      els.wallName.value = record?.name || "Wall";
       els.wallWidth.value = state.wall.width;
       els.wallHeight.value = state.wall.height;
       els.wallDepth.value = state.wall.depth;
@@ -833,33 +1126,45 @@
       els.spaceCinematicLight.checked = state.space.cinematicLight !== false;
     }
 
+    function updateProjectHeader() {
+      const title = state.project.title || "Untitled exhibition";
+      const count = Array.isArray(state.walls) && state.walls.length ? state.walls.length : 1;
+      els.projectName.textContent = `${title} | ${count} wall${count === 1 ? "" : "s"}`;
+    }
+
     function syncProjectFromInputs() {
       state.project.title = els.projectTitle.value || "Untitled exhibition";
-      state.project.artist = els.projectArtist.value || "";
-      state.project.museum = els.projectMuseum.value || "";
-      state.project.wallId = els.projectWallId.value || "";
-      state.project.revision = els.projectRevision.value || "";
-      state.project.notes = els.projectNotes.value || "";
-      els.projectName.textContent = `${state.project.title} ${state.project.wallId ? `| ${state.project.wallId}` : ""}`;
+      updateProjectHeader();
       save();
       render();
     }
 
     function syncInputsFromProject() {
       els.projectTitle.value = state.project.title || "";
-      els.projectArtist.value = state.project.artist || "";
-      els.projectMuseum.value = state.project.museum || "";
-      els.projectWallId.value = state.project.wallId || "";
-      els.projectRevision.value = state.project.revision || "";
-      els.projectNotes.value = state.project.notes || "";
-      els.projectName.textContent = `${state.project.title || "Untitled exhibition"} ${state.project.wallId ? `| ${state.project.wallId}` : ""}`;
+      updateProjectHeader();
+    }
+
+    function applyTheme() {
+      const theme = state.theme === "light" ? "light" : "dark";
+      state.theme = theme;
+      document.body.dataset.theme = theme;
+      els.themeToggle.setAttribute("aria-checked", String(theme === "dark"));
+      const label = els.themeToggle.querySelector(".switch-label");
+      if (label) label.textContent = "Dark mode";
+    }
+
+    function toggleTheme() {
+      state.theme = state.theme === "dark" ? "light" : "dark";
+      applyTheme();
+      save();
     }
 
     function addItem(item) {
+      const type = canonicalItemType(item.type);
       state.items.push({
         id: uid(),
-        name: item.name || titleCase(item.type || "object"),
-        type: item.type || "artwork",
+        name: item.name || itemTypeLabel(type),
+        type,
         shape: item.shape || "rect",
         text: item.text || "",
         image: item.image || "",
@@ -868,7 +1173,7 @@
         y: Math.max(0, number(item.y, 0)),
         width: Math.max(10, number(item.width, 100)),
         height: Math.max(10, number(item.height, 100)),
-        color: item.color || colorForType(item.type)
+        color: item.color || colorForType(type)
       });
       syncActiveWallRecord();
       save();
@@ -881,33 +1186,72 @@
 
     function colorForType(type) {
       const colors = {
-        artwork: "#2f6f9f",
+        title: "#f4f1e8",
+        graphic: "#2f6f9f",
+        object: "#4d7898",
         screen: "#151515",
-        label: "#eff6ff",
         text: "#ffffff",
-        illumination: "#f7d154",
-        shelf: "#7b5d46",
-        opening: "#d8ddd6"
+        support: "#7b5d46"
       };
-      return colors[String(type).toLowerCase()] || "#2f6f9f";
+      return colors[canonicalItemType(type)] || "#2f6f9f";
+    }
+
+    function canonicalItemType(type) {
+      const value = String(type || "object").toLowerCase();
+      if (value === "artwork" || value === "printed graphic" || value === "graphic") return "graphic";
+      if (value === "label" || value === "explanatory text") return "text";
+      if (value === "title" || value === "title text") return "title";
+      if (value === "illumination" || value === "prototype" || value === "physical object") return "object";
+      if (value === "shelf" || value === "opening" || value === "mount" || value === "support") return "support";
+      if (value === "screen") return "screen";
+      return "object";
+    }
+
+    function itemTypeLabel(type) {
+      return {
+        title: "Title text",
+        text: "Explanatory text",
+        screen: "Screen / moving image",
+        graphic: "Printed graphic / still visual",
+        object: "Physical object / prototype",
+        support: "Support / display hardware"
+      }[canonicalItemType(type)] || "Physical object / prototype";
     }
 
     function normalizeItem(item) {
+      const legacyType = item.type;
+      const type = canonicalItemType(legacyType);
       return {
         shape: "rect",
         text: "",
         image: "",
-        illuminated: item.type === "illumination",
-        ...item
+        ...item,
+        type,
+        illuminated: Boolean(item.illuminated || legacyType === "illumination")
       };
     }
 
     function itemCode(item) {
       const normalized = normalizeItem(item);
-      const prefixes = { artwork: "A", screen: "S", label: "T", text: "T", illumination: "L", shelf: "SH", opening: "O" };
+      const prefixes = { title: "TT", text: "TX", screen: "SC", graphic: "PG", object: "PO", support: "SP" };
       const sameType = state.items.filter(candidate => normalizeItem(candidate).type === normalized.type);
       const index = sameType.findIndex(candidate => candidate.id === item.id) + 1;
       return `${prefixes[normalized.type] || "O"}${String(Math.max(1, index)).padStart(2, "0")}`;
+    }
+
+    function itemSizeLabel(item) {
+      const normalized = normalizeItem(item);
+      return normalized.shape === "circle" && normalized.width === normalized.height
+        ? `dia ${normalized.width} mm`
+        : `${normalized.width} x ${normalized.height} mm`;
+    }
+
+    function itemPositionLabel(item) {
+      const normalized = normalizeItem(item);
+      if (normalized.shape === "circle") {
+        return `CL from left ${Math.round(normalized.x + normalized.width / 2)} mm; CL from floor ${Math.round(normalized.y + normalized.height / 2)} mm`;
+      }
+      return `left edge ${Math.round(normalized.x)} mm; bottom ${Math.round(normalized.y)} mm`;
     }
 
     const imageCache = new Map();
@@ -1004,6 +1348,23 @@
       render();
     }
 
+    function defaultWallName(index) {
+      return `Wall ${String.fromCharCode(65 + index)}`;
+    }
+
+    function resetWallSpecs() {
+      const record = activeWallRecord();
+      if (!record) return;
+      const index = Math.max(0, state.walls.findIndex(wall => wall.id === record.id));
+      record.name = defaultWallName(index);
+      record.wall = { width: 6000, height: 3000, depth: 120, color: "#f5f4ea" };
+      record.placement = { x: 1000 + index * 700, y: 1200, rotation: 0 };
+      loadActiveWall();
+      syncInputsFromWall();
+      save();
+      render();
+    }
+
     function deleteWall() {
       if (state.walls.length <= 1) return;
       state.walls = state.walls.filter(wall => wall.id !== state.activeWallId);
@@ -1040,10 +1401,12 @@
       const scale = Math.min((width - pad * 2) / state.wall.width, (height - pad * 2) / state.wall.height) * zoom;
       const wallW = state.wall.width * scale;
       const wallH = state.wall.height * scale;
+      const panX = options.fit ? 0 : number(state.view2d.panX, 0);
+      const panY = options.fit ? 0 : number(state.view2d.panY, 0);
       return {
         scale,
-        x: (width - wallW) / 2,
-        y: (height - wallH) / 2,
+        x: (width - wallW) / 2 + panX,
+        y: (height - wallH) / 2 + panY,
         w: wallW,
         h: wallH
       };
@@ -1069,11 +1432,31 @@
       activeCtx.restore();
     }
 
+    function drawArrowHead(x, y, angle, color = "#333", size = 5) {
+      activeCtx.save();
+      activeCtx.fillStyle = color;
+      activeCtx.beginPath();
+      activeCtx.moveTo(x, y);
+      activeCtx.lineTo(x - Math.cos(angle - Math.PI / 7) * size, y - Math.sin(angle - Math.PI / 7) * size);
+      activeCtx.lineTo(x - Math.cos(angle + Math.PI / 7) * size, y - Math.sin(angle + Math.PI / 7) * size);
+      activeCtx.closePath();
+      activeCtx.fill();
+      activeCtx.restore();
+    }
+
+    function drawArrowDimension(x1, y1, x2, y2, color = "#333", dash = []) {
+      drawLine(x1, y1, x2, y2, color, dash);
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      drawArrowHead(x1, y1, angle + Math.PI, color);
+      drawArrowHead(x2, y2, angle, color);
+    }
+
     function drawText(text, x, y, options = {}) {
       activeCtx.save();
       let value = String(text);
       activeCtx.fillStyle = options.color || "#1d1d1d";
-      activeCtx.font = `${options.weight || 700} ${options.size || 12}px Inter, system-ui, sans-serif`;
+      const boost = activeCanvas !== els.canvas && options.noExportBoost !== true ? 2 : 0;
+      activeCtx.font = `${options.weight || 700} ${(options.size || 12) + boost}px Inter, system-ui, sans-serif`;
       activeCtx.textAlign = options.align || "center";
       activeCtx.textBaseline = options.baseline || "middle";
       activeCtx.lineJoin = "round";
@@ -1107,12 +1490,12 @@
 
     function drawDimension(x1, y1, x2, y2, label, offset = 18, vertical = false, color = "#4b5750") {
       if (vertical) {
-        drawLine(x1, y1, x2, y2, color);
+        drawArrowDimension(x1, y1, x2, y2, color);
         drawLine(x1 - 5, y1, x1 + 5, y1, color);
         drawLine(x2 - 5, y2, x2 + 5, y2, color);
         drawText(label, x1 - offset, (y1 + y2) / 2, { rotate: -Math.PI / 2, color, halo: contrastHalo(color) });
       } else {
-        drawLine(x1, y1, x2, y2, color);
+        drawArrowDimension(x1, y1, x2, y2, color);
         drawLine(x1, y1 - 5, x1, y1 + 5, color);
         drawLine(x2, y2 - 5, x2, y2 + 5, color);
         drawText(label, (x1 + x2) / 2, y1 - offset, { color, halo: contrastHalo(color) });
@@ -1153,20 +1536,17 @@
 
     function drawObjectLabel(item, box, canvasSize, options = {}) {
       const textColor = contrastText(item.color);
-      const sizeLine = `${item.width} x ${item.height}`;
-      const positionLine = `x ${Math.round(item.x)}, y ${Math.round(item.y)}`;
-      const nameLine = `${itemCode(item)} ${options.label || item.name}`;
-      const minWidth = Math.max(textWidth(nameLine, 11), textWidth(sizeLine, 10), textWidth(positionLine, 10)) + 14;
-      const minHeight = options.includePosition ? 48 : 34;
+      const isCircle = item.shape === "circle";
+      const sizeLine = itemSizeLabel(item);
+      const nameLine = options.label || item.name;
+      const minWidth = Math.max(textWidth(nameLine, 11), textWidth(sizeLine, 10)) + 14;
+      const minHeight = 34;
       const anchor = options.anchor || { x: box.x + box.w / 2, y: box.y + box.h / 2 };
       const cramped = box.w < minWidth || box.h < minHeight || box.x < 8 || box.y < 8 || box.x + box.w > canvasSize.width - 8 || box.y + box.h > canvasSize.height - 8;
 
       if (!cramped) {
-        drawText(nameLine, anchor.x, anchor.y - (options.includePosition ? 14 : 8), { color: textColor, size: options.selected ? 13 : 11, weight: options.selected ? 700 : 600, halo: contrastHalo(textColor), maxWidth: Math.max(42, box.w - 10) });
-        drawText(sizeLine, anchor.x, anchor.y + (options.includePosition ? 2 : 9), { color: textColor, size: 10, weight: 600, halo: contrastHalo(textColor), maxWidth: Math.max(42, box.w - 10) });
-        if (options.includePosition) {
-          drawText(positionLine, anchor.x, anchor.y + 17, { color: textColor, size: 10, weight: 600, halo: contrastHalo(textColor), maxWidth: Math.max(42, box.w - 10) });
-        }
+        drawText(nameLine, anchor.x, anchor.y - 8, { color: textColor, size: options.selected ? 13 : 11, weight: options.selected ? 700 : 600, halo: contrastHalo(textColor), maxWidth: Math.max(42, box.w - 10) });
+        drawText(sizeLine, anchor.x, anchor.y + 9, { color: textColor, size: 10, weight: 600, halo: contrastHalo(textColor), maxWidth: Math.max(42, box.w - 10) });
         return false;
       }
 
@@ -1175,7 +1555,7 @@
         x: preferRight ? box.x + box.w + 82 : box.x - 82,
         y: box.y + box.h / 2 - 16
       }, canvasSize.width, canvasSize.height, 42);
-      drawLeaderLabel(options.includePosition ? [nameLine, sizeLine, positionLine] : [nameLine, sizeLine], anchor, labelPoint, {
+      drawLeaderLabel([nameLine, sizeLine], anchor, labelPoint, {
         color: options.calloutColor || "#26362f",
         halo: contrastHalo(options.calloutColor || "#26362f"),
         size: 10,
@@ -1189,31 +1569,77 @@
       return isDark(state.wall.color) ? "rgba(255,255,255,0.58)" : "rgba(22,22,22,0.46)";
     }
 
+    function screenBoxForItem(geom, rawItem) {
+      const item = normalizeItem(rawItem);
+      const x = mmX(geom, item.x);
+      const y = mmY(geom, item.y + item.height);
+      return { item, x, y, w: item.width * geom.scale, h: item.height * geom.scale };
+    }
+
+    function pointInBox(point, box, pad = 8) {
+      return point.x >= box.x - pad && point.x <= box.x + box.w + pad && point.y >= box.y - pad && point.y <= box.y + box.h + pad;
+    }
+
+    function labelHitsBoxes(point, boxes, vertical = false) {
+      const labelBox = vertical
+        ? { x: point.x - 9, y: point.y - 48, w: 18, h: 96 }
+        : { x: point.x - 58, y: point.y - 10, w: 116, h: 20 };
+      return boxes.some(box => (
+        labelBox.x < box.x + box.w + 6 &&
+        labelBox.x + labelBox.w > box.x - 6 &&
+        labelBox.y < box.y + box.h + 6 &&
+        labelBox.y + labelBox.h > box.y - 6
+      ));
+    }
+
     function drawPositionGuides(geom, item, box, options = {}) {
       const color = guideColor(options.strong);
       const labelColor = contrastText(state.wall.color);
       const halo = contrastHalo(labelColor);
-      const bottomY = box.y + box.h;
-      const leftX = box.x;
+      const boxes = options.boxes || [];
+      const isCircle = item.shape === "circle";
+      const guideX = isCircle ? box.x + box.w / 2 : box.x;
+      const guideY = isCircle ? box.y + box.h / 2 : box.y + box.h;
+      const measureX = isCircle ? item.x + item.width / 2 : item.x;
+      const measureY = isCircle ? item.y + item.height / 2 : item.y;
+      const xLabel = isCircle ? `CL from left ${Math.round(measureX)} mm` : `left edge ${Math.round(measureX)} mm`;
+      const yLabel = isCircle ? `CL from floor ${Math.round(measureY)} mm` : `bottom ${Math.round(measureY)} mm`;
       const floorY = geom.y + geom.h;
       const wallLeftX = geom.x;
 
-      drawLine(leftX, floorY, leftX, bottomY, color, [4, 4]);
-      drawLine(wallLeftX, bottomY, leftX, bottomY, color, [4, 4]);
-      drawText(`x ${Math.round(item.x)}`, (wallLeftX + leftX) / 2, bottomY - 8, {
+      drawArrowDimension(wallLeftX, guideY, guideX, guideY, color, [4, 4]);
+      drawArrowDimension(guideX, floorY, guideX, guideY, color, [4, 4]);
+
+      let xPoint = { x: (wallLeftX + guideX) / 2, y: guideY - 10 };
+      if (labelHitsBoxes(xPoint, boxes)) {
+        xPoint = { x: Math.max(wallLeftX + 62, guideX - 64), y: guideY - 12 };
+      }
+      if (labelHitsBoxes(xPoint, boxes)) {
+        xPoint = { x: wallLeftX + 64, y: guideY + 14 };
+      }
+
+      let yPoint = { x: guideX + 20, y: (floorY + guideY) / 2 };
+      if (labelHitsBoxes(yPoint, boxes, true)) {
+        yPoint = { x: Math.max(wallLeftX + 22, guideX - 20), y: (floorY + guideY) / 2 };
+      }
+      if (labelHitsBoxes(yPoint, boxes, true)) {
+        yPoint = { x: guideX + 26, y: Math.min(floorY - 48, guideY + 72) };
+      }
+
+      drawText(xLabel, xPoint.x, xPoint.y, {
         color: labelColor,
         size: options.strong ? 11 : 10,
         weight: 600,
         halo,
-        maxWidth: Math.max(46, Math.abs(leftX - wallLeftX) - 6)
+        maxWidth: 150
       });
-      drawText(`y ${Math.round(item.y)}`, leftX + 18, (floorY + bottomY) / 2, {
+      drawText(yLabel, yPoint.x, yPoint.y, {
         rotate: -Math.PI / 2,
         color: labelColor,
         size: options.strong ? 11 : 10,
         weight: 600,
         halo,
-        maxWidth: Math.max(46, Math.abs(floorY - bottomY) - 6)
+        maxWidth: 150
       });
     }
 
@@ -1263,7 +1689,7 @@
 
     function drawItemShape(item, x, y, w, h, options = {}) {
       activeCtx.save();
-      if (item.illuminated || item.type === "illumination") {
+      if (item.illuminated) {
         const glow = activeCtx.createRadialGradient(x + w / 2, y + h / 2, 0, x + w / 2, y + h / 2, Math.max(w, h));
         glow.addColorStop(0, "rgba(247, 209, 84, 0.36)");
         glow.addColorStop(1, "rgba(247, 209, 84, 0)");
@@ -1418,6 +1844,7 @@
       const { width, height } = clear();
       const geom = elevationGeometry(width, height);
       const wallMark = contrastText(state.wall.color);
+      const surroundMark = activeCanvas === els.canvas ? contrastText(sceneSurroundColor()) : "#4b5750";
       const overlaps = overlapIds();
       const canvasSize = { width, height };
       activeCtx.fillStyle = activeCanvas === els.canvas ? sceneSurroundColor() : "#f9fbf7";
@@ -1428,16 +1855,21 @@
       activeCtx.fillRect(geom.x, geom.y, geom.w, geom.h);
       activeCtx.strokeRect(geom.x, geom.y, geom.w, geom.h);
 
-      drawDimension(geom.x, geom.y + geom.h + 34, geom.x + geom.w, geom.y + geom.h + 34, `${state.wall.width} mm`, 14);
-      drawDimension(geom.x - 34, geom.y, geom.x - 34, geom.y + geom.h, `${state.wall.height} mm`, 18, true);
+      drawDimension(geom.x, geom.y + geom.h + 34, geom.x + geom.w, geom.y + geom.h + 34, `${state.wall.width} mm`, 14, false, surroundMark);
+      drawDimension(geom.x - 34, geom.y, geom.x - 34, geom.y + geom.h, `${state.wall.height} mm`, 18, true, surroundMark);
       drawSnapLines(geom);
 
-      state.items.forEach(item => {
-        item = normalizeItem(item);
-        const x = mmX(geom, item.x);
-        const y = mmY(geom, item.y + item.height);
-        const w = item.width * geom.scale;
-        const h = item.height * geom.scale;
+      const itemBoxes = state.items.map(item => screenBoxForItem(geom, item));
+      itemBoxes.forEach(({ item, x, y, w, h }) => {
+        const selected = isSelected(item.id);
+        const overlap = overlaps.has(item.id);
+        drawPositionGuides(geom, item, { x, y, w, h }, {
+          strong: selected || overlap,
+          boxes: itemBoxes.filter(box => box.item.id !== item.id)
+        });
+      });
+
+      itemBoxes.forEach(({ item, x, y, w, h }) => {
         const invalid = item.x + item.width > state.wall.width || item.y + item.height > state.wall.height;
         const overlap = overlaps.has(item.id);
         const selected = isSelected(item.id);
@@ -1445,7 +1877,6 @@
         const stroke = invalid || overlap ? "#b3261e" : selected ? "#d7d3cb" : "#1f2924";
 
         drawItemShape(item, x, y, w, h, { stroke, lineWidth: invalid || overlap || selected ? 3 : 1.5 });
-        drawPositionGuides(geom, item, { x, y, w, h }, { strong: showFullMeasures });
 
         if (item.type === "screen") {
           activeCtx.fillStyle = "rgba(255,255,255,0.12)";
@@ -1457,7 +1888,6 @@
         drawObjectLabel(item, { x, y, w, h }, canvasSize, {
           label,
           selected,
-          includePosition: true,
           calloutColor: wallMark
         });
         if (overlap) {
@@ -1476,7 +1906,7 @@
         }
       });
 
-      els.scaleLabel.textContent = `2D zoom ${Math.round(state.view2d.zoom * 100)}% | 1 px = ${Math.round(1 / geom.scale)} mm`;
+      els.scaleLabel.textContent = `2D zoom ${Math.round(state.view2d.zoom * 100)}% | scale 1 px = ${Math.round(1 / geom.scale)} mm`;
     }
 
     function validHexColor(value, fallback) {
@@ -1616,7 +2046,7 @@
       const scale = baseScale * state.view3d.zoom;
       const cx = width / 2;
       const cy = height / 2 + 28;
-      const depth = Math.max(state.wall.depth, state.wall.width * 0.07);
+      const depth = Math.max(40, state.wall.depth);
       const rotX = (state.view3d.rotX ?? state.view3d.pitch ?? -10) * Math.PI / 180;
       const rotY = (state.view3d.rotY ?? state.view3d.yaw ?? 24) * Math.PI / 180;
       const rotZ = (state.view3d.rotZ ?? state.view3d.roll ?? 0) * Math.PI / 180;
@@ -1668,6 +2098,18 @@
         polygon(faceDef.points.map(point => [point.x, point.y]), faceDef.fill, faceDef.stroke);
       }
 
+      function drawFaceOutline(points, color) {
+        activeCtx.save();
+        activeCtx.strokeStyle = color;
+        activeCtx.lineWidth = 1.2;
+        activeCtx.beginPath();
+        activeCtx.moveTo(points[0].x, points[0].y);
+        points.slice(1).forEach(point => activeCtx.lineTo(point.x, point.y));
+        activeCtx.closePath();
+        activeCtx.stroke();
+        activeCtx.restore();
+      }
+
       function centerOf(points) {
         return points.reduce((acc, point) => ({
           x: acc.x + point.x / points.length,
@@ -1677,17 +2119,15 @@
 
       const frontZ = depth;
       const backZ = 0;
-      const floorY = -180;
-      const floor = face([
+      const floorY = 0;
+      const floorOutline = [
         { x: -600, y: floorY, z: -depth * 1.7 },
         { x: state.wall.width + 600, y: floorY, z: -depth * 1.7 },
         { x: state.wall.width + 600, y: floorY, z: depth * 2.6 },
         { x: -600, y: floorY, z: depth * 2.6 }
-      ], floorColor, activeCanvas === els.canvas ? shade(floorColor, 38) : "#b4bfb2", "floor");
+      ].map(project);
       const faces = [
-        floor,
         face([{ x: state.wall.width, y: 0, z: backZ }, { x: 0, y: 0, z: backZ }, { x: 0, y: state.wall.height, z: backZ }, { x: state.wall.width, y: state.wall.height, z: backZ }], activeCanvas === els.canvas ? "#1d1e21" : "#d1d9cf", activeCanvas === els.canvas ? "#4b4d52" : "#7e897f", "back"),
-        face([{ x: 0, y: state.wall.height, z: frontZ }, { x: state.wall.width, y: state.wall.height, z: frontZ }, { x: state.wall.width, y: state.wall.height, z: backZ }, { x: 0, y: state.wall.height, z: backZ }], activeCanvas === els.canvas ? "#25262a" : "#dfe7db", activeCanvas === els.canvas ? "#4b4d52" : "#7e897f", "top"),
         face([{ x: state.wall.width, y: 0, z: frontZ }, { x: state.wall.width, y: 0, z: backZ }, { x: state.wall.width, y: state.wall.height, z: backZ }, { x: state.wall.width, y: state.wall.height, z: frontZ }], activeCanvas === els.canvas ? "#202125" : "#c9d3c5", activeCanvas === els.canvas ? "#4b4d52" : "#7e897f", "right"),
         face([{ x: 0, y: 0, z: backZ }, { x: 0, y: 0, z: frontZ }, { x: 0, y: state.wall.height, z: frontZ }, { x: 0, y: state.wall.height, z: backZ }], activeCanvas === els.canvas ? "#202125" : "#c9d3c5", activeCanvas === els.canvas ? "#4b4d52" : "#7e897f", "left"),
         face([{ x: 0, y: 0, z: frontZ }, { x: state.wall.width, y: 0, z: frontZ }, { x: state.wall.width, y: state.wall.height, z: frontZ }, { x: 0, y: state.wall.height, z: frontZ }], state.wall.color, "#303137", "front")
@@ -1698,6 +2138,7 @@
       const renderables = faces.map(faceDef => ({
         z: faceDef.z,
         draw: () => {
+          if (!visibleFace(faceDef.points)) return;
           drawFace(faceDef);
         }
       }));
@@ -1722,7 +2163,7 @@
           draw: () => {
         const item = rendered.item;
         activeCtx.save();
-        if (item.illuminated || item.type === "illumination") {
+        if (item.illuminated) {
           const c = rendered.center;
           const glow = activeCtx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 72 * state.view3d.zoom);
           glow.addColorStop(0, "rgba(247, 209, 84, 0.36)");
@@ -1754,6 +2195,7 @@
         });
       });
 
+      drawFaceOutline(floorOutline, activeCanvas === els.canvas ? shade(floorColor, 48) : "#b4bfb2");
       renderables.sort((a, b) => a.z - b.z).forEach(renderable => renderable.draw());
       applyCinematicLight(width, height);
       drawAxisGizmo(width, height, rotY, rotX, rotZ);
@@ -1762,10 +2204,10 @@
 
     function spaceGeometry(width, height) {
       const pad = 82;
-      const scale = Math.min((width - pad * 2) / state.space.width, (height - pad * 2) / state.space.depth);
+      const scale = Math.min((width - pad * 2) / state.space.width, (height - pad * 2) / state.space.depth) * state.view2d.zoom;
       const w = state.space.width * scale;
       const h = state.space.depth * scale;
-      return { scale, x: (width - w) / 2, y: (height - h) / 2, w, h };
+      return { scale, x: (width - w) / 2 + number(state.view2d.panX, 0), y: (height - h) / 2 + number(state.view2d.panY, 0), w, h };
     }
 
     function spacePoint(geom, x, y) {
@@ -1786,15 +2228,18 @@
     function drawSpace2D() {
       const { width, height } = clear();
       const geom = spaceGeometry(width, height);
+      const floorFill = activeCanvas === els.canvas ? shade(sceneFloorColor(), -18) : "#ffffff";
+      const surroundMark = activeCanvas === els.canvas ? contrastText(sceneSurroundColor()) : "#26362f";
+      const floorMark = activeCanvas === els.canvas ? contrastText(floorFill) : "#26362f";
       activeCtx.fillStyle = activeCanvas === els.canvas ? sceneSurroundColor() : "#f9fbf7";
       activeCtx.fillRect(0, 0, width, height);
-      activeCtx.fillStyle = activeCanvas === els.canvas ? shade(sceneFloorColor(), -18) : "#ffffff";
+      activeCtx.fillStyle = floorFill;
       activeCtx.strokeStyle = activeCanvas === els.canvas ? shade(sceneFloorColor(), 52) : "#7e897f";
       activeCtx.lineWidth = 2;
       activeCtx.fillRect(geom.x, geom.y, geom.w, geom.h);
       activeCtx.strokeRect(geom.x, geom.y, geom.w, geom.h);
-      drawText(`${state.space.width} mm`, geom.x + geom.w / 2, geom.y + geom.h + 34, { color: activeCanvas === els.canvas ? "#dbe8df" : "#26362f", halo: contrastHalo("#ffffff"), size: 13 });
-      drawText(`${state.space.depth} mm`, geom.x - 34, geom.y + geom.h / 2, { rotate: -Math.PI / 2, color: activeCanvas === els.canvas ? "#dbe8df" : "#26362f", halo: contrastHalo("#ffffff"), size: 13 });
+      drawText(`${state.space.width} mm`, geom.x + geom.w / 2, geom.y + geom.h + 34, { color: surroundMark, halo: contrastHalo(surroundMark), size: 13 });
+      drawText(`${state.space.depth} mm`, geom.x - 34, geom.y + geom.h / 2, { rotate: -Math.PI / 2, color: surroundMark, halo: contrastHalo(surroundMark), size: 13 });
 
       state.walls.forEach((wall, index) => {
         const ends = wallSpaceEndpoints(wall);
@@ -1809,10 +2254,10 @@
         activeCtx.lineTo(b.x, b.y);
         activeCtx.stroke();
         const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-        drawText(wall.name || `Wall ${index + 1}`, mid.x, mid.y - 18, { color: selected ? "#d7d3cb" : "#e5e5e2", halo: "rgba(0,0,0,0.32)", size: 12 });
-        drawText(`${wall.wall.width} mm`, mid.x, mid.y + 18, { color: "#e5e5e2", halo: "rgba(0,0,0,0.32)", size: 10, weight: 600 });
+        drawText(wall.name || `Wall ${index + 1}`, mid.x, mid.y - 18, { color: selected ? "#d7d3cb" : floorMark, halo: contrastHalo(floorMark), size: 12 });
+        drawText(`${wall.wall.width} mm`, mid.x, mid.y + 18, { color: floorMark, halo: contrastHalo(floorMark), size: 10, weight: 600 });
       });
-      els.scaleLabel.textContent = `Space 2D | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | drag walls to move`;
+      els.scaleLabel.textContent = `Floor plan zoom ${Math.round(state.view2d.zoom * 100)}% | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | ${state.tool === "hand" ? "drag to pan" : "drag walls to move"}`;
     }
 
     function drawSpace3D() {
@@ -1880,14 +2325,25 @@
         };
       }
 
-      const faces = [
-        face3d([
-          { x: 0, y: 0, z: 0 },
-          { x: state.space.width, y: 0, z: 0 },
-          { x: state.space.width, y: 0, z: state.space.depth },
-          { x: 0, y: 0, z: state.space.depth }
-        ], floorColor, shade(floorColor, 44))
-      ];
+      function drawRoomOutline(points, color) {
+        activeCtx.save();
+        activeCtx.strokeStyle = color;
+        activeCtx.lineWidth = 1.2;
+        activeCtx.beginPath();
+        activeCtx.moveTo(points[0].x, points[0].y);
+        points.slice(1).forEach(point => activeCtx.lineTo(point.x, point.y));
+        activeCtx.closePath();
+        activeCtx.stroke();
+        activeCtx.restore();
+      }
+
+      const floorOutline = [
+        { x: 0, y: 0, z: 0 },
+        { x: state.space.width, y: 0, z: 0 },
+        { x: state.space.width, y: 0, z: state.space.depth },
+        { x: 0, y: 0, z: state.space.depth }
+      ].map(projectRoom);
+      const faces = [];
 
       state.walls.forEach((wall, index) => {
         const ends = wallSpaceEndpoints(wall);
@@ -1915,12 +2371,6 @@
           { x: backA.x, y: wallHeight, z: backA.z },
           { x: backB.x, y: wallHeight, z: backB.z }
         ];
-        const wallTop = [
-          { x: frontA.x, y: wallHeight, z: frontA.z },
-          { x: frontB.x, y: wallHeight, z: frontB.z },
-          { x: backB.x, y: wallHeight, z: backB.z },
-          { x: backA.x, y: wallHeight, z: backA.z }
-        ];
         const wallLeft = [
           { x: backA.x, y: 0, z: backA.z },
           { x: frontA.x, y: 0, z: frontA.z },
@@ -1936,7 +2386,6 @@
         const wallBackDef = face3d(wallBack, shade(wall.wall.color, -34), edgeStroke);
         const wallFaceDef = face3d(wallFace, wall.wall.color, edgeStroke);
         faces.push(wallBackDef);
-        faces.push(face3d(wallTop, shade(wall.wall.color, -18), edgeStroke));
         faces.push(face3d(wallLeft, shade(wall.wall.color, -26), edgeStroke));
         faces.push(face3d(wallRight, shade(wall.wall.color, -26), edgeStroke));
         faces.push(wallFaceDef);
@@ -1957,7 +2406,7 @@
           ];
           faces.push(face3d(points, item.shape === "circle" ? "rgba(0,0,0,0)" : item.color, item.shape === "circle" ? "rgba(0,0,0,0)" : "#1f2924", projected => {
             const center = centerOf(projected);
-            if (item.illuminated || item.type === "illumination") {
+            if (item.illuminated) {
               const glow = activeCtx.createRadialGradient(center.x, center.y, 0, center.x, center.y, 74 * state.view3d.zoom);
               glow.addColorStop(0, "rgba(247, 209, 84, 0.34)");
               glow.addColorStop(1, "rgba(247, 209, 84, 0)");
@@ -1983,8 +2432,10 @@
         });
       });
 
+      drawRoomOutline(floorOutline, shade(floorColor, 44));
       const sortedFaces = faces.sort((a, b) => a.z - b.z);
       sortedFaces.forEach(face => {
+        if (!visibleFace(face.points)) return;
         polygon(face.points.map(point => [point.x, point.y]), face.fill, face.stroke);
         if (typeof face.drawExtra === "function") face.drawExtra(face.points);
       });
@@ -2073,7 +2524,7 @@
             <strong><span class="swatch" style="background:${item.color}"></span>${itemCode(item)} ${escapeHtml(item.name)}</strong>
             <button class="danger" type="button" data-remove="${item.id}">Remove</button>
           </header>
-          <div class="small">${item.type}, ${item.shape === "circle" ? "circular" : "rectangular"}${item.illuminated ? ", illuminated" : ""} | x ${Math.round(item.x)}, y ${Math.round(item.y)} | ${item.width} x ${item.height} mm${overlaps.has(item.id) ? " | OVERLAP" : ""}</div>
+          <div class="small">${itemTypeLabel(item.type)}, ${item.shape === "circle" ? "circular" : "rectangular"}${item.illuminated ? ", illuminated" : ""} | ${itemPositionLabel(item)} | ${itemSizeLabel(item)}${overlaps.has(item.id) ? " | OVERLAP" : ""}</div>
         `;
         els.itemList.append(row);
       });
@@ -2092,6 +2543,8 @@
     function render(options = {}) {
       if (!options.skipList) renderItemList();
       renderWallTabs();
+      updateProjectHeader();
+      updateToolButtons();
       if (state.view === "elevation") {
         drawElevation();
       } else if (state.view === "perspective") {
@@ -2117,7 +2570,7 @@
         state.items = layout.items.map(item => ({
           id: uid(),
           name: item.name || titleCase(item.type || "Object"),
-          type: item.type || "artwork",
+        type: canonicalItemType(item.type),
           x: number(item.x, 0),
           y: number(item.y, 0),
           width: Math.max(10, number(item.width, 100)),
@@ -2147,8 +2600,27 @@
       return normalized < 0 ? normalized + 360 : normalized;
     }
 
+    function is2dView() {
+      return state.view === "elevation" || state.view === "space2d";
+    }
+
+    function updateToolButtons() {
+      const isHand = state.tool === "hand";
+      els.toolSelect.classList.toggle("active", !isHand);
+      els.toolHand.classList.toggle("active", isHand);
+      els.canvas.style.cursor = isHand && is2dView() ? "grab" : "";
+    }
+
+    function setTool(tool) {
+      state.tool = tool === "hand" ? "hand" : "select";
+      state.panDrag = null;
+      updateToolButtons();
+      save();
+      render();
+    }
+
     function zoomView(amount) {
-      if (state.view === "elevation") {
+      if (is2dView()) {
         state.view2d.zoom = clamp(Number((state.view2d.zoom + amount).toFixed(2)), 0.45, 3.5);
       } else {
         state.view3d.zoom = clamp(Number((state.view3d.zoom + amount).toFixed(2)), 0.55, 3);
@@ -2158,8 +2630,10 @@
     }
 
     function resetView() {
-      if (state.view === "elevation") {
+      if (is2dView()) {
         state.view2d.zoom = 1;
+        state.view2d.panX = 0;
+        state.view2d.panY = 0;
       } else {
         state.view3d.zoom = 1;
         state.view3d.rotX = -10;
@@ -2262,6 +2736,20 @@
     }
 
     function startDrag(event) {
+      if (event.button !== undefined && event.button !== 0) return;
+      if (state.tool === "hand" && is2dView()) {
+        state.panDrag = {
+          startX: event.clientX,
+          startY: event.clientY,
+          panX: number(state.view2d.panX, 0),
+          panY: number(state.view2d.panY, 0)
+        };
+        els.canvas.style.cursor = "grabbing";
+        if (typeof els.canvas.setPointerCapture === "function") {
+          els.canvas.setPointerCapture(event.pointerId);
+        }
+        return;
+      }
       if (state.view === "space2d") {
         const point = pointerPosition(event);
         const { wall, geom } = wallAtSpacePoint(point);
@@ -2342,6 +2830,12 @@
     }
 
     function moveDrag(event) {
+      if (state.panDrag && is2dView()) {
+        state.view2d.panX = Math.round(state.panDrag.panX + event.clientX - state.panDrag.startX);
+        state.view2d.panY = Math.round(state.panDrag.panY + event.clientY - state.panDrag.startY);
+        render();
+        return;
+      }
       if (state.rotateDrag && (state.view === "perspective" || state.view === "space3d")) {
         if (event.shiftKey) {
           state.view3d.rotZ = normalizeDegrees(state.rotateDrag.startRotZ + (event.clientX - state.rotateDrag.startX) * 0.32);
@@ -2438,6 +2932,15 @@
     }
 
     function stopDrag(event) {
+      if (state.panDrag) {
+        state.panDrag = null;
+        if (event.pointerId !== undefined && typeof els.canvas.hasPointerCapture === "function" && els.canvas.hasPointerCapture(event.pointerId)) {
+          els.canvas.releasePointerCapture(event.pointerId);
+        }
+        save();
+        render();
+        return;
+      }
       if (state.rotateDrag) {
         state.rotateDrag = null;
         if (event.pointerId !== undefined && typeof els.canvas.hasPointerCapture === "function" && els.canvas.hasPointerCapture(event.pointerId)) {
@@ -2478,7 +2981,12 @@
       try {
         const parsed = JSON.parse(saved);
         state.view = parsed.view || state.view;
+        state.tool = parsed.tool === "hand" ? "hand" : "select";
+        state.theme = parsed.theme === "light" ? "light" : "dark";
         state.view2d = { ...state.view2d, ...parsed.view2d };
+        state.view2d.zoom = number(state.view2d.zoom, 1);
+        state.view2d.panX = number(state.view2d.panX, 0);
+        state.view2d.panY = number(state.view2d.panY, 0);
         state.view3d = { ...state.view3d, ...parsed.view3d };
         state.view3d.rotX = state.view3d.rotX ?? state.view3d.pitch ?? -10;
         state.view3d.rotY = state.view3d.rotY ?? state.view3d.yaw ?? 24;
@@ -2505,6 +3013,7 @@
         ensureWalls();
         setSelection([]);
         state.drag = null;
+        state.panDrag = null;
         state.rotateDrag = null;
         state.resizeDrag = null;
         state.snapLines = [];
@@ -2524,21 +3033,22 @@
     }
 
     function drawSchedule(x, y, width) {
-      const rowH = 34;
+      const rowH = 40;
+      const hasTextColumn = state.items.some(rawItem => normalizeItem(rawItem).text);
       const columns = [
-        { label: "ID", width: 90 },
-        { label: "Name", width: 520 },
-        { label: "Type", width: 260 },
-        { label: "Size", width: 260 },
-        { label: "Position", width: 280 },
-        { label: "Notes", width: width - 1410 }
+        { label: "ID", width: 110 },
+        { label: "Name", width: 500 },
+        { label: "Type", width: 500 },
+        { label: "Size", width: 300 },
+        { label: "Position", width: hasTextColumn ? 720 : width - 1410 }
       ];
+      if (hasTextColumn) columns.push({ label: "Text", width: width - 2130 });
       let colX = x;
-      drawText("Object schedule", x, y - 36, { align: "left", color: "#161616", size: 25, halo: null });
+      drawText("List of objects", x, y - 40, { align: "left", color: "#161616", size: 27, halo: null });
       activeCtx.fillStyle = "#edf2ec";
       activeCtx.fillRect(x, y, width, rowH);
       columns.forEach(column => {
-        drawText(column.label, colX + 10, y + rowH / 2, { align: "left", color: "#161616", size: 16, halo: null });
+        drawText(column.label, colX + 10, y + rowH / 2, { align: "left", color: "#161616", size: 17, halo: null });
         colX += column.width;
       });
       state.items.slice(0, 12).forEach((rawItem, index) => {
@@ -2551,10 +3061,59 @@
         const values = [
           itemCode(item),
           item.name,
-          item.type,
-          `${item.width} x ${item.height}`,
-          `x ${Math.round(item.x)}, y ${Math.round(item.y)}`,
-          item.text || (item.illuminated ? "Illuminated" : "")
+          itemTypeLabel(item.type),
+          itemSizeLabel(item),
+          itemPositionLabel(item)
+        ];
+        if (hasTextColumn) values.push(item.text || "");
+        colX = x;
+        columns.forEach((column, columnIndex) => {
+          drawText(values[columnIndex], colX + 10, rowY + rowH / 2, {
+            align: "left",
+            color: "#26312b",
+            size: 16,
+            weight: 600,
+            halo: null,
+            maxWidth: column.width - 18
+          });
+          colX += column.width;
+        });
+      });
+    }
+
+    function drawWallSchedule(x, y, width) {
+      const rowH = 34;
+      const columns = [
+        { label: "Wall", width: 420 },
+        { label: "Size", width: 360 },
+        { label: "Depth", width: 220 },
+        { label: "Position in space", width: 440 },
+        { label: "Rotation", width: 220 },
+        { label: "Objects", width: width - 1660 }
+      ];
+      let colX = x;
+      drawText("Wall schedule", x, y - 36, { align: "left", color: "#161616", size: 25, halo: null });
+      activeCtx.fillStyle = "#edf2ec";
+      activeCtx.fillRect(x, y, width, rowH);
+      columns.forEach(column => {
+        drawText(column.label, colX + 10, y + rowH / 2, { align: "left", color: "#161616", size: 16, halo: null });
+        colX += column.width;
+      });
+      state.walls.slice(0, 12).forEach((wallRecord, index) => {
+        const wall = wallRecord.wall;
+        const placement = wallRecord.placement || {};
+        const rowY = y + rowH * (index + 1);
+        activeCtx.fillStyle = index % 2 ? "#ffffff" : "#f8faf6";
+        activeCtx.fillRect(x, rowY, width, rowH);
+        activeCtx.strokeStyle = "#d6ddd4";
+        activeCtx.strokeRect(x, rowY, width, rowH);
+        const values = [
+          wallRecord.name,
+          `${wall.width} x ${wall.height}`,
+          `${wall.depth} mm`,
+          `x ${Math.round(placement.x || 0)}, y ${Math.round(placement.y || 0)}`,
+          `${Math.round(placement.rotation || 0)} deg`,
+          `${wallRecord.items.length} objects`
         ];
         colX = x;
         columns.forEach((column, columnIndex) => {
@@ -2571,11 +3130,13 @@
       });
     }
 
-    function createA3Canvas() {
+    function createA3Canvas(exportView = state.view) {
       const previousCanvas = activeCanvas;
       const previousCtx = activeCtx;
       const previousView = state.view;
       const previousZoom2d = state.view2d.zoom;
+      const previousPanX = number(state.view2d.panX, 0);
+      const previousPanY = number(state.view2d.panY, 0);
       const previousZoom3d = state.view3d.zoom;
       const a3 = {
         width: 4961,
@@ -2592,18 +3153,20 @@
       activeCtx.fillStyle = "#ffffff";
       activeCtx.fillRect(0, 0, a3.width, a3.height);
 
+      state.view = exportView;
       const titles = {
-        elevation: "2D measured wall layout",
-        perspective: "3D wall preview",
-        space2d: "2D exhibition space plan",
-        space3d: "3D exhibition space preview"
+        elevation: "Active wall 2D measured preview",
+        space2d: "Exhibition space 2D top view"
       };
-      const title = titles[state.view] || "Exhibition preview";
-      drawText("Exhibition Wall Mockup Maker", a3.margin, 86, { align: "left", baseline: "middle", color: "#161616", size: 42, halo: null });
-      drawText(`by Tiago | ${title}`, a3.margin, 142, { align: "left", baseline: "middle", color: "#5d655f", size: 25, weight: 600, halo: null });
-      drawText(`${state.project.title || "Untitled exhibition"}${state.project.artist ? ` | ${state.project.artist}` : ""}${state.project.museum ? ` | ${state.project.museum}` : ""}`, a3.margin, 190, { align: "left", baseline: "middle", color: "#5d655f", size: 23, weight: 600, halo: null });
-      drawText(`${state.project.wallId || "Wall"} | ${state.project.revision || "Rev A"} | Wall ${state.wall.width} x ${state.wall.height} mm | depth ${state.wall.depth} mm | A3 300 dpi`, a3.margin, 232, { align: "left", baseline: "middle", color: "#5d655f", size: 21, weight: 600, halo: null });
-      if (state.project.notes) drawText(state.project.notes, a3.width - a3.margin, 142, { align: "right", baseline: "middle", color: "#5d655f", size: 18, weight: 600, halo: null, maxWidth: 1250 });
+      const title = titles[exportView] || "2D preview";
+      drawText("Exhibition Wall Mockup Maker", a3.margin, 78, { align: "left", baseline: "middle", color: "#161616", size: 42, halo: null, noExportBoost: true });
+      drawText("Version 1.0", a3.margin + 820, 80, { align: "left", baseline: "middle", color: "#7c8580", size: 15, weight: 700, halo: null, noExportBoost: true });
+      drawText(`by @tiagomartinspinto | ${title}`, a3.margin, 132, { align: "left", baseline: "middle", color: "#5d655f", size: 25, weight: 600, halo: null, noExportBoost: true });
+      drawText(state.project.title || "Untitled exhibition", a3.margin, 180, { align: "left", baseline: "middle", color: "#5d655f", size: 23, weight: 600, halo: null, noExportBoost: true });
+      const exportMeta = exportView === "space2d"
+        ? `Space ${state.space.width} x ${state.space.depth} mm | ${state.walls.length} walls | Print on A3 for scale/readability`
+        : `${activeWallRecord().name} | ${state.wall.width} x ${state.wall.height} mm | depth ${state.wall.depth} mm | Print on A3 for scale/readability`;
+      drawText(exportMeta, a3.margin, 222, { align: "left", baseline: "middle", color: "#5d655f", size: 21, weight: 600, halo: null, noExportBoost: true });
       drawLine(a3.margin, 242, a3.width - a3.margin, 242, "#c8cfc8");
 
       const drawingX = a3.margin;
@@ -2618,27 +3181,31 @@
       activeCanvas = drawingCanvas;
       activeCtx = drawingCanvas.getContext("2d");
       activeCtx.setTransform(1, 0, 0, 1, 0, 0);
-      if (previousView === "elevation") {
+      if (exportView === "elevation") {
         state.view2d.zoom = 1;
+        state.view2d.panX = 0;
+        state.view2d.panY = 0;
         drawElevation();
-      } else if (previousView === "perspective") {
-        state.view3d.zoom = Math.max(1.15, previousZoom3d);
-        drawPerspective();
-      } else if (previousView === "space2d") {
-        state.view2d.zoom = 1;
-        drawSpace2D();
       } else {
-        state.view3d.zoom = Math.max(1.05, previousZoom3d);
-        drawSpace3D();
+        state.view2d.zoom = 1;
+        state.view2d.panX = 0;
+        state.view2d.panY = 0;
+        drawSpace2D();
       }
 
       activeCanvas = exportCanvas;
       activeCtx = exportCanvas.getContext("2d");
       activeCtx.drawImage(drawingCanvas, drawingX, drawingY);
-      drawSchedule(drawingX, drawingY + drawingH + 110, drawingW);
+      if (exportView === "space2d") {
+        drawWallSchedule(drawingX, drawingY + drawingH + 110, drawingW);
+      } else {
+        drawSchedule(drawingX, drawingY + drawingH + 110, drawingW);
+      }
 
       state.view = previousView;
       state.view2d.zoom = previousZoom2d;
+      state.view2d.panX = previousPanX;
+      state.view2d.panY = previousPanY;
       state.view3d.zoom = previousZoom3d;
       activeCanvas = previousCanvas;
       activeCtx = previousCtx;
@@ -2647,39 +3214,98 @@
       return exportCanvas;
     }
 
-    function exportA3Png() {
-      const previousView = state.view;
-      const exportCanvas = createA3Canvas();
-      const link = document.createElement("a");
-      link.download = `wall-mockup-a3-${previousView}.png`;
-      link.href = exportCanvas.toDataURL("image/png");
-      link.click();
+    function asciiBytes(text) {
+      const bytes = new Uint8Array(text.length);
+      for (let index = 0; index < text.length; index += 1) {
+        bytes[index] = text.charCodeAt(index) & 255;
+      }
+      return bytes;
     }
 
-    function printA3Pdf() {
-      const dataUrl = createA3Canvas().toDataURL("image/png");
-      const printWindow = window.open("", "_blank");
-      if (!printWindow) return;
-      printWindow.document.write(`
-        <!doctype html>
-        <html>
-          <head>
-            <title>${escapeHtml(state.project.title || "Exhibition Wall Mockup Maker")}</title>
-            <style>
-              @page { size: A3 landscape; margin: 0; }
-              html, body { margin: 0; background: #fff; }
-              img { width: 100vw; height: 100vh; object-fit: contain; display: block; }
-            </style>
-          </head>
-          <body>
-            <img src="${dataUrl}" onload="window.focus(); window.print();">
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
+    function base64Bytes(base64) {
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index);
+      }
+      return bytes;
     }
 
-    document.querySelectorAll("#wallWidth,#wallHeight,#wallDepth,#wallColor,#wallSpaceX,#wallSpaceY,#wallSpaceRotation").forEach(input => {
+    function makePdfFromCanvas(canvas) {
+      const imageBytes = base64Bytes(canvas.toDataURL("image/jpeg", 0.94).split(",")[1]);
+      const pageW = 1190.55;
+      const pageH = 841.89;
+      const chunks = [];
+      const offsets = [0];
+      let length = 0;
+
+      function append(part) {
+        const bytes = typeof part === "string" ? asciiBytes(part) : part;
+        chunks.push(bytes);
+        length += bytes.length;
+      }
+
+      function object(id, body) {
+        offsets[id] = length;
+        append(`${id} 0 obj\n${body}\nendobj\n`);
+      }
+
+      append("%PDF-1.4\n");
+      object(1, "<< /Type /Catalog /Pages 2 0 R >>");
+      object(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
+      object(3, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`);
+      offsets[4] = length;
+      append(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imageBytes.length} >>\nstream\n`);
+      append(imageBytes);
+      append("\nendstream\nendobj\n");
+      const content = `q\n${pageW} 0 0 ${pageH} 0 0 cm\n/Im0 Do\nQ\n`;
+      object(5, `<< /Length ${content.length} >>\nstream\n${content}endstream`);
+
+      const xrefAt = length;
+      append(`xref\n0 6\n0000000000 65535 f \n`);
+      for (let id = 1; id <= 5; id += 1) {
+        append(`${String(offsets[id]).padStart(10, "0")} 00000 n \n`);
+      }
+      append(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefAt}\n%%EOF`);
+
+      const output = new Uint8Array(length);
+      let offset = 0;
+      chunks.forEach(chunk => {
+        output.set(chunk, offset);
+        offset += chunk.length;
+      });
+      return output;
+    }
+
+    function slug(text) {
+      return String(text || "export")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 60) || "export";
+    }
+
+    function exportA3Pdf(exportView) {
+      const canvas = createA3Canvas(exportView);
+      const filename = exportView === "space2d"
+        ? `${slug(state.project.title)}-room-floor-plan.pdf`
+        : `${slug(state.project.title)}-${slug(activeWallRecord().name)}-2d-wall.pdf`;
+      download(filename, makePdfFromCanvas(canvas), "application/pdf");
+    }
+
+    function setSidebarCollapsed(enabled) {
+      document.body.classList.toggle("sidebar-collapsed", enabled);
+      els.sidebarToggle.setAttribute("aria-pressed", String(enabled));
+      els.sidebarToggle.setAttribute("aria-label", enabled ? "Show left panel" : "Hide left panel");
+      els.sidebarToggle.title = enabled ? "Show left panel" : "Hide left panel";
+      setTimeout(resizeCanvas, 0);
+    }
+
+    function toggleSidebar() {
+      setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"));
+    }
+
+    document.querySelectorAll("#wallName,#wallWidth,#wallHeight,#wallDepth,#wallColor,#wallSpaceX,#wallSpaceY,#wallSpaceRotation").forEach(input => {
       input.addEventListener("input", syncWallFromInputs);
     });
 
@@ -2696,8 +3322,9 @@
     els.addWall.addEventListener("click", addWall);
     els.duplicateWall.addEventListener("click", duplicateWall);
     els.deleteWall.addEventListener("click", deleteWall);
+    els.resetWall.addEventListener("click", resetWallSpecs);
 
-    document.querySelectorAll("#projectTitle,#projectArtist,#projectMuseum,#projectWallId,#projectRevision,#projectNotes").forEach(input => {
+    document.querySelectorAll("#projectTitle").forEach(input => {
       input.addEventListener("input", syncProjectFromInputs);
     });
 
@@ -2720,7 +3347,7 @@
         type: els.itemType.value,
         shape: els.itemShape.value,
         color: els.itemColor.value,
-        illuminated: els.itemIlluminated.checked || els.itemType.value === "illumination",
+        illuminated: els.itemIlluminated.checked,
         text: els.itemText.value,
         image: els.itemImage.dataset.image || "",
         x: els.itemX.value,
@@ -2742,9 +3369,9 @@
     document.querySelector("#sample").addEventListener("click", () => {
       state.wall = { width: 6000, height: 3000, depth: 120, color: "#f5f4ea" };
       state.items = [
-        { id: uid(), name: "Artwork", type: "artwork", shape: "rect", text: "", illuminated: false, x: 900, y: 900, width: 1200, height: 800, color: "#2f6f9f" },
-        { id: uid(), name: "Wall label", type: "label", shape: "rect", text: "Intro text", illuminated: false, x: 2400, y: 1700, width: 900, height: 220, color: "#eff6ff" },
-        { id: uid(), name: "Round light", type: "illumination", shape: "circle", text: "", illuminated: true, x: 3300, y: 2050, width: 420, height: 420, color: "#f7d154" },
+        { id: uid(), name: "Artwork", type: "graphic", shape: "rect", text: "", illuminated: false, x: 900, y: 900, width: 1200, height: 800, color: "#2f6f9f" },
+        { id: uid(), name: "Wall text", type: "text", shape: "rect", text: "Intro text", illuminated: false, x: 2400, y: 1700, width: 900, height: 220, color: "#eff6ff" },
+        { id: uid(), name: "Round light", type: "object", shape: "circle", text: "", illuminated: true, x: 3300, y: 2050, width: 420, height: 420, color: "#f7d154" },
         { id: uid(), name: "Screen", type: "screen", shape: "rect", text: "", illuminated: false, x: 3600, y: 650, width: 1800, height: 900, color: "#151515" }
       ];
       setSelection([]);
@@ -2775,10 +3402,6 @@
 
     els.itemType.addEventListener("change", () => {
       els.itemColor.value = colorForType(els.itemType.value);
-      if (els.itemType.value === "illumination") {
-        els.itemShape.value = "circle";
-        els.itemIlluminated.checked = true;
-      }
     });
 
     document.querySelectorAll(".tab[data-view]").forEach(button => {
@@ -2793,6 +3416,8 @@
     els.zoomOut.addEventListener("click", () => zoomView(-0.15));
     els.zoomIn.addEventListener("click", () => zoomView(0.15));
     els.resetView.addEventListener("click", resetView);
+    els.toolSelect.addEventListener("click", () => setTool("select"));
+    els.toolHand.addEventListener("click", () => setTool("hand"));
     els.rotateXDown.addEventListener("click", () => rotate3d("x", -10));
     els.rotateXUp.addEventListener("click", () => rotate3d("x", 10));
     els.rotateYLeft.addEventListener("click", () => rotate3d("y", -12));
@@ -2808,11 +3433,16 @@
     els.distributeH.addEventListener("click", () => distributeSelection("h"));
     els.distributeV.addEventListener("click", () => distributeSelection("v"));
 
-    document.querySelector("#exportPng").addEventListener("click", () => {
-      exportA3Png();
+    document.querySelector("#exportWallPdf").addEventListener("click", () => {
+      exportA3Pdf("elevation");
     });
 
-    els.printPdf.addEventListener("click", printA3Pdf);
+    document.querySelector("#exportRoomPdf").addEventListener("click", () => {
+      exportA3Pdf("space2d");
+    });
+
+    els.themeToggle.addEventListener("click", toggleTheme);
+    els.sidebarToggle.addEventListener("click", toggleSidebar);
 
     window.addEventListener("resize", resizeCanvas);
     els.canvas.addEventListener("pointerdown", startDrag);
@@ -2826,6 +3456,7 @@
 
     load();
     ensureWalls();
+    applyTheme();
     syncInputsFromWall();
     syncInputsFromSpace();
     syncInputsFromProject();
