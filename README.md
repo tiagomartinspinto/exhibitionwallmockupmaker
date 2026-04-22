@@ -1,9 +1,20 @@
-<<<<<<< HEAD
 # Exhibition Wall Mockup Maker
 
-by @tiagomartinspinto.
+by [@tiagomartinspinto](https://github.com/tiagomartinspinto)
 
-Web app for creating measured exhibition wall mockups with 2D construction guides, clean 3D previews, object alignment tools, and A3 PNG export.
+Exhibition Wall Mockup Maker is a web app for planning exhibition walls and rooms with clean 2D measured drawings, 3D previews, object placement tools, and PDF exports for construction handoff.
+
+## What it does
+
+- Build multiple walls inside one exhibition project
+- Edit wall dimensions, depth, color, and room placement in millimeters
+- Place text blocks, screens, graphics, objects, and support elements
+- Upload images and preview them in both 2D and 3D
+- Drag, align, distribute, resize, and zoom while working
+- View the active wall in 2D and 3D
+- View the full room as a floor plan and 3D room preview
+- Export measured wall PDFs and room plan PDFs
+- Export simple snapshot PDFs from the live preview
 
 ## Run locally
 
@@ -11,58 +22,33 @@ Web app for creating measured exhibition wall mockups with 2D construction guide
 npm start
 ```
 
-Then visit:
+Then open:
 
 ```txt
 http://127.0.0.1:4175
 ```
 
-The local server uses `PORT` when provided, otherwise it defaults to `4175`.
+The server uses `PORT` when provided and falls back to `4175`.
 
 ## Deploy on Render
 
-Create a new Render Web Service and use:
+This repo includes a `render.yaml`, so Render can pick up the service settings automatically.
+
+Manual settings, if needed:
 
 ```txt
 Build Command: npm install
 Start Command: npm start
 ```
 
-Render will provide the `PORT` environment variable automatically.
+Render provides the `PORT` environment variable automatically.
 
-## What works now
+## Stack
 
-- Wall width, height, depth, and color in millimeters.
-- Project title for the exhibition.
-- Exhibition space dimensions for room-level planning.
-- Floor, surrounding, and cinematic light controls for preview scenes.
-- Multiple wall tabs in one project.
-- Move walls around in the 2D exhibition space plan.
-- Add artworks, screens, labels, text, illumination, shelves, and openings.
-- Upload artwork/images and place them on the wall.
-- Auto-generated object IDs for drawings and schedules.
-- Rectangular and circular object shapes.
-- 2D measured elevation with object dimensions, zoom, and draggable positioning.
-- Compact 2D labels with object size and x/y position.
-- Always-visible 2D x/y position guide lines from the wall edges to each object.
-- Shift-click multi-select in 2D or in the object list.
-- Align selected objects left, center, right, top, middle, bottom, or distribute spacing.
-- Snap guides while dragging or resizing.
-- Basic resize handle for selected objects.
-- Leader-line callouts when labels are cramped or near the preview edge.
-- 3-axis wall 3D preview with zoom, mouse drag rotation, X/Y/Z buttons, and object-name-only labels.
-- Whole-project Space 2D and true Space 3D overview views.
-- Overlap detection in the object list and 2D preview.
-- Contrast-aware measurement labels for light and dark wall colors.
-- Export A3 PNG at 300 dpi resolution for construction reference.
-- Print / Save as PDF through the browser print dialog.
-- Object schedule included on A3 handoff sheets.
+- Single-page HTML/CSS/JavaScript app
+- Small Node HTTP server for local use and deployment
+- No framework dependency required
 
-## Good next steps
+## Repository
 
-- Export a print-ready PDF with scale and object schedule.
-- Save multiple projects.
-- Add wall openings/doors as editable space-planning elements.
-=======
-# exhibitionwallmockupmaker
->>>>>>> 6d80300dadf8e37ed67c24cab07da93a2a7114cb
+[https://github.com/tiagomartinspinto/exhibitionwallmockupmaker](https://github.com/tiagomartinspinto/exhibitionwallmockupmaker)
