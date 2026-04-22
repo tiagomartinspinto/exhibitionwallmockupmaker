@@ -451,6 +451,22 @@
       vertical-align: middle;
     }
 
+    .tool-icon {
+      display: block;
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+      flex: 0 0 auto;
+    }
+
+    .tool-icon-stroke {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
     .align-icon::before,
     .align-icon::after {
       content: "";
@@ -597,6 +613,61 @@
       border-radius: 8px;
       backdrop-filter: blur(10px);
       box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+    }
+
+    .stage-actions {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 8;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--chrome-bg) 92%, transparent);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+    }
+
+    .stage-snapshot {
+      position: relative;
+      width: 38px;
+      min-width: 38px;
+      height: 38px;
+      min-height: 38px;
+      padding: 0;
+      color: color-mix(in srgb, var(--ink) 70%, var(--muted));
+      background: transparent;
+      border-color: transparent;
+      border-radius: 999px;
+      box-shadow: none;
+    }
+
+    .stage-snapshot:hover {
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-color: rgba(215, 211, 203, 0.16);
+    }
+
+    .stage-snapshot::before {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border-radius: 999px;
+      border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+      opacity: 0.72;
+      pointer-events: none;
+    }
+
+    .stage-snapshot .tool-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .stage-snapshot .tool-icon-stroke {
+      stroke-width: 1.65;
     }
 
     body.sidebar-collapsed .stage-panel-toggle {
@@ -802,7 +873,7 @@
       </section>
 
       <section class="section">
-        <h2>Add Object</h2>
+        <h2>Object</h2>
         <label>Name
           <input id="itemName" value="Artwork">
         </label>
@@ -824,14 +895,9 @@
             </select>
           </label>
         </div>
-        <div class="grid-2">
-          <label>Color
-            <input id="itemColor" type="color" value="#2f6f9f">
-          </label>
-          <label>Illuminated
-            <input id="itemIlluminated" type="checkbox">
-          </label>
-        </div>
+        <label>Color
+          <input id="itemColor" type="color" value="#2f6f9f">
+        </label>
         <label>Visible text
           <textarea id="itemText" spellcheck="true" placeholder="Optional words shown on the object"></textarea>
         </label>
@@ -883,8 +949,19 @@
         <div class="toolbar-tools">
           <div class="view-controls" aria-label="View controls">
             <span class="control-label">View</span>
-            <button id="toolSelect" class="mini-button active" type="button" title="Select and move objects">Select</button>
-            <button id="toolHand" class="mini-button" type="button" title="Pan the 2D preview">Hand</button>
+            <button id="toolSelect" class="mini-button active" type="button" title="Select and move objects" aria-label="Select and move objects">
+              <svg class="tool-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 3v17l4.9-4.6 3 5.7 2.3-1.2-2.9-5.6 6.7-.9L4 3z"></path>
+              </svg>
+            </button>
+            <button id="toolHand" class="mini-button" type="button" title="Pan the 2D preview (or hold Space)" aria-label="Pan the 2D preview">
+              <svg class="tool-icon tool-icon-stroke" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18 11V7a1 1 0 0 0-2 0v4"></path>
+                <path d="M14 10V5a1 1 0 0 0-2 0v5"></path>
+                <path d="M10 11V6.5a1 1 0 0 0-2 0V15"></path>
+                <path d="M18 9a1 1 0 1 1 2 0v6.5A6.5 6.5 0 0 1 13.5 22h-1.2a5.8 5.8 0 0 1-4.3-1.9l-3-3.4A1.2 1.2 0 0 1 6.8 15l1.2 1.2"></path>
+              </svg>
+            </button>
             <button id="zoomOut" class="mini-button" type="button" title="Zoom out">-</button>
             <button id="zoomIn" class="mini-button" type="button" title="Zoom in">+</button>
             <button id="resetView" class="mini-button" type="button" title="Reset view">Reset</button>
@@ -910,6 +987,15 @@
       </div>
       <div class="stage-wrap">
         <div class="stage">
+          <div class="stage-actions" aria-label="Preview actions">
+            <button id="snapshotView" class="stage-snapshot" type="button" title="Snapshot PDF" aria-label="Snapshot PDF">
+              <svg class="tool-icon tool-icon-stroke" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 9.2h2.1l1.15-1.7h5.5l1.15 1.7H18a2.2 2.2 0 0 1 2.2 2.2v5.4A2.2 2.2 0 0 1 18 19H6a2.2 2.2 0 0 1-2.2-2.2v-5.4A2.2 2.2 0 0 1 6 9.2z"></path>
+                <circle cx="12" cy="13.1" r="3.15"></circle>
+                <path d="M8.1 9.2l.75-1.1"></path>
+              </svg>
+            </button>
+          </div>
           <canvas id="canvas" width="1400" height="860"></canvas>
           <div class="status">
             <span id="scaleLabel"></span>
@@ -945,6 +1031,7 @@
       resizeDrag: null,
       snapLines: [],
       tool: "select",
+      handOverride: false,
       theme: "dark",
       view2d: { zoom: 1, panX: 0, panY: 0 },
       view3d: { zoom: 1, rotX: -10, rotY: 24, rotZ: 0 },
@@ -988,17 +1075,18 @@
       itemType: document.querySelector("#itemType"),
       itemShape: document.querySelector("#itemShape"),
       itemColor: document.querySelector("#itemColor"),
-      itemIlluminated: document.querySelector("#itemIlluminated"),
       itemText: document.querySelector("#itemText"),
       itemImage: document.querySelector("#itemImage"),
       itemX: document.querySelector("#itemX"),
       itemY: document.querySelector("#itemY"),
       itemW: document.querySelector("#itemW"),
       itemH: document.querySelector("#itemH"),
+      addItem: document.querySelector("#addItem"),
       itemList: document.querySelector("#itemList"),
       overlapSummary: document.querySelector("#overlapSummary"),
       scaleLabel: document.querySelector("#scaleLabel"),
       projectName: document.querySelector("#projectName"),
+      snapshotView: document.querySelector("#snapshotView"),
       toolSelect: document.querySelector("#toolSelect"),
       toolHand: document.querySelector("#toolHand"),
       zoomOut: document.querySelector("#zoomOut"),
@@ -1026,6 +1114,9 @@
 
     let activeCanvas = els.canvas;
     let activeCtx = screenCtx;
+    const STORAGE_KEY = "wall-mockup-maker";
+    const PERSIST_DELAY = 180;
+    let persistTimer = null;
 
     function makeWall(name, wall = {}, items = [], placement = {}) {
       return {
@@ -1144,6 +1235,55 @@
       updateProjectHeader();
     }
 
+    function defaultItemFormState() {
+      return {
+        name: "Artwork",
+        type: "graphic",
+        shape: "rect",
+        color: colorForType("graphic"),
+        text: "",
+        x: 900,
+        y: 900,
+        width: 1200,
+        height: 800
+      };
+    }
+
+    function syncItemInputs() {
+      const item = selectedSingleItem();
+      const source = item ? normalizeItem(item) : defaultItemFormState();
+      els.itemName.value = source.name || "";
+      els.itemType.value = canonicalItemType(source.type);
+      els.itemShape.value = source.shape || "rect";
+      els.itemColor.value = source.color || colorForType(source.type);
+      els.itemText.value = source.text || "";
+      els.itemX.value = Math.round(source.x ?? 0);
+      els.itemY.value = Math.round(source.y ?? 0);
+      els.itemW.value = Math.round(source.width ?? 100);
+      els.itemH.value = Math.round(source.height ?? 100);
+      if (!item) {
+        els.itemImage.value = "";
+        els.itemImage.dataset.image = "";
+      }
+      els.addItem.textContent = item ? "Add to wall" : "Add to wall";
+    }
+
+    function syncSelectedItemFromInputs() {
+      const item = selectedSingleItem();
+      if (!item) return false;
+      item.name = els.itemName.value || item.name;
+      item.type = canonicalItemType(els.itemType.value);
+      item.shape = els.itemShape.value || item.shape;
+      item.color = els.itemColor.value || item.color;
+      item.text = els.itemText.value || "";
+      item.x = Math.max(0, number(els.itemX.value, item.x));
+      item.y = Math.max(0, number(els.itemY.value, item.y));
+      item.width = Math.max(10, number(els.itemW.value, item.width));
+      item.height = Math.max(10, number(els.itemH.value, item.height));
+      clampItemToWall(item);
+      return true;
+    }
+
     function applyTheme() {
       const theme = state.theme === "light" ? "light" : "dark";
       state.theme = theme;
@@ -1157,6 +1297,7 @@
       state.theme = state.theme === "dark" ? "light" : "dark";
       applyTheme();
       save();
+      render({ canvasOnly: true });
     }
 
     function addItem(item) {
@@ -1254,6 +1395,22 @@
       return `left edge ${Math.round(normalized.x)} mm; bottom ${Math.round(normalized.y)} mm`;
     }
 
+    function itemTypePrintLabel(type) {
+      return {
+        title: "Title text",
+        text: "Text",
+        screen: "Screen",
+        graphic: "Graphic",
+        object: "Object",
+        support: "Support"
+      }[canonicalItemType(type)] || "Object";
+    }
+
+    function exportTextLabel(item) {
+      const normalized = normalizeItem(item);
+      return normalized.text ? `Text to add: ${normalized.text}` : "";
+    }
+
     const imageCache = new Map();
 
     function cachedImage(src) {
@@ -1262,7 +1419,7 @@
       const image = new Image();
       image.src = src;
       imageCache.set(src, image);
-      image.onload = () => render();
+      image.onload = () => render({ canvasOnly: true });
       return image;
     }
 
@@ -1396,17 +1553,24 @@
     }
 
     function elevationGeometry(width, height, options = {}) {
-      const pad = options.pad ?? 78;
+      const exportMode = activeCanvas !== els.canvas;
+      const pad = options.pad ?? (exportMode ? 40 : 78);
+      const leftPad = options.leftPad ?? (exportMode ? 260 : pad);
+      const rightPad = options.rightPad ?? pad;
+      const topPad = options.topPad ?? pad;
+      const bottomPad = options.bottomPad ?? (exportMode ? 180 : pad);
       const zoom = options.fit ? 1 : state.view2d.zoom;
-      const scale = Math.min((width - pad * 2) / state.wall.width, (height - pad * 2) / state.wall.height) * zoom;
+      const innerW = width - leftPad - rightPad;
+      const innerH = height - topPad - bottomPad;
+      const scale = Math.min(innerW / state.wall.width, innerH / state.wall.height) * zoom;
       const wallW = state.wall.width * scale;
       const wallH = state.wall.height * scale;
       const panX = options.fit ? 0 : number(state.view2d.panX, 0);
       const panY = options.fit ? 0 : number(state.view2d.panY, 0);
       return {
         scale,
-        x: (width - wallW) / 2 + panX,
-        y: (height - wallH) / 2 + panY,
+        x: leftPad + (innerW - wallW) / 2 + panX,
+        y: topPad + (innerH - wallH) / 2 + panY,
         w: wallW,
         h: wallH
       };
@@ -1455,7 +1619,7 @@
       activeCtx.save();
       let value = String(text);
       activeCtx.fillStyle = options.color || "#1d1d1d";
-      const boost = activeCanvas !== els.canvas && options.noExportBoost !== true ? 2 : 0;
+      const boost = activeCanvas !== els.canvas && options.noExportBoost !== true ? 5 : 0;
       activeCtx.font = `${options.weight || 700} ${(options.size || 12) + boost}px Inter, system-ui, sans-serif`;
       activeCtx.textAlign = options.align || "center";
       activeCtx.textBaseline = options.baseline || "middle";
@@ -1569,6 +1733,22 @@
       return isDark(state.wall.color) ? "rgba(255,255,255,0.58)" : "rgba(22,22,22,0.46)";
     }
 
+    function guideAxisColors(strong = false) {
+      if (activeCanvas !== els.canvas) {
+        return strong
+          ? { x: "#215f8b", y: "#8b5a21" }
+          : { x: "#4e86ad", y: "#a97a43" };
+      }
+      if (isDark(state.wall.color)) {
+        return strong
+          ? { x: "rgba(142,208,255,0.94)", y: "rgba(255,206,143,0.94)" }
+          : { x: "rgba(142,208,255,0.72)", y: "rgba(255,206,143,0.72)" };
+      }
+      return strong
+        ? { x: "#2f78a8", y: "#9a6531" }
+        : { x: "rgba(47,120,168,0.72)", y: "rgba(154,101,49,0.72)" };
+    }
+
     function screenBoxForItem(geom, rawItem) {
       const item = normalizeItem(rawItem);
       const x = mmX(geom, item.x);
@@ -1592,11 +1772,50 @@
       ));
     }
 
+    function estimatedLabelBox(point, text, options = {}) {
+      const size = options.size || 10;
+      const weight = options.weight || 600;
+      const paddingX = options.paddingX || 10;
+      const paddingY = options.paddingY || 6;
+      if (options.vertical) {
+        const width = size + paddingX * 1.2;
+        const height = Math.min(options.maxHeight || 220, textWidth(text, size, weight) + paddingY * 2);
+        return { x: point.x - width / 2, y: point.y - height / 2, w: width, h: height };
+      }
+      const width = Math.min(options.maxWidth || 240, textWidth(text, size, weight) + paddingX * 2);
+      const height = size + paddingY * 2;
+      return { x: point.x - width / 2, y: point.y - height / 2, w: width, h: height };
+    }
+
+    function boxesOverlap(a, b, pad = 8) {
+      return !(
+        a.x + a.w + pad < b.x ||
+        a.x > b.x + b.w + pad ||
+        a.y + a.h + pad < b.y ||
+        a.y > b.y + b.h + pad
+      );
+    }
+
+    function labelCollides(box, itemBoxes = [], placedLabels = []) {
+      if (itemBoxes.some(itemBox => boxesOverlap(box, itemBox, 10))) return true;
+      return placedLabels.some(existing => boxesOverlap(box, existing, 10));
+    }
+
+    function reserveLabelBox(point, text, placedLabels, options = {}) {
+      const box = estimatedLabelBox(point, text, options);
+      placedLabels.push(box);
+      return box;
+    }
+
     function drawPositionGuides(geom, item, box, options = {}) {
-      const color = guideColor(options.strong);
-      const labelColor = contrastText(state.wall.color);
-      const halo = contrastHalo(labelColor);
+      const axisColors = guideAxisColors(options.strong);
+      const xColor = axisColors.x;
+      const yColor = axisColors.y;
+      const xHalo = activeCanvas !== els.canvas ? "rgba(255,255,255,0.88)" : contrastHalo(xColor);
+      const yHalo = activeCanvas !== els.canvas ? "rgba(255,255,255,0.88)" : contrastHalo(yColor);
       const boxes = options.boxes || [];
+      const placedLabels = options.placedLabels || [];
+      const exportMode = activeCanvas !== els.canvas;
       const isCircle = item.shape === "circle";
       const guideX = isCircle ? box.x + box.w / 2 : box.x;
       const guideY = isCircle ? box.y + box.h / 2 : box.y + box.h;
@@ -1607,39 +1826,277 @@
       const floorY = geom.y + geom.h;
       const wallLeftX = geom.x;
 
-      drawArrowDimension(wallLeftX, guideY, guideX, guideY, color, [4, 4]);
-      drawArrowDimension(guideX, floorY, guideX, guideY, color, [4, 4]);
+      drawArrowDimension(wallLeftX, guideY, guideX, guideY, xColor, [4, 4]);
+      drawArrowDimension(guideX, floorY, guideX, guideY, yColor, [4, 4]);
 
-      let xPoint = { x: (wallLeftX + guideX) / 2, y: guideY - 10 };
-      if (labelHitsBoxes(xPoint, boxes)) {
-        xPoint = { x: Math.max(wallLeftX + 62, guideX - 64), y: guideY - 12 };
-      }
-      if (labelHitsBoxes(xPoint, boxes)) {
-        xPoint = { x: wallLeftX + 64, y: guideY + 14 };
-      }
+      const xSize = exportMode ? 13 : options.strong ? 11 : 10;
+      const ySize = exportMode ? 13 : options.strong ? 11 : 10;
+      const xCandidates = [];
+      const xGuideMid = (wallLeftX + guideX) / 2;
+      const xGutterColumns = exportMode
+        ? [wallLeftX - 120, wallLeftX - 210, wallLeftX - 300, wallLeftX - 390]
+        : [wallLeftX + 84, Math.max(wallLeftX + 96, guideX - 92)];
+      const xOffsets = exportMode ? [-22, 0, 22, 44, -44, 66, -66] : [-12, 16, 36];
+      xGutterColumns.forEach(column => {
+        xOffsets.forEach(offset => {
+          xCandidates.push({ x: column, y: guideY + offset });
+        });
+      });
+      [-16, 18, 42, -40].forEach(offset => {
+        xCandidates.push({ x: xGuideMid, y: guideY + offset });
+      });
 
-      let yPoint = { x: guideX + 20, y: (floorY + guideY) / 2 };
-      if (labelHitsBoxes(yPoint, boxes, true)) {
-        yPoint = { x: Math.max(wallLeftX + 22, guideX - 20), y: (floorY + guideY) / 2 };
-      }
-      if (labelHitsBoxes(yPoint, boxes, true)) {
-        yPoint = { x: guideX + 26, y: Math.min(floorY - 48, guideY + 72) };
-      }
+      const yCandidates = [];
+      const yMid = (floorY + guideY) / 2;
+      const yColumns = exportMode
+        ? [guideX + 34, guideX + 70, guideX - 34, guideX - 70, wallLeftX - 36, wallLeftX - 78]
+        : [guideX + 24, guideX - 24, guideX + 44, guideX - 44];
+      const yOffsets = exportMode ? [0, -48, 48, -88, 88] : [0, -38, 38];
+      yColumns.forEach(column => {
+        yOffsets.forEach(offset => {
+          yCandidates.push({
+            x: column,
+            y: clamp(yMid + offset, geom.y + 88, floorY - 88)
+          });
+        });
+      });
+
+      const pickCandidate = (candidates, label, config = {}) => {
+        let best = null;
+        candidates.forEach((candidate, index) => {
+          const labelBox = estimatedLabelBox(candidate, label, config);
+          const collision = labelCollides(labelBox, boxes.map(entry => ({ x: entry.x, y: entry.y, w: entry.w, h: entry.h })), placedLabels);
+          const outsideBonus = candidate.x < geom.x - 4 || candidate.x > geom.x + geom.w + 4 ? -0.8 : 0;
+          const score = (collision ? 1000 : 0) + index + outsideBonus;
+          if (!best || score < best.score) best = { candidate, labelBox, score };
+        });
+        return best;
+      };
+
+      const xPick = pickCandidate(xCandidates, xLabel, { size: xSize, weight: 600 });
+      const yPick = pickCandidate(yCandidates, yLabel, { size: ySize, weight: 600, vertical: true });
+      const xPoint = xPick.candidate;
+      const yPoint = yPick.candidate;
+      reserveLabelBox(xPoint, xLabel, placedLabels, { size: xSize, weight: 600 });
+      reserveLabelBox(yPoint, yLabel, placedLabels, { size: ySize, weight: 600, vertical: true });
 
       drawText(xLabel, xPoint.x, xPoint.y, {
-        color: labelColor,
-        size: options.strong ? 11 : 10,
+        color: xColor,
+        size: xSize,
         weight: 600,
-        halo,
-        maxWidth: 150
+        halo: xHalo,
+        maxWidth: exportMode ? 220 : 150
       });
       drawText(yLabel, yPoint.x, yPoint.y, {
         rotate: -Math.PI / 2,
-        color: labelColor,
-        size: options.strong ? 11 : 10,
+        color: yColor,
+        size: ySize,
         weight: 600,
-        halo,
-        maxWidth: 150
+        halo: yHalo,
+        maxWidth: exportMode ? 220 : 150
+      });
+    }
+
+    function distributeValues(values, minGap, minValue, maxValue) {
+      if (!values.length) return [];
+      const placed = values.slice().sort((a, b) => a - b);
+      for (let index = 1; index < placed.length; index += 1) {
+        placed[index] = Math.max(placed[index], placed[index - 1] + minGap);
+      }
+      const overflow = placed[placed.length - 1] - maxValue;
+      if (overflow > 0) {
+        for (let index = placed.length - 1; index >= 0; index -= 1) {
+          placed[index] -= overflow;
+        }
+      }
+      if (placed[0] < minValue) {
+        const underflow = minValue - placed[0];
+        for (let index = 0; index < placed.length; index += 1) {
+          placed[index] += underflow;
+        }
+      }
+      for (let index = placed.length - 2; index >= 0; index -= 1) {
+        placed[index] = Math.min(placed[index], placed[index + 1] - minGap);
+      }
+      return placed.map(value => clamp(value, minValue, maxValue));
+    }
+
+    function drawExportPositionGuides(geom, itemBoxes, options = {}) {
+      const xPalette = ["#2f78a8", "#4b95c5", "#5f88b8", "#3b6fa3", "#6ca6cf", "#537fae"];
+      const yPalette = ["#9a6531", "#bb7a3a", "#a96d45", "#8f5d2d", "#c88d52", "#b07239"];
+      const floorY = geom.y + geom.h;
+      const wallLeftX = geom.x;
+      const itemRects = itemBoxes.map(box => ({ x: box.x, y: box.y, w: box.w, h: box.h }));
+      const placedLabels = [];
+
+      const fitsLabel = (candidate, text, config = {}, bounds = null) => {
+        const box = estimatedLabelBox(candidate, text, config);
+        const inBounds = box.x >= 18 && box.x + box.w <= activeCanvas.width - 18 && box.y >= 18 && box.y + box.h <= activeCanvas.height - 18;
+        if (!inBounds) return false;
+        if (bounds) {
+          if (box.x < bounds.left || box.x + box.w > bounds.right || box.y < bounds.top || box.y + box.h > bounds.bottom) return false;
+        }
+        return !labelCollides(box, itemRects, placedLabels);
+      };
+
+      const commitLabel = (candidate, text, drawOptions = {}, boxOptions = {}) => {
+        reserveLabelBox(candidate, text, placedLabels, boxOptions);
+        drawText(text, candidate.x, candidate.y, drawOptions);
+      };
+
+      const xEntries = itemBoxes.map(({ item, x, y, w, h }, index) => {
+        const isCircle = item.shape === "circle";
+        const guideX = isCircle ? x + w / 2 : x;
+        const guideY = isCircle ? y + h / 2 : y + h;
+        const measureX = isCircle ? item.x + item.width / 2 : item.x;
+        return {
+          guideX,
+          guideY,
+          label: isCircle ? `CL from left ${Math.round(measureX)} mm` : `left edge ${Math.round(measureX)} mm`,
+          color: xPalette[index % xPalette.length],
+          length: guideX - wallLeftX
+        };
+      });
+
+      const yEntries = itemBoxes.map(({ item, x, y, w, h }, index) => {
+        const isCircle = item.shape === "circle";
+        const guideX = isCircle ? x + w / 2 : x;
+        const guideY = isCircle ? y + h / 2 : y + h;
+        const measureY = isCircle ? item.y + item.height / 2 : item.y;
+        return {
+          guideX,
+          guideY,
+          label: isCircle ? `CL from floor ${Math.round(measureY)} mm` : `bottom ${Math.round(measureY)} mm`,
+          color: yPalette[index % yPalette.length],
+          length: floorY - guideY
+        };
+      });
+
+      xEntries.forEach(entry => {
+        drawArrowDimension(wallLeftX, entry.guideY, entry.guideX, entry.guideY, entry.color, [4, 4]);
+      });
+      yEntries.forEach(entry => {
+        drawArrowDimension(entry.guideX, floorY, entry.guideX, entry.guideY, entry.color, [4, 4]);
+      });
+
+      xEntries.slice().sort((a, b) => b.length - a.length).forEach(entry => {
+        const label = entry.label;
+        const labelWidth = textWidth(label, 14, 700);
+        const halo = "rgba(255,255,255,0.96)";
+        let placed = false;
+        if (entry.length > labelWidth + 28) {
+          const fractions = [0.5, 0.65, 0.35, 0.78, 0.22];
+          const yOffsets = [0, -14, 14, -28, 28];
+          fractions.forEach(fraction => {
+            yOffsets.forEach(offset => {
+              if (placed) return;
+              const candidate = { x: wallLeftX + entry.length * fraction, y: entry.guideY + offset };
+              const bounds = {
+                left: wallLeftX + 12,
+                right: entry.guideX - 12,
+                top: entry.guideY - 34,
+                bottom: entry.guideY + 34
+              };
+              if (!fitsLabel(candidate, label, { size: 14, weight: 700, maxWidth: Math.max(120, entry.length - 24) }, bounds)) return;
+              commitLabel(candidate, label, {
+                color: entry.color,
+                size: 14,
+                weight: 700,
+                halo,
+                maxWidth: Math.max(120, entry.length - 24)
+              }, {
+                size: 14,
+                weight: 700,
+                maxWidth: Math.max(120, entry.length - 24)
+              });
+              placed = true;
+            });
+          });
+        }
+        if (placed) return;
+        const fallbackColumns = [wallLeftX - 130, wallLeftX - 250];
+        const offsets = [0, -22, 22, -44, 44, -66, 66];
+        fallbackColumns.forEach(column => {
+          offsets.forEach(offset => {
+            if (placed) return;
+            const candidate = { x: column, y: clamp(entry.guideY + offset, geom.y + 24, floorY - 24) };
+            if (!fitsLabel(candidate, label, { size: 14, weight: 700, maxWidth: 220 })) return;
+            drawLine(candidate.x + labelWidth / 2 + 12, candidate.y, wallLeftX - 10, entry.guideY, entry.color, [4, 4]);
+            commitLabel(candidate, label, {
+              color: entry.color,
+              size: 14,
+              weight: 700,
+              halo,
+              maxWidth: 220
+            }, {
+              size: 14,
+              weight: 700,
+              maxWidth: 220
+            });
+            placed = true;
+          });
+        });
+      });
+
+      yEntries.slice().sort((a, b) => b.length - a.length).forEach(entry => {
+        const label = entry.label;
+        const labelExtent = textWidth(label, 14, 700) + 12;
+        const halo = "rgba(255,255,255,0.96)";
+        let placed = false;
+        if (entry.length > labelExtent + 24) {
+          const fractions = [0.5, 0.68, 0.32, 0.8, 0.2];
+          const xOffsets = [0, -18, 18];
+          fractions.forEach(fraction => {
+            xOffsets.forEach(offset => {
+              if (placed) return;
+              const candidate = { x: entry.guideX + offset, y: floorY - entry.length * fraction };
+              const bounds = {
+                left: entry.guideX - 34,
+                right: entry.guideX + 34,
+                top: entry.guideY + 12,
+                bottom: floorY - 12
+              };
+              if (!fitsLabel(candidate, label, { size: 14, weight: 700, vertical: true, maxHeight: Math.max(120, entry.length - 24) }, bounds)) return;
+              commitLabel(candidate, label, {
+                rotate: -Math.PI / 2,
+                color: entry.color,
+                size: 14,
+                weight: 700,
+                halo,
+                maxWidth: Math.max(120, entry.length - 24)
+              }, {
+                size: 14,
+                weight: 700,
+                vertical: true,
+                maxHeight: Math.max(120, entry.length - 24)
+              });
+              placed = true;
+            });
+          });
+        }
+        if (placed) return;
+        const fallbackRows = [floorY + 40, floorY + 78, floorY + 116];
+        const xOffsets = [0, -90, 90, -170, 170];
+        fallbackRows.forEach(rowY => {
+          xOffsets.forEach(offset => {
+            if (placed) return;
+            const candidate = { x: clamp(entry.guideX + offset, geom.x + 90, geom.x + geom.w - 90), y: rowY };
+            if (!fitsLabel(candidate, label, { size: 14, weight: 700, maxWidth: 220 })) return;
+            drawLine(entry.guideX, floorY + 8, candidate.x, candidate.y - 10, entry.color, [4, 4]);
+            commitLabel(candidate, label, {
+              color: entry.color,
+              size: 14,
+              weight: 700,
+              halo,
+              maxWidth: 220
+            }, {
+              size: 14,
+              weight: 700,
+              maxWidth: 220
+            });
+            placed = true;
+          });
+        });
       });
     }
 
@@ -1747,7 +2204,7 @@
       const h = Math.max(1, maxY - minY);
       activeCtx.save();
       if (item.shape === "circle") {
-        const center = options.center || points.reduce((acc, point) => ({ x: acc.x + point.x / points.length, y: acc.y + point.y / points.length }), { x: 0, y: 0 });
+        const center = options.center || projectedCenter(points);
         const rx = Math.max(5, Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y) / 2);
         const ry = Math.max(5, Math.hypot(points[3].x - points[0].x, points[3].y - points[0].y) / 2);
         activeCtx.beginPath();
@@ -1766,6 +2223,52 @@
       activeCtx.drawImage(image, minX + (w - drawW) / 2, minY + (h - drawH) / 2, drawW, drawH);
       activeCtx.restore();
       return true;
+    }
+
+    function projectedCenter(points) {
+      return points.reduce((acc, point) => ({
+        x: acc.x + point.x / points.length,
+        y: acc.y + point.y / points.length
+      }), { x: 0, y: 0 });
+    }
+
+    function averageProjectedZ(points) {
+      return points.reduce((sum, point) => sum + point.z, 0) / points.length;
+    }
+
+    function fillProjectedFace(points, fill, stroke, lineWidth = 1.2) {
+      activeCtx.save();
+      activeCtx.beginPath();
+      activeCtx.moveTo(points[0].x, points[0].y);
+      points.slice(1).forEach(point => activeCtx.lineTo(point.x, point.y));
+      activeCtx.closePath();
+      activeCtx.fillStyle = fill;
+      activeCtx.fill();
+      if (stroke && stroke !== "transparent" && stroke !== "rgba(0,0,0,0)") {
+        activeCtx.strokeStyle = stroke;
+        activeCtx.lineWidth = lineWidth;
+        activeCtx.stroke();
+      }
+      activeCtx.restore();
+    }
+
+    function drawProjectedEllipse(item, points, fill, stroke, options = {}) {
+      const center = options.center || projectedCenter(points);
+      const angle = options.rotation || Math.atan2(points[1].y - points[0].y, points[1].x - points[0].x);
+      const rx = Math.max(5, Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y) / 2);
+      const ry = Math.max(5, Math.hypot(points[3].x - points[0].x, points[3].y - points[0].y) / 2);
+      activeCtx.save();
+      activeCtx.beginPath();
+      activeCtx.ellipse(center.x, center.y, rx, ry, angle, 0, Math.PI * 2);
+      activeCtx.fillStyle = fill;
+      activeCtx.fill();
+      activeCtx.strokeStyle = stroke;
+      activeCtx.lineWidth = 1.2;
+      activeCtx.stroke();
+      activeCtx.restore();
+      if (options.drawImage !== false) {
+        drawProjectedImage(item, points, { center, rotation: angle });
+      }
     }
 
     function pointInItem(point, item, geom) {
@@ -1843,6 +2346,7 @@
     function drawElevation() {
       const { width, height } = clear();
       const geom = elevationGeometry(width, height);
+      const exportMode = activeCanvas !== els.canvas;
       const wallMark = contrastText(state.wall.color);
       const surroundMark = activeCanvas === els.canvas ? contrastText(sceneSurroundColor()) : "#4b5750";
       const overlaps = overlapIds();
@@ -1855,19 +2359,16 @@
       activeCtx.fillRect(geom.x, geom.y, geom.w, geom.h);
       activeCtx.strokeRect(geom.x, geom.y, geom.w, geom.h);
 
-      drawDimension(geom.x, geom.y + geom.h + 34, geom.x + geom.w, geom.y + geom.h + 34, `${state.wall.width} mm`, 14, false, surroundMark);
-      drawDimension(geom.x - 34, geom.y, geom.x - 34, geom.y + geom.h, `${state.wall.height} mm`, 18, true, surroundMark);
+      const overallWidthY = exportMode ? geom.y + geom.h + 158 : geom.y + geom.h + 34;
+      const overallHeightX = exportMode ? geom.x - 70 : geom.x - 34;
+      drawDimension(geom.x, overallWidthY, geom.x + geom.w, overallWidthY, `${state.wall.width} mm`, 14, false, surroundMark);
+      drawDimension(overallHeightX, geom.y, overallHeightX, geom.y + geom.h, `${state.wall.height} mm`, 18, true, surroundMark);
       drawSnapLines(geom);
 
       const itemBoxes = state.items.map(item => screenBoxForItem(geom, item));
-      itemBoxes.forEach(({ item, x, y, w, h }) => {
-        const selected = isSelected(item.id);
-        const overlap = overlaps.has(item.id);
-        drawPositionGuides(geom, item, { x, y, w, h }, {
-          strong: selected || overlap,
-          boxes: itemBoxes.filter(box => box.item.id !== item.id)
-        });
-      });
+      if (exportMode) {
+        drawExportPositionGuides(geom, itemBoxes);
+      }
 
       itemBoxes.forEach(({ item, x, y, w, h }) => {
         const invalid = item.x + item.width > state.wall.width || item.y + item.height > state.wall.height;
@@ -1919,6 +2420,17 @@
 
     function sceneSurroundColor() {
       return validHexColor(state.space.surroundColor, "#070708");
+    }
+
+    function itemReliefDepth(item) {
+      const type = canonicalItemType(item.type);
+      if (type === "screen") return 64;
+      if (type === "support") return 42;
+      if (type === "object") return 86;
+      if (type === "graphic") return 20;
+      if (type === "title") return 16;
+      if (type === "text") return 12;
+      return 24;
     }
 
     function applyCinematicLight(width, height) {
@@ -2110,26 +2622,22 @@
         activeCtx.restore();
       }
 
-      function centerOf(points) {
-        return points.reduce((acc, point) => ({
-          x: acc.x + point.x / points.length,
-          y: acc.y + point.y / points.length
-        }), { x: 0, y: 0 });
-      }
-
       const frontZ = depth;
       const backZ = 0;
       const floorY = 0;
-      const floorOutline = [
-        { x: -600, y: floorY, z: -depth * 1.7 },
-        { x: state.wall.width + 600, y: floorY, z: -depth * 1.7 },
-        { x: state.wall.width + 600, y: floorY, z: depth * 2.6 },
-        { x: -600, y: floorY, z: depth * 2.6 }
+      const floorPlane = [
+        { x: -520, y: floorY, z: -depth * 0.8 },
+        { x: state.wall.width + 520, y: floorY, z: -depth * 0.8 },
+        { x: state.wall.width + 720, y: floorY, z: depth * 2.1 },
+        { x: -720, y: floorY, z: depth * 2.1 }
       ].map(project);
+      fillProjectedFace(floorPlane, activeCanvas === els.canvas ? shade(floorColor, -10) : "#edf2e9", activeCanvas === els.canvas ? shade(floorColor, 10) : "#d9e0d7", 1);
+
       const faces = [
         face([{ x: state.wall.width, y: 0, z: backZ }, { x: 0, y: 0, z: backZ }, { x: 0, y: state.wall.height, z: backZ }, { x: state.wall.width, y: state.wall.height, z: backZ }], activeCanvas === els.canvas ? "#1d1e21" : "#d1d9cf", activeCanvas === els.canvas ? "#4b4d52" : "#7e897f", "back"),
         face([{ x: state.wall.width, y: 0, z: frontZ }, { x: state.wall.width, y: 0, z: backZ }, { x: state.wall.width, y: state.wall.height, z: backZ }, { x: state.wall.width, y: state.wall.height, z: frontZ }], activeCanvas === els.canvas ? "#202125" : "#c9d3c5", activeCanvas === els.canvas ? "#4b4d52" : "#7e897f", "right"),
         face([{ x: 0, y: 0, z: backZ }, { x: 0, y: 0, z: frontZ }, { x: 0, y: state.wall.height, z: frontZ }, { x: 0, y: state.wall.height, z: backZ }], activeCanvas === els.canvas ? "#202125" : "#c9d3c5", activeCanvas === els.canvas ? "#4b4d52" : "#7e897f", "left"),
+        face([{ x: 0, y: state.wall.height, z: frontZ }, { x: state.wall.width, y: state.wall.height, z: frontZ }, { x: state.wall.width, y: state.wall.height, z: backZ }, { x: 0, y: state.wall.height, z: backZ }], activeCanvas === els.canvas ? shade(state.wall.color, -12) : "#dde4da", activeCanvas === els.canvas ? "#4b4d52" : "#7e897f", "top"),
         face([{ x: 0, y: 0, z: frontZ }, { x: state.wall.width, y: 0, z: frontZ }, { x: state.wall.width, y: state.wall.height, z: frontZ }, { x: 0, y: state.wall.height, z: frontZ }], state.wall.color, "#303137", "front")
       ];
       const frontFace = faces.find(faceDef => faceDef.name === "front");
@@ -2145,57 +2653,101 @@
 
       if (frontIsVisible) state.items.forEach(rawItem => {
         const item = normalizeItem(rawItem);
-        const z = frontZ + 24;
-        const projected = [
-          { x: item.x, y: item.y, z },
-          { x: item.x + item.width, y: item.y, z },
-          { x: item.x + item.width, y: item.y + item.height, z },
-          { x: item.x, y: item.y + item.height, z }
+        const gap = 6;
+        const relief = itemReliefDepth(item);
+        const zBackItem = frontZ + gap;
+        const zFrontItem = zBackItem + relief;
+        const shadowPoints = [
+          { x: item.x + 8, y: Math.max(0, item.y - 8), z: frontZ + 1 },
+          { x: item.x + item.width + 8, y: Math.max(0, item.y - 8), z: frontZ + 1 },
+          { x: item.x + item.width + 16, y: Math.min(state.wall.height, item.y + item.height - 6), z: frontZ + 1 },
+          { x: item.x + 16, y: Math.min(state.wall.height, item.y + item.height - 6), z: frontZ + 1 }
         ].map(project);
-        const rendered = {
-          item,
-          points: projected,
-          z: projected.reduce((sum, point) => sum + point.z, 0) / projected.length,
-          center: centerOf(projected)
-        };
-        renderables.push({
-          z: rendered.z,
-          draw: () => {
-        const item = rendered.item;
-        activeCtx.save();
-        if (item.illuminated) {
-          const c = rendered.center;
-          const glow = activeCtx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 72 * state.view3d.zoom);
-          glow.addColorStop(0, "rgba(247, 209, 84, 0.36)");
-          glow.addColorStop(1, "rgba(247, 209, 84, 0)");
-          activeCtx.fillStyle = glow;
-          activeCtx.fillRect(c.x - 110, c.y - 110, 220, 220);
-        }
-        activeCtx.restore();
+        const backPoints3d = [
+          { x: item.x, y: item.y, z: zBackItem },
+          { x: item.x + item.width, y: item.y, z: zBackItem },
+          { x: item.x + item.width, y: item.y + item.height, z: zBackItem },
+          { x: item.x, y: item.y + item.height, z: zBackItem }
+        ];
+        const frontPoints3d = [
+          { x: item.x, y: item.y, z: zFrontItem },
+          { x: item.x + item.width, y: item.y, z: zFrontItem },
+          { x: item.x + item.width, y: item.y + item.height, z: zFrontItem },
+          { x: item.x, y: item.y + item.height, z: zFrontItem }
+        ];
+        const backPoints = backPoints3d.map(project);
+        const frontPoints = frontPoints3d.map(project);
+        const frontCenter = projectedCenter(frontPoints);
+        const frontAngle = Math.atan2(frontPoints[1].y - frontPoints[0].y, frontPoints[1].x - frontPoints[0].x);
+        const sideStroke = shade(item.color, -34);
+        const sideFill = shade(item.color, -22);
+        const topFill = shade(item.color, -12);
+
+          renderables.push({
+            z: averageProjectedZ(shadowPoints) - 3,
+            draw: () => fillProjectedFace(shadowPoints, "rgba(0,0,0,0.12)", "rgba(0,0,0,0)", 0)
+          });
 
         if (item.shape === "circle") {
-          const c = rendered.center;
-          const rx = Math.max(5, Math.hypot(rendered.points[1].x - rendered.points[0].x, rendered.points[1].y - rendered.points[0].y) / 2);
-          const ry = Math.max(5, Math.hypot(rendered.points[3].x - rendered.points[0].x, rendered.points[3].y - rendered.points[0].y) / 2);
-          activeCtx.beginPath();
-          activeCtx.ellipse(c.x, c.y, rx, ry, (state.view3d.rotZ ?? state.view3d.roll ?? 0) * Math.PI / 180, 0, Math.PI * 2);
-          activeCtx.fillStyle = item.color;
-          activeCtx.fill();
-          activeCtx.strokeStyle = "#1f2924";
-          activeCtx.lineWidth = 1.5;
-          activeCtx.stroke();
+          renderables.push({
+            z: averageProjectedZ(backPoints),
+            draw: () => drawProjectedEllipse(item, backPoints, shade(item.color, -26), sideStroke, { center: projectedCenter(backPoints), rotation: frontAngle, drawImage: false })
+          });
+          renderables.push({
+            z: averageProjectedZ(frontPoints) - 0.2,
+            draw: () => {
+              [0, 1, 2, 3].forEach(index => drawLine(backPoints[index].x, backPoints[index].y, frontPoints[index].x, frontPoints[index].y, sideStroke));
+            }
+          });
+          renderables.push({
+            z: averageProjectedZ(frontPoints),
+            draw: () => {
+              if (item.illuminated) {
+                const glow = activeCtx.createRadialGradient(frontCenter.x, frontCenter.y, 0, frontCenter.x, frontCenter.y, 72 * state.view3d.zoom);
+                glow.addColorStop(0, "rgba(247, 209, 84, 0.36)");
+                glow.addColorStop(1, "rgba(247, 209, 84, 0)");
+                activeCtx.fillStyle = glow;
+                activeCtx.fillRect(frontCenter.x - 110, frontCenter.y - 110, 220, 220);
+              }
+              drawProjectedEllipse(item, frontPoints, item.color, "#1f2924", { center: frontCenter, rotation: frontAngle });
+            }
+          });
         } else {
-          polygon(rendered.points.map(point => [point.x, point.y]), item.color, "#1f2924");
+          const sideFaces = [
+            { points: [backPoints3d[0], frontPoints3d[0], frontPoints3d[3], backPoints3d[3]], fill: sideFill },
+            { points: [frontPoints3d[1], backPoints3d[1], backPoints3d[2], frontPoints3d[2]], fill: sideFill },
+            { points: [backPoints3d[3], frontPoints3d[3], frontPoints3d[2], backPoints3d[2]], fill: topFill }
+          ];
+          sideFaces.forEach(faceDef => {
+            const projected = faceDef.points.map(project);
+            renderables.push({
+              z: averageProjectedZ(projected),
+              draw: () => {
+                if (!visibleFace(projected)) return;
+                fillProjectedFace(projected, faceDef.fill, sideStroke, 1.2);
+              }
+            });
+          });
+          renderables.push({
+            z: averageProjectedZ(frontPoints),
+            draw: () => {
+              if (item.illuminated) {
+                const glow = activeCtx.createRadialGradient(frontCenter.x, frontCenter.y, 0, frontCenter.x, frontCenter.y, 72 * state.view3d.zoom);
+                glow.addColorStop(0, "rgba(247, 209, 84, 0.36)");
+                glow.addColorStop(1, "rgba(247, 209, 84, 0)");
+                activeCtx.fillStyle = glow;
+                activeCtx.fillRect(frontCenter.x - 110, frontCenter.y - 110, 220, 220);
+              }
+              fillProjectedFace(frontPoints, item.color, "#1f2924", 1.4);
+              drawProjectedImage(item, frontPoints, {
+                center: frontCenter,
+                rotation: frontAngle
+              });
+            }
+          });
         }
-        drawProjectedImage(item, rendered.points, {
-          center: rendered.center,
-          rotation: (state.view3d.rotZ ?? state.view3d.roll ?? 0) * Math.PI / 180
-        });
-          }
-        });
       });
 
-      drawFaceOutline(floorOutline, activeCanvas === els.canvas ? shade(floorColor, 48) : "#b4bfb2");
       renderables.sort((a, b) => a.z - b.z).forEach(renderable => renderable.draw());
       applyCinematicLight(width, height);
       drawAxisGizmo(width, height, rotY, rotX, rotZ);
@@ -2257,7 +2809,7 @@
         drawText(wall.name || `Wall ${index + 1}`, mid.x, mid.y - 18, { color: selected ? "#d7d3cb" : floorMark, halo: contrastHalo(floorMark), size: 12 });
         drawText(`${wall.wall.width} mm`, mid.x, mid.y + 18, { color: floorMark, halo: contrastHalo(floorMark), size: 10, weight: 600 });
       });
-      els.scaleLabel.textContent = `Floor plan zoom ${Math.round(state.view2d.zoom * 100)}% | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | ${state.tool === "hand" ? "drag to pan" : "drag walls to move"}`;
+      els.scaleLabel.textContent = `Floor plan zoom ${Math.round(state.view2d.zoom * 100)}% | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | ${activeTool() === "hand" ? "drag to pan" : "drag walls to move"}`;
     }
 
     function drawSpace3D() {
@@ -2307,20 +2859,13 @@
         };
       }
 
-      function centerOf(points) {
-        return points.reduce((acc, point) => ({
-          x: acc.x + point.x / points.length,
-          y: acc.y + point.y / points.length
-        }), { x: 0, y: 0 });
-      }
-
       function face3d(points, fill, stroke, drawExtra) {
         const projected = points.map(projectRoom);
         return {
           points: projected,
           fill,
           stroke,
-          z: projected.reduce((sum, point) => sum + point.z, 0) / projected.length,
+          z: averageProjectedZ(projected),
           drawExtra
         };
       }
@@ -2343,6 +2888,7 @@
         { x: state.space.width, y: 0, z: state.space.depth },
         { x: 0, y: 0, z: state.space.depth }
       ].map(projectRoom);
+      fillProjectedFace(floorOutline, activeCanvas === els.canvas ? shade(floorColor, -10) : "#edf2e9", activeCanvas === els.canvas ? shade(floorColor, 10) : "#d9e0d7", 1);
       const faces = [];
 
       state.walls.forEach((wall, index) => {
@@ -2383,60 +2929,127 @@
           { x: backB.x, y: wallHeight, z: backB.z },
           { x: frontB.x, y: wallHeight, z: frontB.z }
         ];
+        const wallTop = [
+          { x: frontA.x, y: wallHeight, z: frontA.z },
+          { x: frontB.x, y: wallHeight, z: frontB.z },
+          { x: backB.x, y: wallHeight, z: backB.z },
+          { x: backA.x, y: wallHeight, z: backA.z }
+        ];
         const wallBackDef = face3d(wallBack, shade(wall.wall.color, -34), edgeStroke);
         const wallFaceDef = face3d(wallFace, wall.wall.color, edgeStroke);
         faces.push(wallBackDef);
         faces.push(face3d(wallLeft, shade(wall.wall.color, -26), edgeStroke));
         faces.push(face3d(wallRight, shade(wall.wall.color, -26), edgeStroke));
+        faces.push(face3d(wallTop, shade(wall.wall.color, -12), edgeStroke));
         faces.push(wallFaceDef);
 
         if (!visibleFace(wallFaceDef.points)) return;
         (wall.items || []).forEach(rawItem => {
           const item = normalizeItem(rawItem);
-          const offset = halfDepth + 32;
+          const gap = 8;
+          const backOffset = halfDepth + gap;
+          const frontOffset = backOffset + itemReliefDepth(item);
           const left = item.x;
           const right = item.x + item.width;
           const bottom = item.y;
           const top = item.y + item.height;
-          const points = [
-            { x: ends.a.x + ux * left + nx * offset, y: bottom, z: ends.a.y + uy * left + ny * offset },
-            { x: ends.a.x + ux * right + nx * offset, y: bottom, z: ends.a.y + uy * right + ny * offset },
-            { x: ends.a.x + ux * right + nx * offset, y: top, z: ends.a.y + uy * right + ny * offset },
-            { x: ends.a.x + ux * left + nx * offset, y: top, z: ends.a.y + uy * left + ny * offset }
+          const backPoints3d = [
+            { x: ends.a.x + ux * left + nx * backOffset, y: bottom, z: ends.a.y + uy * left + ny * backOffset },
+            { x: ends.a.x + ux * right + nx * backOffset, y: bottom, z: ends.a.y + uy * right + ny * backOffset },
+            { x: ends.a.x + ux * right + nx * backOffset, y: top, z: ends.a.y + uy * right + ny * backOffset },
+            { x: ends.a.x + ux * left + nx * backOffset, y: top, z: ends.a.y + uy * left + ny * backOffset }
           ];
-          faces.push(face3d(points, item.shape === "circle" ? "rgba(0,0,0,0)" : item.color, item.shape === "circle" ? "rgba(0,0,0,0)" : "#1f2924", projected => {
-            const center = centerOf(projected);
-            if (item.illuminated) {
-              const glow = activeCtx.createRadialGradient(center.x, center.y, 0, center.x, center.y, 74 * state.view3d.zoom);
-              glow.addColorStop(0, "rgba(247, 209, 84, 0.34)");
-              glow.addColorStop(1, "rgba(247, 209, 84, 0)");
-              activeCtx.fillStyle = glow;
-              activeCtx.fillRect(center.x - 120, center.y - 120, 240, 240);
-            }
-            if (item.shape === "circle") {
-              const rx = Math.max(5, Math.hypot(projected[1].x - projected[0].x, projected[1].y - projected[0].y) / 2);
-              const ry = Math.max(5, Math.hypot(projected[3].x - projected[0].x, projected[3].y - projected[0].y) / 2);
-              activeCtx.beginPath();
-              activeCtx.ellipse(center.x, center.y, rx, ry, rotZ, 0, Math.PI * 2);
-              activeCtx.fillStyle = item.color;
-              activeCtx.fill();
-              activeCtx.strokeStyle = "#1f2924";
-              activeCtx.lineWidth = 1.3;
-              activeCtx.stroke();
-            }
-            drawProjectedImage(item, projected, {
-              center,
-              rotation: rotZ
+          const frontPoints3d = [
+            { x: ends.a.x + ux * left + nx * frontOffset, y: bottom, z: ends.a.y + uy * left + ny * frontOffset },
+            { x: ends.a.x + ux * right + nx * frontOffset, y: bottom, z: ends.a.y + uy * right + ny * frontOffset },
+            { x: ends.a.x + ux * right + nx * frontOffset, y: top, z: ends.a.y + uy * right + ny * frontOffset },
+            { x: ends.a.x + ux * left + nx * frontOffset, y: top, z: ends.a.y + uy * left + ny * frontOffset }
+          ];
+          const backProjected = backPoints3d.map(projectRoom);
+          const frontProjected = frontPoints3d.map(projectRoom);
+          const frontCenter = projectedCenter(frontProjected);
+          const rotation = Math.atan2(frontProjected[1].y - frontProjected[0].y, frontProjected[1].x - frontProjected[0].x);
+          const sideStroke = shade(item.color, -34);
+          const sideFill = shade(item.color, -22);
+          const topFill = shade(item.color, -12);
+          const shadowPoints = [
+            { x: ends.a.x + ux * (left + 8) + nx * (halfDepth + 2), y: Math.max(0, bottom - 8), z: ends.a.y + uy * (left + 8) + ny * (halfDepth + 2) },
+            { x: ends.a.x + ux * (right + 8) + nx * (halfDepth + 2), y: Math.max(0, bottom - 8), z: ends.a.y + uy * (right + 8) + ny * (halfDepth + 2) },
+            { x: ends.a.x + ux * (right + 16) + nx * (halfDepth + 2), y: Math.min(wallHeight, top - 6), z: ends.a.y + uy * (right + 16) + ny * (halfDepth + 2) },
+            { x: ends.a.x + ux * (left + 16) + nx * (halfDepth + 2), y: Math.min(wallHeight, top - 6), z: ends.a.y + uy * (left + 16) + ny * (halfDepth + 2) }
+          ].map(projectRoom);
+          faces.push({
+            points: shadowPoints,
+            fill: "rgba(0,0,0,0.12)",
+            stroke: "rgba(0,0,0,0)",
+            z: averageProjectedZ(shadowPoints)
+          });
+          if (item.shape === "circle") {
+            faces.push({
+              points: backProjected,
+              fill: shade(item.color, -26),
+              stroke: sideStroke,
+              z: averageProjectedZ(backProjected),
+              custom: true,
+              drawExtra: projected => drawProjectedEllipse(item, projected, shade(item.color, -26), sideStroke, { center: projectedCenter(projected), rotation, drawImage: false })
             });
-          }));
+            faces.push({
+              points: frontProjected,
+              fill: item.color,
+              stroke: "#1f2924",
+              z: averageProjectedZ(frontProjected),
+              custom: true,
+              drawExtra: projected => {
+                if (item.illuminated) {
+                  const glow = activeCtx.createRadialGradient(frontCenter.x, frontCenter.y, 0, frontCenter.x, frontCenter.y, 74 * state.view3d.zoom);
+                  glow.addColorStop(0, "rgba(247, 209, 84, 0.34)");
+                  glow.addColorStop(1, "rgba(247, 209, 84, 0)");
+                  activeCtx.fillStyle = glow;
+                  activeCtx.fillRect(frontCenter.x - 120, frontCenter.y - 120, 240, 240);
+                }
+                [0, 1, 2, 3].forEach(index => drawLine(backProjected[index].x, backProjected[index].y, frontProjected[index].x, frontProjected[index].y, sideStroke));
+                drawProjectedEllipse(item, projected, item.color, "#1f2924", { center: frontCenter, rotation });
+              }
+            });
+          } else {
+            [
+              { points: [backPoints3d[0], frontPoints3d[0], frontPoints3d[3], backPoints3d[3]], fill: sideFill },
+              { points: [frontPoints3d[1], backPoints3d[1], backPoints3d[2], frontPoints3d[2]], fill: sideFill },
+              { points: [backPoints3d[3], frontPoints3d[3], frontPoints3d[2], backPoints3d[2]], fill: topFill }
+            ].forEach(faceDef => {
+              faces.push(face3d(faceDef.points, faceDef.fill, sideStroke));
+            });
+            faces.push({
+              points: frontProjected,
+              fill: item.color,
+              stroke: "#1f2924",
+              z: averageProjectedZ(frontProjected),
+              drawExtra: projected => {
+                if (item.illuminated) {
+                  const glow = activeCtx.createRadialGradient(frontCenter.x, frontCenter.y, 0, frontCenter.x, frontCenter.y, 74 * state.view3d.zoom);
+                  glow.addColorStop(0, "rgba(247, 209, 84, 0.34)");
+                  glow.addColorStop(1, "rgba(247, 209, 84, 0)");
+                  activeCtx.fillStyle = glow;
+                  activeCtx.fillRect(frontCenter.x - 120, frontCenter.y - 120, 240, 240);
+                }
+                drawProjectedImage(item, projected, {
+                  center: frontCenter,
+                  rotation
+                });
+              }
+            });
+          }
         });
       });
 
-      drawRoomOutline(floorOutline, shade(floorColor, 44));
       const sortedFaces = faces.sort((a, b) => a.z - b.z);
       sortedFaces.forEach(face => {
         if (!visibleFace(face.points)) return;
-        polygon(face.points.map(point => [point.x, point.y]), face.fill, face.stroke);
+        if (face.custom) {
+          if (typeof face.drawExtra === "function") face.drawExtra(face.points);
+          return;
+        }
+        fillProjectedFace(face.points, face.fill, face.stroke, 1.2);
         if (typeof face.drawExtra === "function") face.drawExtra(face.points);
       });
 
@@ -2541,10 +3154,13 @@
     }
 
     function render(options = {}) {
-      if (!options.skipList) renderItemList();
-      renderWallTabs();
-      updateProjectHeader();
-      updateToolButtons();
+      if (!options.canvasOnly) {
+        if (!options.skipList) renderItemList();
+        renderWallTabs();
+        updateProjectHeader();
+        syncItemInputs();
+        updateToolButtons();
+      }
       if (state.view === "elevation") {
         drawElevation();
       } else if (state.view === "perspective") {
@@ -2604,19 +3220,34 @@
       return state.view === "elevation" || state.view === "space2d";
     }
 
+    function activeTool() {
+      if (state.handOverride && is2dView()) return "hand";
+      return state.tool === "hand" ? "hand" : "select";
+    }
+
     function updateToolButtons() {
-      const isHand = state.tool === "hand";
+      const isHand = activeTool() === "hand";
       els.toolSelect.classList.toggle("active", !isHand);
       els.toolHand.classList.toggle("active", isHand);
-      els.canvas.style.cursor = isHand && is2dView() ? "grab" : "";
+      if (state.panDrag && is2dView()) {
+        els.canvas.style.cursor = "grabbing";
+      } else {
+        els.canvas.style.cursor = isHand && is2dView() ? "grab" : "";
+      }
     }
 
     function setTool(tool) {
       state.tool = tool === "hand" ? "hand" : "select";
+      state.handOverride = false;
       state.panDrag = null;
       updateToolButtons();
       save();
-      render();
+      render({ canvasOnly: true });
+    }
+
+    function isEditableTarget(target) {
+      if (!target || !(target instanceof Element)) return false;
+      return Boolean(target.closest("input, textarea, select, button, [contenteditable='true']"));
     }
 
     function zoomView(amount) {
@@ -2626,7 +3257,7 @@
         state.view3d.zoom = clamp(Number((state.view3d.zoom + amount).toFixed(2)), 0.55, 3);
       }
       save();
-      render();
+      render({ canvasOnly: true });
     }
 
     function resetView() {
@@ -2644,7 +3275,7 @@
         delete state.view3d.roll;
       }
       save();
-      render();
+      render({ canvasOnly: true });
     }
 
     function rotate3d(axis, amount) {
@@ -2655,7 +3286,7 @@
       if (axis === "y") state.view3d.rotY = normalizeDegrees(state.view3d.rotY + amount);
       if (axis === "z") state.view3d.rotZ = normalizeDegrees(state.view3d.rotZ + amount);
       save();
-      render();
+      render({ canvasOnly: true });
     }
 
     function selectionBounds(items) {
@@ -2736,8 +3367,9 @@
     }
 
     function startDrag(event) {
-      if (event.button !== undefined && event.button !== 0) return;
-      if (state.tool === "hand" && is2dView()) {
+      const middlePan = event.button === 1 && is2dView();
+      if (event.button !== undefined && event.button !== 0 && !middlePan) return;
+      if ((activeTool() === "hand" && is2dView()) || middlePan) {
         state.panDrag = {
           startX: event.clientX,
           startY: event.clientY,
@@ -2833,7 +3465,7 @@
       if (state.panDrag && is2dView()) {
         state.view2d.panX = Math.round(state.panDrag.panX + event.clientX - state.panDrag.startX);
         state.view2d.panY = Math.round(state.panDrag.panY + event.clientY - state.panDrag.startY);
-        render();
+        render({ canvasOnly: true });
         return;
       }
       if (state.rotateDrag && (state.view === "perspective" || state.view === "space3d")) {
@@ -2843,7 +3475,7 @@
           state.view3d.rotY = normalizeDegrees(state.rotateDrag.startRotY + (event.clientX - state.rotateDrag.startX) * 0.28);
           state.view3d.rotX = normalizeDegrees(state.rotateDrag.startRotX - (event.clientY - state.rotateDrag.startY) * 0.22);
         }
-        render();
+        render({ canvasOnly: true });
         return;
       }
       if (state.resizeDrag && state.view === "elevation") {
@@ -2871,7 +3503,7 @@
         }
         item.width = Math.max(50, Math.min(state.wall.width - item.x, nextW));
         item.height = Math.max(50, Math.min(state.wall.height - item.y, nextH));
-        render();
+        render({ canvasOnly: true });
         return;
       }
       if (state.drag && state.drag.type === "spaceWall") {
@@ -2886,7 +3518,7 @@
         wall.placement.x = clamp(wall.placement.x, 0, state.space.width);
         wall.placement.y = clamp(wall.placement.y, 0, state.space.depth);
         if (wall.id === state.activeWallId) syncInputsFromWall();
-        render();
+        render({ canvasOnly: true });
         return;
       }
       if (!state.drag || state.view !== "elevation") return;
@@ -2928,7 +3560,7 @@
         candidate.x = Math.round(start.x + deltaX);
         candidate.y = Math.round(start.y + deltaY);
       });
-      render();
+      render({ canvasOnly: true });
     }
 
     function stopDrag(event) {
@@ -2937,6 +3569,7 @@
         if (event.pointerId !== undefined && typeof els.canvas.hasPointerCapture === "function" && els.canvas.hasPointerCapture(event.pointerId)) {
           els.canvas.releasePointerCapture(event.pointerId);
         }
+        updateToolButtons();
         save();
         render();
         return;
@@ -2970,18 +3603,101 @@
       render();
     }
 
-    function save() {
+    function serializedItem(item) {
+      const normalized = normalizeItem(item);
+      return {
+        id: normalized.id || uid(),
+        name: normalized.name || itemTypeLabel(normalized.type),
+        type: normalized.type,
+        shape: normalized.shape || "rect",
+        text: normalized.text || "",
+        image: normalized.image || "",
+        illuminated: Boolean(normalized.illuminated),
+        x: Math.max(0, number(normalized.x, 0)),
+        y: Math.max(0, number(normalized.y, 0)),
+        width: Math.max(10, number(normalized.width, 100)),
+        height: Math.max(10, number(normalized.height, 100)),
+        color: normalized.color || colorForType(normalized.type)
+      };
+    }
+
+    function serializedWallRecord(wall, index) {
+      return {
+        id: wall.id || uid(),
+        name: wall.name || `Wall ${index + 1}`,
+        wall: {
+          width: Math.max(100, number(wall.wall?.width, 6000)),
+          height: Math.max(100, number(wall.wall?.height, 3000)),
+          depth: Math.max(40, number(wall.wall?.depth, 120)),
+          color: wall.wall?.color || "#f5f4ea"
+        },
+        items: Array.isArray(wall.items) ? wall.items.map(serializedItem) : [],
+        placement: {
+          x: number(wall.placement?.x, 1000),
+          y: number(wall.placement?.y, 1000),
+          rotation: number(wall.placement?.rotation, 0)
+        }
+      };
+    }
+
+    function serializedState() {
+      return {
+        version: 2,
+        view: state.view,
+        tool: state.tool === "hand" ? "hand" : "select",
+        theme: state.theme === "light" ? "light" : "dark",
+        view2d: {
+          zoom: number(state.view2d.zoom, 1),
+          panX: number(state.view2d.panX, 0),
+          panY: number(state.view2d.panY, 0)
+        },
+        view3d: {
+          zoom: number(state.view3d.zoom, 1),
+          rotX: number(state.view3d.rotX ?? state.view3d.pitch, -10),
+          rotY: number(state.view3d.rotY ?? state.view3d.yaw, 24),
+          rotZ: number(state.view3d.rotZ ?? state.view3d.roll, 0)
+        },
+        project: {
+          title: state.project.title || "Untitled exhibition"
+        },
+        space: {
+          width: Math.max(1000, number(state.space.width, 12000)),
+          depth: Math.max(1000, number(state.space.depth, 8000)),
+          floorColor: state.space.floorColor || "#101113",
+          surroundColor: state.space.surroundColor || "#070708",
+          cinematicLight: state.space.cinematicLight !== false
+        },
+        activeWallId: state.activeWallId,
+        walls: state.walls.map(serializedWallRecord)
+      };
+    }
+
+    function flushSave() {
+      if (persistTimer) clearTimeout(persistTimer);
+      persistTimer = null;
       syncActiveWallRecord();
-      localStorage.setItem("wall-mockup-maker", JSON.stringify(state));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(serializedState()));
+    }
+
+    function save(options = {}) {
+      if (options.immediate) {
+        flushSave();
+        return;
+      }
+      if (persistTimer) clearTimeout(persistTimer);
+      persistTimer = setTimeout(() => {
+        flushSave();
+      }, PERSIST_DELAY);
     }
 
     function load() {
-      const saved = localStorage.getItem("wall-mockup-maker");
+      const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return;
       try {
         const parsed = JSON.parse(saved);
         state.view = parsed.view || state.view;
         state.tool = parsed.tool === "hand" ? "hand" : "select";
+        state.handOverride = false;
         state.theme = parsed.theme === "light" ? "light" : "dark";
         state.view2d = { ...state.view2d, ...parsed.view2d };
         state.view2d.zoom = number(state.view2d.zoom, 1);
@@ -3018,7 +3734,7 @@
         state.resizeDrag = null;
         state.snapLines = [];
       } catch {
-        localStorage.removeItem("wall-mockup-maker");
+        localStorage.removeItem(STORAGE_KEY);
       }
     }
 
@@ -3033,7 +3749,7 @@
     }
 
     function drawSchedule(x, y, width) {
-      const rowH = 40;
+      const rowH = 46;
       const hasTextColumn = state.items.some(rawItem => normalizeItem(rawItem).text);
       const columns = [
         { label: "ID", width: 110 },
@@ -3042,13 +3758,13 @@
         { label: "Size", width: 300 },
         { label: "Position", width: hasTextColumn ? 720 : width - 1410 }
       ];
-      if (hasTextColumn) columns.push({ label: "Text", width: width - 2130 });
+      if (hasTextColumn) columns.push({ label: "Text to add", width: width - 2130 });
       let colX = x;
-      drawText("List of objects", x, y - 40, { align: "left", color: "#161616", size: 27, halo: null });
+      drawText("List of objects", x, y - 44, { align: "left", color: "#161616", size: 29, halo: null });
       activeCtx.fillStyle = "#edf2ec";
       activeCtx.fillRect(x, y, width, rowH);
       columns.forEach(column => {
-        drawText(column.label, colX + 10, y + rowH / 2, { align: "left", color: "#161616", size: 17, halo: null });
+        drawText(column.label, colX + 12, y + rowH / 2, { align: "left", color: "#161616", size: 18, halo: null });
         colX += column.width;
       });
       state.items.slice(0, 12).forEach((rawItem, index) => {
@@ -3061,17 +3777,17 @@
         const values = [
           itemCode(item),
           item.name,
-          itemTypeLabel(item.type),
+          itemTypePrintLabel(item.type),
           itemSizeLabel(item),
           itemPositionLabel(item)
         ];
-        if (hasTextColumn) values.push(item.text || "");
+        if (hasTextColumn) values.push(exportTextLabel(item));
         colX = x;
         columns.forEach((column, columnIndex) => {
           drawText(values[columnIndex], colX + 10, rowY + rowH / 2, {
             align: "left",
             color: "#26312b",
-            size: 16,
+            size: 17,
             weight: 600,
             halo: null,
             maxWidth: column.width - 18
@@ -3130,6 +3846,29 @@
       });
     }
 
+    function drawObjectListSidebar(x, y, width, height) {
+      const items = state.items.slice(0, 12).map(normalizeItem);
+      drawText("List of objects", x, y - 28, { align: "left", color: "#161616", size: 30, halo: null });
+      let cardY = y;
+      items.forEach((item, index) => {
+        const detailText = exportTextLabel(item);
+        const cardH = detailText ? 148 : 118;
+        if (cardY + cardH > y + height) return;
+        activeCtx.fillStyle = index % 2 ? "#ffffff" : "#f8faf6";
+        activeCtx.fillRect(x, cardY, width, cardH);
+        activeCtx.strokeStyle = "#d6ddd4";
+        activeCtx.strokeRect(x, cardY, width, cardH);
+        drawText(`${itemCode(item)}  ${item.name}`, x + 14, cardY + 24, { align: "left", color: "#161616", size: 21, weight: 700, halo: null, maxWidth: width - 28 });
+        drawText(itemTypePrintLabel(item.type), x + 14, cardY + 56, { align: "left", color: "#4b5750", size: 17, weight: 600, halo: null, maxWidth: width - 28 });
+        drawText(itemSizeLabel(item), x + 14, cardY + 84, { align: "left", color: "#26312b", size: 17, weight: 600, halo: null, maxWidth: width - 28 });
+        drawText(itemPositionLabel(item), x + 14, cardY + 112, { align: "left", color: "#26312b", size: 16, weight: 600, halo: null, maxWidth: width - 28 });
+        if (detailText) {
+          drawText(detailText, x + 14, cardY + 138, { align: "left", color: "#26312b", size: 16, weight: 600, halo: null, maxWidth: width - 28 });
+        }
+        cardY += cardH + 10;
+      });
+    }
+
     function createA3Canvas(exportView = state.view) {
       const previousCanvas = activeCanvas;
       const previousCtx = activeCtx;
@@ -3159,21 +3898,29 @@
         space2d: "Exhibition space 2D top view"
       };
       const title = titles[exportView] || "2D preview";
-      drawText("Exhibition Wall Mockup Maker", a3.margin, 78, { align: "left", baseline: "middle", color: "#161616", size: 42, halo: null, noExportBoost: true });
-      drawText("Version 1.0", a3.margin + 820, 80, { align: "left", baseline: "middle", color: "#7c8580", size: 15, weight: 700, halo: null, noExportBoost: true });
-      drawText(`by @tiagomartinspinto | ${title}`, a3.margin, 132, { align: "left", baseline: "middle", color: "#5d655f", size: 25, weight: 600, halo: null, noExportBoost: true });
-      drawText(state.project.title || "Untitled exhibition", a3.margin, 180, { align: "left", baseline: "middle", color: "#5d655f", size: 23, weight: 600, halo: null, noExportBoost: true });
+      const brandTitle = "Exhibition Wall Mockup Maker";
+      const versionX = a3.margin + textWidth(brandTitle, 42, 700) + 28;
+      drawText(brandTitle, a3.margin, 78, { align: "left", baseline: "middle", color: "#161616", size: 42, halo: null, noExportBoost: true });
+      drawText("V1.0", versionX, 80, { align: "left", baseline: "middle", color: "#7c8580", size: 17, weight: 700, halo: null, noExportBoost: true });
+      drawText(`by @tiagomartinspinto | ${title}`, a3.margin, 134, { align: "left", baseline: "middle", color: "#5d655f", size: 27, weight: 600, halo: null, noExportBoost: true });
+      drawText(state.project.title || "Untitled exhibition", a3.margin, 184, { align: "left", baseline: "middle", color: "#5d655f", size: 24, weight: 600, halo: null, noExportBoost: true });
       const exportMeta = exportView === "space2d"
         ? `Space ${state.space.width} x ${state.space.depth} mm | ${state.walls.length} walls | Print on A3 for scale/readability`
         : `${activeWallRecord().name} | ${state.wall.width} x ${state.wall.height} mm | depth ${state.wall.depth} mm | Print on A3 for scale/readability`;
-      drawText(exportMeta, a3.margin, 222, { align: "left", baseline: "middle", color: "#5d655f", size: 21, weight: 600, halo: null, noExportBoost: true });
+      drawText(exportMeta, a3.margin, 228, { align: "left", baseline: "middle", color: "#5d655f", size: 23, weight: 600, halo: null, noExportBoost: true });
       drawLine(a3.margin, 242, a3.width - a3.margin, 242, "#c8cfc8");
 
-      const drawingX = a3.margin;
+      const wallRatio = state.wall.width / Math.max(1, state.wall.height);
+      const sideList = exportView === "elevation" && (wallRatio < 1.78 || state.items.length > 8);
+      const contentX = a3.margin;
       const drawingY = a3.header + a3.margin / 2;
-      const drawingW = a3.width - a3.margin * 2;
-      const scheduleH = 520;
-      const drawingH = a3.height - drawingY - a3.margin - scheduleH;
+      const contentW = a3.width - a3.margin * 2;
+      const sidebarGap = sideList ? 52 : 70;
+      const sidebarW = sideList ? Math.min(1120, Math.floor(contentW * 0.24)) : 0;
+      const scheduleH = sideList ? 0 : 560;
+      const drawingX = contentX;
+      const drawingW = sideList ? contentW - sidebarW - sidebarGap : contentW;
+      const drawingH = sideList ? a3.height - drawingY - a3.margin : a3.height - drawingY - a3.margin - scheduleH;
       const drawingCanvas = document.createElement("canvas");
       drawingCanvas.width = drawingW;
       drawingCanvas.height = drawingH;
@@ -3196,7 +3943,9 @@
       activeCanvas = exportCanvas;
       activeCtx = exportCanvas.getContext("2d");
       activeCtx.drawImage(drawingCanvas, drawingX, drawingY);
-      if (exportView === "space2d") {
+      if (sideList) {
+        drawObjectListSidebar(drawingX + drawingW + sidebarGap, drawingY + 10, sidebarW, drawingH - 20);
+      } else if (exportView === "space2d") {
         drawWallSchedule(drawingX, drawingY + drawingH + 110, drawingW);
       } else {
         drawSchedule(drawingX, drawingY + drawingH + 110, drawingW);
@@ -3285,12 +4034,80 @@
         .slice(0, 60) || "export";
     }
 
+    function snapshotViewTitle(view = state.view) {
+      return {
+        elevation: "2D wall preview",
+        perspective: "3D wall preview",
+        space2d: "Floor plan",
+        space3d: "3D room preview"
+      }[view] || "Preview";
+    }
+
     function exportA3Pdf(exportView) {
       const canvas = createA3Canvas(exportView);
       const filename = exportView === "space2d"
         ? `${slug(state.project.title)}-room-floor-plan.pdf`
         : `${slug(state.project.title)}-${slug(activeWallRecord().name)}-2d-wall.pdf`;
       download(filename, makePdfFromCanvas(canvas), "application/pdf");
+    }
+
+    function createSnapshotPdfCanvas() {
+      const page = {
+        width: 3508,
+        height: 2480,
+        margin: 170,
+        header: 190
+      };
+      const exportCanvas = document.createElement("canvas");
+      exportCanvas.width = page.width;
+      exportCanvas.height = page.height;
+      const ctx = exportCanvas.getContext("2d");
+      const previousCanvas = activeCanvas;
+      const previousCtx = activeCtx;
+      activeCanvas = exportCanvas;
+      activeCtx = ctx;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, page.width, page.height);
+
+      const title = snapshotViewTitle();
+      const statusLine = els.scaleLabel.textContent || title;
+      const meta = state.view === "space3d" || state.view === "space2d"
+        ? `${state.project.title || "Untitled exhibition"} | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"}`
+        : `${state.project.title || "Untitled exhibition"} | ${activeWallRecord().name}`;
+
+      drawText("Exhibition Wall Mockup Maker", page.margin, 82, { align: "left", baseline: "middle", color: "#161616", size: 38, halo: null, noExportBoost: true });
+      drawText("V1.0", page.margin + textWidth("Exhibition Wall Mockup Maker", 38, 700) + 26, 84, { align: "left", baseline: "middle", color: "#7c8580", size: 16, weight: 700, halo: null, noExportBoost: true });
+      drawText(`by @tiagomartinspinto | ${title}`, page.margin, 132, { align: "left", baseline: "middle", color: "#5d655f", size: 23, weight: 600, halo: null, noExportBoost: true });
+      drawText(meta, page.margin, 174, { align: "left", baseline: "middle", color: "#5d655f", size: 20, weight: 600, halo: null, noExportBoost: true });
+      drawText(statusLine, page.width - page.margin, 174, { align: "right", baseline: "middle", color: "#7c8580", size: 18, weight: 600, halo: null, noExportBoost: true });
+      drawLine(page.margin, 198, page.width - page.margin, 198, "#d7ddd6");
+
+      const frameX = page.margin;
+      const frameY = page.header + 36;
+      const frameW = page.width - page.margin * 2;
+      const frameH = page.height - frameY - page.margin;
+      const source = els.canvas;
+      const ratio = Math.min(frameW / source.width, frameH / source.height);
+      const drawW = source.width * ratio;
+      const drawH = source.height * ratio;
+      const drawX = frameX + (frameW - drawW) / 2;
+      const drawY = frameY + (frameH - drawH) / 2;
+
+      ctx.fillStyle = "#f3f5f2";
+      ctx.fillRect(drawX - 16, drawY - 16, drawW + 32, drawH + 32);
+      ctx.strokeStyle = "#d7ddd6";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(drawX - 16, drawY - 16, drawW + 32, drawH + 32);
+      ctx.drawImage(source, drawX, drawY, drawW, drawH);
+
+      activeCanvas = previousCanvas;
+      activeCtx = previousCtx;
+      return exportCanvas;
+    }
+
+    function exportSnapshotPdf() {
+      const canvas = createSnapshotPdfCanvas();
+      download(`${slug(state.project.title)}-${slug(snapshotViewTitle())}-snapshot.pdf`, makePdfFromCanvas(canvas), "application/pdf");
     }
 
     function setSidebarCollapsed(enabled) {
@@ -3336,18 +4153,24 @@
       }
       const reader = new FileReader();
       reader.onload = () => {
-        els.itemImage.dataset.image = String(reader.result || "");
+        const image = String(reader.result || "");
+        els.itemImage.dataset.image = image;
+        const item = selectedSingleItem();
+        if (item) {
+          item.image = image;
+          save();
+          render();
+        }
       };
       reader.readAsDataURL(file);
     });
 
-    document.querySelector("#addItem").addEventListener("click", () => {
+    els.addItem.addEventListener("click", () => {
       addItem({
         name: els.itemName.value,
         type: els.itemType.value,
         shape: els.itemShape.value,
         color: els.itemColor.value,
-        illuminated: els.itemIlluminated.checked,
         text: els.itemText.value,
         image: els.itemImage.dataset.image || "",
         x: els.itemX.value,
@@ -3400,8 +4223,28 @@
       }
     });
 
+    function handleItemEditorChange(preserveColor = false) {
+      const item = selectedSingleItem();
+      if (!item && !preserveColor) {
+        els.itemColor.value = colorForType(els.itemType.value);
+      }
+      if (syncSelectedItemFromInputs()) {
+        save();
+        render();
+      }
+    }
+
+    [els.itemName, els.itemShape, els.itemColor, els.itemText, els.itemX, els.itemY, els.itemW, els.itemH].forEach(input => {
+      input.addEventListener("input", () => handleItemEditorChange(true));
+      input.addEventListener("change", () => handleItemEditorChange(true));
+    });
+
     els.itemType.addEventListener("change", () => {
-      els.itemColor.value = colorForType(els.itemType.value);
+      const item = selectedSingleItem();
+      if (!item) {
+        els.itemColor.value = colorForType(els.itemType.value);
+      }
+      handleItemEditorChange(Boolean(item));
     });
 
     document.querySelectorAll(".tab[data-view]").forEach(button => {
@@ -3440,6 +4283,7 @@
     document.querySelector("#exportRoomPdf").addEventListener("click", () => {
       exportA3Pdf("space2d");
     });
+    els.snapshotView.addEventListener("click", exportSnapshotPdf);
 
     els.themeToggle.addEventListener("click", toggleTheme);
     els.sidebarToggle.addEventListener("click", toggleSidebar);
@@ -3453,6 +4297,26 @@
       event.preventDefault();
       zoomView(event.deltaY < 0 ? 0.12 : -0.12);
     }, { passive: false });
+    window.addEventListener("keydown", event => {
+      if (event.code !== "Space" || event.repeat || isEditableTarget(event.target) || !is2dView()) return;
+      event.preventDefault();
+      if (!state.handOverride) {
+        state.handOverride = true;
+        updateToolButtons();
+      }
+    });
+    window.addEventListener("keyup", event => {
+      if (event.code !== "Space") return;
+      if (state.handOverride) {
+        state.handOverride = false;
+        updateToolButtons();
+      }
+    });
+    window.addEventListener("beforeunload", () => save({ immediate: true }));
+    window.addEventListener("pagehide", () => save({ immediate: true }));
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") save({ immediate: true });
+    });
 
     load();
     ensureWalls();
