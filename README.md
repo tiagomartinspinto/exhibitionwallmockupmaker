@@ -19,7 +19,7 @@ Exhibition Wall Mockup Maker is a web app for planning exhibition walls and room
 ## Run locally
 
 ```sh
-npm start
+python3 -m http.server 4175
 ```
 
 Then open:
@@ -28,9 +28,7 @@ Then open:
 http://127.0.0.1:4175
 ```
 
-The server uses `PORT` when provided and falls back to `4175`.
-
-`server.js` is only for local use, so you can run the app with `npm start` instead of setting up a separate static server by hand. It is not part of the hosted app on GitHub Pages.
+This app is fully static, so any simple local static server works.
 
 ## Deploy on GitHub Pages
 
@@ -54,7 +52,7 @@ After that, GitHub Pages will publish the static app directly from the repo.
 ## Stack
 
 - Single-page HTML/CSS/JavaScript app
-- Small Node HTTP server for local development only
+- GitHub Pages for hosting
 - No framework dependency required
 
 ## Repository
