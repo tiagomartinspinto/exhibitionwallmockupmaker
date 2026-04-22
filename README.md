@@ -58,10 +58,16 @@ After that, GitHub Pages will publish the static app directly from the repo.
 ## Project structure
 
 ```txt
-index.html        Markup
-css/styles.css    Styling
-js/app.js         Application logic
-.github/workflows GitHub Pages deployment
+index.html                 Markup
+css/styles.css             Styling
+js/core.js                 App bootstrapping and shared globals
+js/model.js                State and wall/item model helpers
+js/rendering.js            2D and 3D drawing logic
+js/ui.js                   UI rendering and toolbar helpers
+js/interactions.js         Dragging, selection, persistence, interaction flow
+js/export.js               PDF export and snapshot export
+js/boot.js                 Event listeners and startup
+.github/workflows          GitHub Pages deployment
 ```
 
 ## Repository
