@@ -55,6 +55,15 @@ After that, GitHub Pages will publish the static app directly from the repo.
 - GitHub Pages for hosting
 - No framework dependency required
 
+## Project structure
+
+```txt
+index.html        Markup
+css/styles.css    Styling
+js/app.js         Application logic
+.github/workflows GitHub Pages deployment
+```
+
 ## Repository
 
 [https://github.com/tiagomartinspinto/exhibitionwallmockupmaker](https://github.com/tiagomartinspinto/exhibitionwallmockupmaker)
