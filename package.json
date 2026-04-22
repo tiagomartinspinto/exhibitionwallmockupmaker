@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/tiagomartinspinto/exhibitionwallmockupmaker.git"
   },
-  "homepage": "https://github.com/tiagomartinspinto/exhibitionwallmockupmaker",
+  "homepage": "https://tiagomartinspinto.github.io/exhibitionwallmockupmaker/",
   "scripts": {
     "start": "node server.js"
   },

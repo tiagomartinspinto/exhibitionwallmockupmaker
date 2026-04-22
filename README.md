@@ -30,23 +30,31 @@ http://127.0.0.1:4175
 
 The server uses `PORT` when provided and falls back to `4175`.
 
-## Deploy on Render
+`server.js` is only for local use, so you can run the app with `npm start` instead of setting up a separate static server by hand. It is not part of the hosted app on GitHub Pages.
 
-This repo includes a `render.yaml`, so Render can pick up the service settings automatically.
+## Deploy on GitHub Pages
 
-Manual settings, if needed:
+This repo now includes a GitHub Actions workflow that deploys the app to GitHub Pages whenever `main` is updated.
+
+Expected site URL:
 
 ```txt
-Build Command: npm install
-Start Command: npm start
+https://tiagomartinspinto.github.io/exhibitionwallmockupmaker/
 ```
 
-Render provides the `PORT` environment variable automatically.
+To enable it in GitHub:
+
+1. Open the repository settings
+2. Go to `Pages`
+3. Set the source to `GitHub Actions`
+4. Push to `main`
+
+After that, GitHub Pages will publish the static app directly from the repo.
 
 ## Stack
 
 - Single-page HTML/CSS/JavaScript app
-- Small Node HTTP server for local use and deployment
+- Small Node HTTP server for local development only
 - No framework dependency required
 
 ## Repository
