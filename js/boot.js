@@ -1,3 +1,16 @@
+    function on(element, eventName, handler, options) {
+      if (!element) return false;
+      element.addEventListener(eventName, handler, options);
+      return true;
+    }
+
+    function ensureBootElements() {
+      const missing = getMissingElements();
+      if (missing.length) {
+        throw new Error(`UI is out of sync. Missing elements: ${missing.join(", ")}`);
+      }
+    }
+
     function setSidebarCollapsed(enabled) {
       document.body.classList.toggle("sidebar-collapsed", enabled);
       els.sidebarToggle.setAttribute("aria-pressed", String(enabled));
@@ -19,21 +32,23 @@
       input.addEventListener("change", syncSpaceFromInputs);
     });
 
-    els.wallTabs.addEventListener("click", event => {
+    ensureBootElements();
+
+    on(els.wallTabs, "click", event => {
       const button = event.target.closest("[data-wall-tab]");
       if (button) switchWall(button.dataset.wallTab);
     });
 
-    els.addWall.addEventListener("click", addWall);
-    els.duplicateWall.addEventListener("click", duplicateWall);
-    els.deleteWall.addEventListener("click", deleteWall);
-    els.resetWall.addEventListener("click", resetWallSpecs);
+    on(els.addWall, "click", addWall);
+    on(els.duplicateWall, "click", duplicateWall);
+    on(els.deleteWall, "click", deleteWall);
+    on(els.resetWall, "click", resetWallSpecs);
 
     document.querySelectorAll("#projectTitle").forEach(input => {
       input.addEventListener("input", syncProjectFromInputs);
     });
 
-    els.itemImage.addEventListener("change", event => {
+    on(els.itemImage, "change", event => {
       const file = event.target.files && event.target.files[0];
       if (!file) {
         els.itemImage.dataset.image = "";
@@ -53,7 +68,7 @@
       reader.readAsDataURL(file);
     });
 
-    els.addItem.addEventListener("click", () => {
+    on(els.addItem, "click", () => {
       addItem({
         name: els.itemName.value,
         type: els.itemType.value,
@@ -70,14 +85,16 @@
       els.itemImage.dataset.image = "";
     });
 
-    document.querySelector("#clearItems").addEventListener("click", () => {
+    const clearItemsButton = document.querySelector("#clearItems");
+    on(clearItemsButton, "click", () => {
       state.items = [];
       setSelection([]);
       save();
       render();
     });
 
-    document.querySelector("#sample").addEventListener("click", () => {
+    const sampleButton = document.querySelector("#sample");
+    on(sampleButton, "click", () => {
       state.wall = { width: 6000, height: 3000, depth: 120, color: "#f5f4ea" };
       state.items = [
         { id: uid(), name: "Artwork", type: "graphic", shape: "rect", text: "", illuminated: false, x: 900, y: 900, width: 1200, height: 800, color: "#2f6f9f" },
@@ -91,7 +108,7 @@
       render();
     });
 
-    els.itemList.addEventListener("click", event => {
+    on(els.itemList, "click", event => {
       const button = event.target.closest("[data-remove]");
       if (button) {
         state.items = state.items.filter(item => item.id !== button.dataset.remove);
@@ -127,7 +144,7 @@
       input.addEventListener("change", () => handleItemEditorChange(true));
     });
 
-    els.itemType.addEventListener("change", () => {
+    on(els.itemType, "change", () => {
       const item = selectedSingleItem();
       if (!item) {
         els.itemColor.value = colorForType(els.itemType.value);
@@ -144,44 +161,46 @@
       });
     });
 
-    els.zoomOut.addEventListener("click", () => zoomView(-0.15));
-    els.zoomIn.addEventListener("click", () => zoomView(0.15));
-    els.resetView.addEventListener("click", resetView);
-    els.toolSelect.addEventListener("click", () => setTool("select"));
-    els.toolHand.addEventListener("click", () => setTool("hand"));
-    els.rotateXDown.addEventListener("click", () => rotate3d("x", -10));
-    els.rotateXUp.addEventListener("click", () => rotate3d("x", 10));
-    els.rotateYLeft.addEventListener("click", () => rotate3d("y", -12));
-    els.rotateYRight.addEventListener("click", () => rotate3d("y", 12));
-    els.rotateZLeft.addEventListener("click", () => rotate3d("z", -10));
-    els.rotateZRight.addEventListener("click", () => rotate3d("z", 10));
-    els.alignLeft.addEventListener("click", () => alignSelection("left"));
-    els.alignCenter.addEventListener("click", () => alignSelection("center"));
-    els.alignRight.addEventListener("click", () => alignSelection("right"));
-    els.alignTop.addEventListener("click", () => alignSelection("top"));
-    els.alignMiddle.addEventListener("click", () => alignSelection("middle"));
-    els.alignBottom.addEventListener("click", () => alignSelection("bottom"));
-    els.distributeH.addEventListener("click", () => distributeSelection("h"));
-    els.distributeV.addEventListener("click", () => distributeSelection("v"));
+    on(els.zoomOut, "click", () => zoomView(-0.15));
+    on(els.zoomIn, "click", () => zoomView(0.15));
+    on(els.resetView, "click", resetView);
+    on(els.toolSelect, "click", () => setTool("select"));
+    on(els.toolHand, "click", () => setTool("hand"));
+    on(els.rotateXDown, "click", () => rotate3d("x", -10));
+    on(els.rotateXUp, "click", () => rotate3d("x", 10));
+    on(els.rotateYLeft, "click", () => rotate3d("y", -12));
+    on(els.rotateYRight, "click", () => rotate3d("y", 12));
+    on(els.rotateZLeft, "click", () => rotate3d("z", -10));
+    on(els.rotateZRight, "click", () => rotate3d("z", 10));
+    on(els.alignLeft, "click", () => alignSelection("left"));
+    on(els.alignCenter, "click", () => alignSelection("center"));
+    on(els.alignRight, "click", () => alignSelection("right"));
+    on(els.alignTop, "click", () => alignSelection("top"));
+    on(els.alignMiddle, "click", () => alignSelection("middle"));
+    on(els.alignBottom, "click", () => alignSelection("bottom"));
+    on(els.distributeH, "click", () => distributeSelection("h"));
+    on(els.distributeV, "click", () => distributeSelection("v"));
 
-    document.querySelector("#exportWallPdf").addEventListener("click", () => {
+    const exportWallPdfButton = document.querySelector("#exportWallPdf");
+    on(exportWallPdfButton, "click", () => {
       exportA3Pdf("elevation");
     });
 
-    document.querySelector("#exportRoomPdf").addEventListener("click", () => {
+    const exportRoomPdfButton = document.querySelector("#exportRoomPdf");
+    on(exportRoomPdfButton, "click", () => {
       exportA3Pdf("space2d");
     });
-    els.snapshotView.addEventListener("click", exportSnapshotPdf);
+    on(els.snapshotView, "click", exportSnapshotPdf);
 
-    els.themeToggle.addEventListener("click", toggleTheme);
-    els.sidebarToggle.addEventListener("click", toggleSidebar);
+    on(els.themeToggle, "click", toggleTheme);
+    on(els.sidebarToggle, "click", toggleSidebar);
 
     window.addEventListener("resize", resizeCanvas);
-    els.canvas.addEventListener("pointerdown", startDrag);
-    els.canvas.addEventListener("pointermove", moveDrag);
-    els.canvas.addEventListener("pointerup", stopDrag);
-    els.canvas.addEventListener("pointercancel", stopDrag);
-    els.canvas.addEventListener("wheel", event => {
+    on(els.canvas, "pointerdown", startDrag);
+    on(els.canvas, "pointermove", moveDrag);
+    on(els.canvas, "pointerup", stopDrag);
+    on(els.canvas, "pointercancel", stopDrag);
+    on(els.canvas, "wheel", event => {
       event.preventDefault();
       zoomView(event.deltaY < 0 ? 0.12 : -0.12);
     }, { passive: false });

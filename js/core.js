@@ -102,6 +102,12 @@
       sidebarToggle: document.querySelector("#sidebarToggle")
     };
 
+    function getMissingElements() {
+      return Object.entries(els)
+        .filter(([, element]) => !element)
+        .map(([key]) => key);
+    }
+
     const screenCtx = els.canvas.getContext("2d");
 
     let activeCanvas = els.canvas;
@@ -109,4 +115,3 @@
     const STORAGE_KEY = "wall-mockup-maker";
     const PERSIST_DELAY = 180;
     let persistTimer = null;
-
