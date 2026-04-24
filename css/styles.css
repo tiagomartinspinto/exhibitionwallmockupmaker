@@ -629,10 +629,10 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 30px;
-      min-width: 30px;
-      height: 30px;
-      min-height: 30px;
+      width: 34px;
+      min-width: 34px;
+      height: 34px;
+      min-height: 34px;
       padding: 0;
       line-height: 0;
       color: color-mix(in srgb, var(--ink) 78%, var(--muted));
@@ -650,8 +650,8 @@
     }
 
     .stage-snapshot .tool-icon {
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
     }
 
     .stage-snapshot .tool-icon-stroke {
