@@ -610,53 +610,37 @@
 
     .stage-actions {
       position: absolute;
-      top: 12px;
-      right: 12px;
+      top: 16px;
+      right: 16px;
       z-index: 8;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px;
-      border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--chrome-bg) 92%, transparent);
-      backdrop-filter: blur(14px);
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+      padding: 0;
     }
 
     .stage-snapshot {
-      position: relative;
-      width: 38px;
-      min-width: 38px;
-      height: 38px;
-      min-height: 38px;
+      width: 34px;
+      min-width: 34px;
+      height: 34px;
+      min-height: 34px;
       padding: 0;
-      color: color-mix(in srgb, var(--ink) 70%, var(--muted));
-      background: transparent;
-      border-color: transparent;
-      border-radius: 999px;
-      box-shadow: none;
+      color: color-mix(in srgb, var(--ink) 74%, var(--muted));
+      background: color-mix(in srgb, var(--panel) 88%, transparent);
+      border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24);
     }
 
     .stage-snapshot:hover {
       color: var(--accent);
       background: var(--accent-soft);
-      border-color: rgba(215, 211, 203, 0.16);
-    }
-
-    .stage-snapshot::before {
-      content: "";
-      position: absolute;
-      inset: 7px;
-      border-radius: 999px;
-      border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
-      opacity: 0.72;
-      pointer-events: none;
+      border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
     }
 
     .stage-snapshot .tool-icon {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
     }
 
     .stage-snapshot .tool-icon-stroke {
