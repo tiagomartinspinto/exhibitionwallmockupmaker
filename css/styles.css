@@ -610,37 +610,44 @@
 
     .stage-actions {
       position: absolute;
-      top: 16px;
-      right: 16px;
+      top: 14px;
+      right: 14px;
       z-index: 8;
       display: inline-flex;
       align-items: center;
       padding: 0;
+      opacity: 0.82;
+      transition: opacity 140ms ease;
+    }
+
+    .stage:hover .stage-actions,
+    .stage-actions:focus-within {
+      opacity: 1;
     }
 
     .stage-snapshot {
-      width: 34px;
-      min-width: 34px;
-      height: 34px;
-      min-height: 34px;
+      width: 30px;
+      min-width: 30px;
+      height: 30px;
+      min-height: 30px;
       padding: 0;
-      color: color-mix(in srgb, var(--ink) 74%, var(--muted));
-      background: color-mix(in srgb, var(--panel) 88%, transparent);
-      border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
-      border-radius: 8px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24);
+      color: color-mix(in srgb, var(--ink) 78%, var(--muted));
+      background: color-mix(in srgb, var(--chrome-bg) 76%, transparent);
+      border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
     }
 
     .stage-snapshot:hover {
       color: var(--accent);
       background: var(--accent-soft);
-      border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
+      border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
     }
 
     .stage-snapshot .tool-icon {
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
     }
 
     .stage-snapshot .tool-icon-stroke {
