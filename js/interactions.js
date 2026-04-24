@@ -388,3 +388,14 @@
           state.items = Array.isArray(parsed.items) ? parsed.items.map(normalizeItem) : state.items;
         }
         ensureWalls();
+        loadActiveWall();
+        setSelection([]);
+        state.drag = null;
+        state.panDrag = null;
+        state.rotateDrag = null;
+        state.resizeDrag = null;
+        state.snapLines = [];
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }

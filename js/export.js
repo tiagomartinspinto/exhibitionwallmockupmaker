@@ -1,14 +1,3 @@
-        setSelection([]);
-        state.drag = null;
-        state.panDrag = null;
-        state.rotateDrag = null;
-        state.resizeDrag = null;
-        state.snapLines = [];
-      } catch {
-        localStorage.removeItem(STORAGE_KEY);
-      }
-    }
-
     function download(filename, content, type) {
       const blob = new Blob([content], { type });
       const url = URL.createObjectURL(blob);
@@ -380,4 +369,3 @@
       const canvas = createSnapshotPdfCanvas();
       download(`${slug(state.project.title)}-${slug(snapshotViewTitle())}-snapshot.pdf`, makePdfFromCanvas(canvas), "application/pdf");
     }
-
