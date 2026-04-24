@@ -1,40 +1,48 @@
 # Exhibition Wall Mockup Maker
 
-by [@tiagomartinspinto](https://github.com/tiagomartinspinto)
+Browser-based exhibition planning for measured wall layouts, room planning, and quick visual mockups.
 
-Live site: [tiagomartinspinto.github.io/exhibitionwallmockupmaker](https://tiagomartinspinto.github.io/exhibitionwallmockupmaker/)
+Live app: [tiagomartinspinto.github.io/exhibitionwallmockupmaker](https://tiagomartinspinto.github.io/exhibitionwallmockupmaker/)
 
-Exhibition Wall Mockup Maker is a browser-based planning tool for exhibition designers, artists, and museum teams who need to turn wall ideas into clear install-ready layouts.
+Created by [@tiagomartinspinto](https://github.com/tiagomartinspinto)
 
-It combines measured 2D wall drawings, room planning, 3D previews, drag-and-drop editing, and PDF export in one static web app.
+## Overview
 
-## What it is for
+Exhibition Wall Mockup Maker is a static web app for planning exhibition walls and rooms in a way that is visual enough for design review and clear enough for installation prep.
 
-Use it to:
+It brings together:
 
-- plan one or many exhibition walls inside the same project
-- place text, screens, printed graphics, physical objects, and support elements
-- test wall compositions inside an exhibition room
-- check overlaps before installation
-- export readable wall drawings for production and construction teams
+- measured 2D wall layouts
+- room floor plans
+- 3D wall and room previews
+- drag-and-drop editing
+- image placement on wall objects
+- PDF export for technical and presentation use
 
-## Main features
+## What you can do
 
-- multi-wall projects with tabs
-- editable wall size, depth, color, and placement in millimeters
-- floor-plan view for the exhibition room
-- 3D wall preview and 3D room preview
-- drag, resize, align, distribute, zoom, and pan tools
-- image uploads shown in both 2D and 3D
-- PDF export for active wall drawings and room plans
-- snapshot PDF export from the current preview
-- dark and light interface modes
+- create projects with multiple walls
+- define wall width, height, depth, color, and placement in the room
+- place title text, explanatory text, screens, graphics, objects, and supports
+- drag, resize, align, and distribute objects on the wall
+- zoom and pan in 2D views with a hand tool
+- inspect the wall in 3D and preview the full exhibition room
+- upload images and preview them in both 2D and 3D
+- export measured PDFs for the active wall and room plan
+- export cleaner snapshot PDFs from the current preview
 
-## Live app
+## Who it is for
+
+- exhibition designers
+- artists preparing installation layouts
+- curators and producers reviewing wall compositions
+- museum and fabrication teams who need readable setup references
+
+## Live site
 
 [Open the app](https://tiagomartinspinto.github.io/exhibitionwallmockupmaker/)
 
-## Run locally
+## Local preview
 
 This project is fully static. Any simple local server works.
 
@@ -50,37 +58,31 @@ http://127.0.0.1:4175
 
 ## GitHub Pages
 
-The site is published directly from the repository root through GitHub Pages.
+The site is currently published directly from the repository root.
 
-Current live URL:
-
-```txt
-https://tiagomartinspinto.github.io/exhibitionwallmockupmaker/
-```
-
-Recommended Pages settings:
+Recommended GitHub Pages settings:
 
 1. Open `Settings`
-2. Go to `Pages`
-3. Set source to `Deploy from a branch`
+2. Open `Pages`
+3. Set `Source` to `Deploy from a branch`
 4. Choose `main`
 5. Choose `/ (root)`
 
 ## Project structure
 
 ```txt
-index.html         App markup
-css/styles.css     App styling
+index.html         App shell and markup
+css/styles.css     Interface styling
 js/core.js         Shared globals and DOM references
-js/model.js        State and data helpers
-js/rendering.js    2D and 3D drawing logic
+js/model.js        State model and wall/item helpers
+js/rendering.js    2D and 3D canvas rendering
 js/ui.js           UI rendering helpers
-js/interactions.js Selection, drag, zoom, pan, persistence
+js/interactions.js Selection, dragging, zoom, pan, persistence
 js/export.js       PDF and snapshot export
 js/boot.js         Startup and event wiring
 ```
 
-## Tech
+## Stack
 
 - HTML
 - CSS
@@ -92,9 +94,9 @@ No framework, no build step, no backend.
 
 ## Notes
 
-- Measurements are handled in millimeters.
-- The live editing view is intentionally cleaner than the exported construction PDF.
-- The app stores working state in the browser, so projects remain local to the device/browser unless exported.
+- All planning dimensions are handled in millimeters.
+- The live editing view is intentionally cleaner than the export PDF.
+- Working data is stored in browser local storage unless exported.
 
 ## Repository
 
