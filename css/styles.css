@@ -626,11 +626,15 @@
     }
 
     .stage-snapshot {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       width: 30px;
       min-width: 30px;
       height: 30px;
       min-height: 30px;
       padding: 0;
+      line-height: 0;
       color: color-mix(in srgb, var(--ink) 78%, var(--muted));
       background: color-mix(in srgb, var(--chrome-bg) 76%, transparent);
       border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
