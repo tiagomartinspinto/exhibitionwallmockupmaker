@@ -29,7 +29,9 @@
       view3d: { zoom: 1, rotX: -10, rotY: 24, rotZ: 0 },
       project: {
         title: "Untitled exhibition",
-        fileName: ""
+        fileName: "",
+        lastLocalSaveAt: "",
+        lastFileSaveAt: ""
       },
       space: { width: 12000, depth: 8000, floorColor: "#101113", surroundColor: "#070708", cinematicLight: true },
       activeWallId: "wall-a",
@@ -120,5 +122,7 @@
     let activeCtx = screenCtx;
     const STORAGE_KEY = "wall-mockup-maker";
     const PERSIST_DELAY = 180;
+    const PROJECT_AUTOSAVE_DELAY = 15000;
     let persistTimer = null;
+    let projectPersistTimer = null;
     let projectFileHandle = null;

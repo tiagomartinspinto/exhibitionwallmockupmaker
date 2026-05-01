@@ -30,6 +30,7 @@ It brings together:
 - inspect the wall in 3D and preview the full exhibition room
 - upload images and preview them in both 2D and 3D
 - save a project file locally on your machine and reopen it later
+- keep working with browser autosave in the background
 - export measured PDFs for the active wall and room plan
 - export cleaner snapshot PDFs from the current preview
 
@@ -65,6 +66,9 @@ The app supports explicit project files in addition to browser autosave.
 - `Save` saves the current project
 - `Save as` lets you choose a new local file
 - `Open` loads a previously saved project
+- browser autosave keeps a local working copy in the background
+- when a real project file handle is available, the app also autosaves back to that file on a calmer timer
+- the interface shows the timestamp of the last save
 
 Project files are stored as JSON on the user's machine.
 

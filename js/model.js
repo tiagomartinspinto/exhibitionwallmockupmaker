@@ -103,12 +103,41 @@
       els.projectName.textContent = `${title} | ${count} wall${count === 1 ? "" : "s"}`;
     }
 
+    function formatSaveTimestamp(value) {
+      if (!value) return "";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+      return new Intl.DateTimeFormat(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(date);
+    }
+
     function updateProjectSaveHint() {
       if (!els.projectSaveHint) return;
       const fileName = state.project.fileName || "";
-      els.projectSaveHint.textContent = fileName
-        ? `Current file: ${fileName}`
-        : "Project files are saved as JSON on your machine.";
+      const localSaved = formatSaveTimestamp(state.project.lastLocalSaveAt);
+      const fileSaved = formatSaveTimestamp(state.project.lastFileSaveAt);
+      if (projectFileHandle && fileName && fileSaved) {
+        els.projectSaveHint.textContent = `Current file: ${fileName} · Autosaved to file ${fileSaved}`;
+        return;
+      }
+      if (fileName && fileSaved) {
+        els.projectSaveHint.textContent = `Current file: ${fileName} · Last file save ${fileSaved}`;
+        return;
+      }
+      if (fileName && localSaved) {
+        els.projectSaveHint.textContent = `Opened file: ${fileName} · Autosaved in browser ${localSaved}`;
+        return;
+      }
+      if (localSaved) {
+        els.projectSaveHint.textContent = `Autosaved in browser ${localSaved}. Use Save as to keep a project file on your machine.`;
+        return;
+      }
+      els.projectSaveHint.textContent = "Project files are saved as JSON on your machine.";
     }
 
     function syncProjectFromInputs() {

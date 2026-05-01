@@ -319,7 +319,10 @@
           rotZ: number(state.view3d.rotZ ?? state.view3d.roll, 0)
         },
         project: {
-          title: state.project.title || "Untitled exhibition"
+          title: state.project.title || "Untitled exhibition",
+          fileName: state.project.fileName || "",
+          lastLocalSaveAt: state.project.lastLocalSaveAt || "",
+          lastFileSaveAt: state.project.lastFileSaveAt || ""
         },
         space: {
           width: Math.max(1000, number(state.space.width, 12000)),
@@ -334,12 +337,16 @@
     }
 
     function projectSnapshot() {
+      const data = serializedState();
+      data.project = {
+        title: data.project.title || "Untitled exhibition"
+      };
       return {
         app: "Exhibition Wall Mockup Maker",
         format: "ewmm",
         version: 1,
         savedAt: new Date().toISOString(),
-        data: serializedState()
+        data
       };
     }
 
@@ -405,7 +412,22 @@
       if (persistTimer) clearTimeout(persistTimer);
       persistTimer = null;
       syncActiveWallRecord();
+      state.project.lastLocalSaveAt = new Date().toISOString();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(serializedState()));
+      updateProjectSaveHint();
+    }
+
+    function scheduleProjectAutosave() {
+      if (!projectFileHandle) return;
+      if (projectPersistTimer) clearTimeout(projectPersistTimer);
+      projectPersistTimer = setTimeout(async () => {
+        try {
+          await saveProjectFile({ autosave: true });
+        } catch (error) {
+          if (error?.name === "AbortError") return;
+          console.error(error);
+        }
+      }, PROJECT_AUTOSAVE_DELAY);
     }
 
     function save(options = {}) {
@@ -417,6 +439,9 @@
       persistTimer = setTimeout(() => {
         flushSave();
       }, PERSIST_DELAY);
+      if (!options.skipProjectAutosave) {
+        scheduleProjectAutosave();
+      }
     }
 
     function load() {
@@ -431,11 +456,13 @@
 
     async function saveProjectFile(options = {}) {
       const useSaveAs = Boolean(options.saveAs);
+      const autosave = Boolean(options.autosave);
       const snapshot = projectSnapshot();
       const fileName = suggestedProjectFileName();
       const content = `${JSON.stringify(snapshot, null, 2)}\n`;
       if (typeof window.showSaveFilePicker === "function") {
         let handle = projectFileHandle;
+        if (autosave && !handle) return false;
         if (!handle || useSaveAs) {
           handle = await window.showSaveFilePicker({
             suggestedName: fileName,
@@ -451,12 +478,17 @@
         projectFileHandle = handle;
         state.project.fileName = handle.name || fileName;
       } else {
+        if (autosave) return false;
         download(fileName, content, "application/json");
         state.project.fileName = fileName;
       }
+      if (projectPersistTimer) clearTimeout(projectPersistTimer);
+      projectPersistTimer = null;
+      state.project.lastFileSaveAt = new Date().toISOString();
       syncInputsFromProject();
-      save({ immediate: true });
+      save({ immediate: true, skipProjectAutosave: true });
       render();
+      return true;
     }
 
     function loadProjectFileFromText(text, fileName = "") {
@@ -466,7 +498,7 @@
       syncInputsFromSpace();
       syncInputsFromWall();
       syncItemInputs();
-      save({ immediate: true });
+      save({ immediate: true, skipProjectAutosave: true });
       render();
     }
 
