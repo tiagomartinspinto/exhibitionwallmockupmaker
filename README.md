@@ -17,6 +17,7 @@ It brings together:
 - 3D wall and room previews
 - drag-and-drop editing
 - image placement on wall objects
+- local project save and reopen
 - PDF export for technical and presentation use
 
 ## What you can do
@@ -28,6 +29,7 @@ It brings together:
 - zoom and pan in 2D views with a hand tool
 - inspect the wall in 3D and preview the full exhibition room
 - upload images and preview them in both 2D and 3D
+- save a project file locally on your machine and reopen it later
 - export measured PDFs for the active wall and room plan
 - export cleaner snapshot PDFs from the current preview
 
@@ -55,6 +57,18 @@ Then open:
 ```txt
 http://127.0.0.1:4175
 ```
+
+## Project files
+
+The app supports explicit project files in addition to browser autosave.
+
+- `Save` saves the current project
+- `Save as` lets you choose a new local file
+- `Open` loads a previously saved project
+
+Project files are stored as JSON on the user's machine.
+
+On Chromium-based browsers, the app can use the browser's native file picker for a smoother save/open flow. On browsers without that support, it falls back to download/upload behavior.
 
 ## GitHub Pages
 
@@ -96,7 +110,8 @@ No framework, no build step, no backend.
 
 - All planning dimensions are handled in millimeters.
 - The live editing view is intentionally cleaner than the export PDF.
-- Working data is stored in browser local storage unless exported.
+- Working data is stored in browser local storage for autosave.
+- Projects can also be explicitly saved as local JSON files and reopened later.
 
 ## Repository
 
