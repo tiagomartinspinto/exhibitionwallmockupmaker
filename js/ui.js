@@ -155,8 +155,8 @@
     function rulerHit(point) {
       if (state.view !== "elevation") return null;
       const rulerSize = 28;
-      if (point.y <= rulerSize && point.x > rulerSize) return { axis: "x" };
-      if (point.x <= rulerSize && point.y > rulerSize) return { axis: "y" };
+      if (point.y <= rulerSize && point.x > rulerSize) return { axis: "y" };
+      if (point.x <= rulerSize && point.y > rulerSize) return { axis: "x" };
       return null;
     }
 
