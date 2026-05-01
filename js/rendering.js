@@ -218,6 +218,7 @@
     }
 
     function drawGuides(geom, width, height) {
+      if (activeCanvas !== els.canvas) return;
       const guides = currentGuides();
       if (guides.visible === false) return;
       activeCtx.save();
@@ -907,7 +908,7 @@
 
     function snapTargets(excludeIds = []) {
       const exclude = new Set(excludeIds);
-      const guides = currentGuides();
+      const guides = activeCanvas === els.canvas ? currentGuides() : defaultGuides();
       const vertical = [
         { value: 0, line: { axis: "x", value: 0 } },
         { value: state.wall.width / 2, line: { axis: "x", value: state.wall.width / 2 } },
@@ -918,7 +919,7 @@
         { value: state.wall.height / 2, line: { axis: "y", value: state.wall.height / 2 } },
         { value: state.wall.height, line: { axis: "y", value: state.wall.height } }
       ];
-      if (guides.visible !== false) {
+      if (activeCanvas === els.canvas && guides.visible !== false) {
         guides.vertical.forEach(value => vertical.push({ value, line: { axis: "x", value } }));
         guides.horizontal.forEach(value => horizontal.push({ value, line: { axis: "y", value } }));
       }
