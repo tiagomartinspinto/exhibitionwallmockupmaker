@@ -333,6 +333,74 @@
       };
     }
 
+    function projectSnapshot() {
+      return {
+        app: "Exhibition Wall Mockup Maker",
+        format: "ewmm",
+        version: 1,
+        savedAt: new Date().toISOString(),
+        data: serializedState()
+      };
+    }
+
+    function suggestedProjectFileName() {
+      const base = String(state.project.title || "untitled-exhibition")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 48) || "untitled-exhibition";
+      return `${base}.ewmm.json`;
+    }
+
+    function applySerializedState(source, options = {}) {
+      const parsed = source && typeof source === "object" && source.data ? source.data : source;
+      const nextFileName = options.fileName || "";
+      state.view = parsed.view || state.view;
+      state.tool = parsed.tool === "hand" ? "hand" : "select";
+      state.handOverride = false;
+      state.theme = parsed.theme === "light" ? "light" : "dark";
+      state.view2d = { ...state.view2d, ...parsed.view2d };
+      state.view2d.zoom = number(state.view2d.zoom, 1);
+      state.view2d.panX = number(state.view2d.panX, 0);
+      state.view2d.panY = number(state.view2d.panY, 0);
+      state.view3d = { ...state.view3d, ...parsed.view3d };
+      state.view3d.rotX = state.view3d.rotX ?? state.view3d.pitch ?? -10;
+      state.view3d.rotY = state.view3d.rotY ?? state.view3d.yaw ?? 24;
+      state.view3d.rotZ = state.view3d.rotZ ?? state.view3d.roll ?? 0;
+      delete state.view3d.yaw;
+      delete state.view3d.pitch;
+      delete state.view3d.roll;
+      state.space = { ...state.space, ...parsed.space };
+      if (state.space.floorColor === "#1d2a23") state.space.floorColor = "#101113";
+      if (state.space.surroundColor === "#202821") state.space.surroundColor = "#070708";
+      state.project = {
+        ...state.project,
+        ...parsed.project,
+        fileName: nextFileName || parsed.project?.fileName || ""
+      };
+      state.activeWallId = parsed.activeWallId || state.activeWallId;
+      state.walls = Array.isArray(parsed.walls) ? parsed.walls.map((wall, index) => ({
+        id: wall.id || uid(),
+        name: wall.name || `Wall ${index + 1}`,
+        wall: { width: 6000, height: 3000, depth: 120, color: "#f5f4ea", ...wall.wall },
+        items: Array.isArray(wall.items) ? wall.items.map(normalizeItem) : [],
+        placement: { x: 1000, y: 1000, rotation: 0, ...wall.placement }
+      })) : state.walls;
+      if (!state.walls.length) {
+        state.wall = { ...state.wall, ...parsed.wall };
+        state.items = Array.isArray(parsed.items) ? parsed.items.map(normalizeItem) : state.items;
+      }
+      ensureWalls();
+      loadActiveWall();
+      setSelection([]);
+      state.drag = null;
+      state.panDrag = null;
+      state.rotateDrag = null;
+      state.resizeDrag = null;
+      state.snapLines = [];
+    }
+
     function flushSave() {
       if (persistTimer) clearTimeout(persistTimer);
       persistTimer = null;
@@ -355,47 +423,68 @@
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return;
       try {
-        const parsed = JSON.parse(saved);
-        state.view = parsed.view || state.view;
-        state.tool = parsed.tool === "hand" ? "hand" : "select";
-        state.handOverride = false;
-        state.theme = parsed.theme === "light" ? "light" : "dark";
-        state.view2d = { ...state.view2d, ...parsed.view2d };
-        state.view2d.zoom = number(state.view2d.zoom, 1);
-        state.view2d.panX = number(state.view2d.panX, 0);
-        state.view2d.panY = number(state.view2d.panY, 0);
-        state.view3d = { ...state.view3d, ...parsed.view3d };
-        state.view3d.rotX = state.view3d.rotX ?? state.view3d.pitch ?? -10;
-        state.view3d.rotY = state.view3d.rotY ?? state.view3d.yaw ?? 24;
-        state.view3d.rotZ = state.view3d.rotZ ?? state.view3d.roll ?? 0;
-        delete state.view3d.yaw;
-        delete state.view3d.pitch;
-        delete state.view3d.roll;
-        state.space = { ...state.space, ...parsed.space };
-        if (state.space.floorColor === "#1d2a23") state.space.floorColor = "#101113";
-        if (state.space.surroundColor === "#202821") state.space.surroundColor = "#070708";
-        state.project = { ...state.project, ...parsed.project };
-        state.activeWallId = parsed.activeWallId || state.activeWallId;
-        state.walls = Array.isArray(parsed.walls) ? parsed.walls.map((wall, index) => ({
-          id: wall.id || uid(),
-          name: wall.name || `Wall ${index + 1}`,
-          wall: { width: 6000, height: 3000, depth: 120, color: "#f5f4ea", ...wall.wall },
-          items: Array.isArray(wall.items) ? wall.items.map(normalizeItem) : [],
-          placement: { x: 1000, y: 1000, rotation: 0, ...wall.placement }
-        })) : state.walls;
-        if (!state.walls.length) {
-          state.wall = { ...state.wall, ...parsed.wall };
-          state.items = Array.isArray(parsed.items) ? parsed.items.map(normalizeItem) : state.items;
-        }
-        ensureWalls();
-        loadActiveWall();
-        setSelection([]);
-        state.drag = null;
-        state.panDrag = null;
-        state.rotateDrag = null;
-        state.resizeDrag = null;
-        state.snapLines = [];
+        applySerializedState(JSON.parse(saved));
       } catch {
         localStorage.removeItem(STORAGE_KEY);
       }
+    }
+
+    async function saveProjectFile(options = {}) {
+      const useSaveAs = Boolean(options.saveAs);
+      const snapshot = projectSnapshot();
+      const fileName = suggestedProjectFileName();
+      const content = `${JSON.stringify(snapshot, null, 2)}\n`;
+      if (typeof window.showSaveFilePicker === "function") {
+        let handle = projectFileHandle;
+        if (!handle || useSaveAs) {
+          handle = await window.showSaveFilePicker({
+            suggestedName: fileName,
+            types: [{
+              description: "Exhibition Wall Mockup Maker project",
+              accept: { "application/json": [".json", ".ewmm"] }
+            }]
+          });
+        }
+        const writable = await handle.createWritable();
+        await writable.write(content);
+        await writable.close();
+        projectFileHandle = handle;
+        state.project.fileName = handle.name || fileName;
+      } else {
+        download(fileName, content, "application/json");
+        state.project.fileName = fileName;
+      }
+      syncInputsFromProject();
+      save({ immediate: true });
+      render();
+    }
+
+    function loadProjectFileFromText(text, fileName = "") {
+      const parsed = JSON.parse(text);
+      applySerializedState(parsed, { fileName });
+      syncInputsFromProject();
+      syncInputsFromSpace();
+      syncInputsFromWall();
+      syncItemInputs();
+      save({ immediate: true });
+      render();
+    }
+
+    async function openProjectFile() {
+      if (typeof window.showOpenFilePicker === "function") {
+        const [handle] = await window.showOpenFilePicker({
+          multiple: false,
+          excludeAcceptAllOption: false,
+          types: [{
+            description: "Exhibition Wall Mockup Maker project",
+            accept: { "application/json": [".json", ".ewmm"] }
+          }]
+        });
+        if (!handle) return;
+        const file = await handle.getFile();
+        loadProjectFileFromText(await file.text(), file.name || "");
+        projectFileHandle = handle;
+        return;
+      }
+      els.projectFileInput?.click();
     }

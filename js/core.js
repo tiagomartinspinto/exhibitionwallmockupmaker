@@ -28,7 +28,8 @@
       view2d: { zoom: 1, panX: 0, panY: 0 },
       view3d: { zoom: 1, rotX: -10, rotY: 24, rotZ: 0 },
       project: {
-        title: "Untitled exhibition"
+        title: "Untitled exhibition",
+        fileName: ""
       },
       space: { width: 12000, depth: 8000, floorColor: "#101113", surroundColor: "#070708", cinematicLight: true },
       activeWallId: "wall-a",
@@ -63,6 +64,11 @@
       deleteWall: document.querySelector("#deleteWall"),
       resetWall: document.querySelector("#resetWall"),
       projectTitle: document.querySelector("#projectTitle"),
+      saveProject: document.querySelector("#saveProject"),
+      saveProjectAs: document.querySelector("#saveProjectAs"),
+      openProject: document.querySelector("#openProject"),
+      projectSaveHint: document.querySelector("#projectSaveHint"),
+      projectFileInput: document.querySelector("#projectFileInput"),
       itemName: document.querySelector("#itemName"),
       itemType: document.querySelector("#itemType"),
       itemShape: document.querySelector("#itemShape"),
@@ -115,3 +121,4 @@
     const STORAGE_KEY = "wall-mockup-maker";
     const PERSIST_DELAY = 180;
     let persistTimer = null;
+    let projectFileHandle = null;

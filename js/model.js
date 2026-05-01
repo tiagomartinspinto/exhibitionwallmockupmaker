@@ -103,9 +103,18 @@
       els.projectName.textContent = `${title} | ${count} wall${count === 1 ? "" : "s"}`;
     }
 
+    function updateProjectSaveHint() {
+      if (!els.projectSaveHint) return;
+      const fileName = state.project.fileName || "";
+      els.projectSaveHint.textContent = fileName
+        ? `Current file: ${fileName}`
+        : "Project files are saved as JSON on your machine.";
+    }
+
     function syncProjectFromInputs() {
       state.project.title = els.projectTitle.value || "Untitled exhibition";
       updateProjectHeader();
+      updateProjectSaveHint();
       save();
       render();
     }
@@ -113,6 +122,7 @@
     function syncInputsFromProject() {
       els.projectTitle.value = state.project.title || "";
       updateProjectHeader();
+      updateProjectSaveHint();
     }
 
     function defaultItemFormState() {
@@ -412,4 +422,3 @@
       save();
       render();
     }
-

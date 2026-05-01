@@ -48,6 +48,46 @@
       input.addEventListener("input", syncProjectFromInputs);
     });
 
+    on(els.saveProject, "click", async () => {
+      try {
+        await saveProjectFile();
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+        console.error(error);
+      }
+    });
+
+    on(els.saveProjectAs, "click", async () => {
+      try {
+        await saveProjectFile({ saveAs: true });
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+        console.error(error);
+      }
+    });
+
+    on(els.openProject, "click", async () => {
+      try {
+        await openProjectFile();
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+        console.error(error);
+      }
+    });
+
+    on(els.projectFileInput, "change", async event => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      try {
+        loadProjectFileFromText(await file.text(), file.name || "");
+        projectFileHandle = null;
+      } catch (error) {
+        console.error(error);
+      } finally {
+        els.projectFileInput.value = "";
+      }
+    });
+
     on(els.itemImage, "change", event => {
       const file = event.target.files && event.target.files[0];
       if (!file) {

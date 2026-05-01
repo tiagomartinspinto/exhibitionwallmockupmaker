@@ -246,6 +246,12 @@
       flex-wrap: wrap;
     }
 
+    .compact-row button {
+      min-height: 34px;
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+
     .wall-actions {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
