@@ -206,6 +206,8 @@
     on(els.resetView, "click", resetView);
     on(els.toolSelect, "click", () => setTool("select"));
     on(els.toolHand, "click", () => setTool("hand"));
+    on(els.guideToggle, "click", toggleGuides);
+    on(els.clearGuides, "click", clearGuides);
     on(els.rotateXDown, "click", () => rotate3d("x", -10));
     on(els.rotateXUp, "click", () => rotate3d("x", 10));
     on(els.rotateYLeft, "click", () => rotate3d("y", -12));
@@ -240,6 +242,12 @@
     on(els.canvas, "pointermove", moveDrag);
     on(els.canvas, "pointerup", stopDrag);
     on(els.canvas, "pointercancel", stopDrag);
+    on(els.canvas, "dblclick", event => {
+      if (state.view !== "elevation") return;
+      if (removeGuideAtPoint(pointerPosition(event))) {
+        event.preventDefault();
+      }
+    });
     on(els.canvas, "wheel", event => {
       event.preventDefault();
       zoomView(event.deltaY < 0 ? 0.12 : -0.12);

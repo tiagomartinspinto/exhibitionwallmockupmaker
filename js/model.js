@@ -1,10 +1,23 @@
-    function makeWall(name, wall = {}, items = [], placement = {}) {
+    function defaultGuides() {
+      return { vertical: [], horizontal: [], visible: true };
+    }
+
+    function normalizeGuides(guides) {
+      return {
+        vertical: Array.isArray(guides?.vertical) ? guides.vertical.map(value => Math.round(number(value, 0))) : [],
+        horizontal: Array.isArray(guides?.horizontal) ? guides.horizontal.map(value => Math.round(number(value, 0))) : [],
+        visible: guides?.visible !== false
+      };
+    }
+
+    function makeWall(name, wall = {}, items = [], placement = {}, guides = {}) {
       return {
         id: uid(),
         name,
         wall: { width: 6000, height: 3000, depth: 120, color: "#f5f4ea", ...wall },
         items: items.map(normalizeItem),
-        placement: { x: 1000, y: 1000, rotation: 0, ...placement }
+        placement: { x: 1000, y: 1000, rotation: 0, ...placement },
+        guides: normalizeGuides(guides)
       };
     }
 
@@ -31,6 +44,7 @@
       record.name = els.wallName?.value || record.name || "Wall";
       record.wall = state.wall;
       record.items = state.items;
+      record.guides = normalizeGuides(state.guides);
       record.placement = {
         x: number(els.wallSpaceX?.value, record.placement?.x ?? 1000),
         y: number(els.wallSpaceY?.value, record.placement?.y ?? 1000),
@@ -43,6 +57,7 @@
       if (!record) return;
       state.wall = record.wall;
       state.items = record.items;
+      state.guides = normalizeGuides(record.guides || defaultGuides());
     }
 
     function number(value, fallback) {
@@ -215,6 +230,20 @@
     function toggleTheme() {
       state.theme = state.theme === "dark" ? "light" : "dark";
       applyTheme();
+      save();
+      render({ canvasOnly: true });
+    }
+
+    function toggleGuides() {
+      state.guides.visible = !(state.guides.visible !== false);
+      syncActiveWallRecord();
+      save();
+      render({ canvasOnly: true });
+    }
+
+    function clearGuides() {
+      state.guides = defaultGuides();
+      syncActiveWallRecord();
       save();
       render({ canvasOnly: true });
     }

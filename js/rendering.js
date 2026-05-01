@@ -19,10 +19,11 @@
 
     function elevationGeometry(width, height, options = {}) {
       const exportMode = activeCanvas !== els.canvas;
+      const rulerSize = exportMode ? 0 : 28;
       const pad = options.pad ?? (exportMode ? 40 : 78);
-      const leftPad = options.leftPad ?? (exportMode ? 260 : pad);
+      const leftPad = options.leftPad ?? (exportMode ? 260 : pad + rulerSize);
       const rightPad = options.rightPad ?? pad;
-      const topPad = options.topPad ?? pad;
+      const topPad = options.topPad ?? (pad + rulerSize);
       const bottomPad = options.bottomPad ?? (exportMode ? 180 : pad);
       const zoom = options.fit ? 1 : state.view2d.zoom;
       const innerW = width - leftPad - rightPad;
@@ -39,6 +40,14 @@
         w: wallW,
         h: wallH
       };
+    }
+
+    function screenToWallX(geom, screenX) {
+      return (screenX - geom.x) / geom.scale;
+    }
+
+    function screenToWallY(geom, screenY) {
+      return (geom.y + geom.h - screenY) / geom.scale;
     }
 
     function mmX(geom, value) {
@@ -196,6 +205,126 @@
     function guideColor(strong = false) {
       if (strong) return contrastText(state.wall.color);
       return isDark(state.wall.color) ? "rgba(255,255,255,0.58)" : "rgba(22,22,22,0.46)";
+    }
+
+    function rulerStep(scale) {
+      const targetPx = 72;
+      const steps = [10, 20, 50, 100, 200, 500, 1000, 2000];
+      return steps.find(step => step * scale >= targetPx) || 5000;
+    }
+
+    function currentGuides() {
+      return normalizeGuides(state.guides || defaultGuides());
+    }
+
+    function drawGuides(geom, width, height) {
+      const guides = currentGuides();
+      if (guides.visible === false) return;
+      activeCtx.save();
+      activeCtx.strokeStyle = "rgba(146,208,255,0.56)";
+      activeCtx.lineWidth = 1;
+      activeCtx.setLineDash([5, 5]);
+      guides.vertical.forEach(value => {
+        const x = mmX(geom, value);
+        activeCtx.beginPath();
+        activeCtx.moveTo(x, 0);
+        activeCtx.lineTo(x, height);
+        activeCtx.stroke();
+      });
+      activeCtx.strokeStyle = "rgba(255,206,143,0.56)";
+      guides.horizontal.forEach(value => {
+        const y = mmY(geom, value);
+        activeCtx.beginPath();
+        activeCtx.moveTo(0, y);
+        activeCtx.lineTo(width, y);
+        activeCtx.stroke();
+      });
+      if (state.guideDrag) {
+        if (state.guideDrag.axis === "x") {
+          activeCtx.strokeStyle = "rgba(146,208,255,0.9)";
+          const x = mmX(geom, state.guideDrag.value);
+          activeCtx.beginPath();
+          activeCtx.moveTo(x, 0);
+          activeCtx.lineTo(x, height);
+          activeCtx.stroke();
+        } else {
+          activeCtx.strokeStyle = "rgba(255,206,143,0.9)";
+          const y = mmY(geom, state.guideDrag.value);
+          activeCtx.beginPath();
+          activeCtx.moveTo(0, y);
+          activeCtx.lineTo(width, y);
+          activeCtx.stroke();
+        }
+      }
+      activeCtx.restore();
+    }
+
+    function drawRulers(geom, width, height) {
+      if (activeCanvas !== els.canvas) return;
+      const rulerSize = 28;
+      const step = rulerStep(geom.scale);
+      const minor = step / 2;
+      const band = isDark(sceneSurroundColor()) ? "#111215" : "#eff1f4";
+      const border = isDark(sceneSurroundColor()) ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)";
+      const ink = isDark(sceneSurroundColor()) ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.65)";
+      const accentX = "rgba(146,208,255,0.9)";
+      const accentY = "rgba(255,206,143,0.9)";
+      activeCtx.save();
+      activeCtx.fillStyle = band;
+      activeCtx.fillRect(0, 0, width, rulerSize);
+      activeCtx.fillRect(0, 0, rulerSize, height);
+      activeCtx.strokeStyle = border;
+      activeCtx.beginPath();
+      activeCtx.moveTo(rulerSize, 0);
+      activeCtx.lineTo(rulerSize, height);
+      activeCtx.moveTo(0, rulerSize);
+      activeCtx.lineTo(width, rulerSize);
+      activeCtx.stroke();
+
+      const startX = Math.floor(screenToWallX(geom, rulerSize) / minor) * minor;
+      const endX = Math.ceil(screenToWallX(geom, width) / minor) * minor;
+      for (let value = startX; value <= endX; value += minor) {
+        const x = mmX(geom, value);
+        const major = value % step === 0;
+        const tick = major ? 12 : 7;
+        activeCtx.strokeStyle = major ? ink : border;
+        activeCtx.beginPath();
+        activeCtx.moveTo(x, rulerSize);
+        activeCtx.lineTo(x, rulerSize - tick);
+        activeCtx.stroke();
+        if (major) {
+          drawText(`${Math.round(value)}`, x, 11, { color: ink, size: 9, weight: 600 });
+        }
+      }
+
+      const startY = Math.floor(screenToWallY(geom, height) / minor) * minor;
+      const endY = Math.ceil(screenToWallY(geom, rulerSize) / minor) * minor;
+      for (let value = startY; value <= endY; value += minor) {
+        const y = mmY(geom, value);
+        const major = value % step === 0;
+        const tick = major ? 12 : 7;
+        activeCtx.strokeStyle = major ? ink : border;
+        activeCtx.beginPath();
+        activeCtx.moveTo(rulerSize, y);
+        activeCtx.lineTo(rulerSize - tick, y);
+        activeCtx.stroke();
+        if (major) {
+          drawText(`${Math.round(value)}`, 11, y, { color: ink, size: 9, weight: 600, rotate: -Math.PI / 2 });
+        }
+      }
+
+      const guides = currentGuides();
+      if (guides.visible !== false) {
+        guides.vertical.forEach(value => {
+          const x = mmX(geom, value);
+          drawLine(x, 0, x, rulerSize, accentX);
+        });
+        guides.horizontal.forEach(value => {
+          const y = mmY(geom, value);
+          drawLine(0, y, rulerSize, y, accentY);
+        });
+      }
+      activeCtx.restore();
     }
 
     function guideAxisColors(strong = false) {
@@ -778,6 +907,7 @@
 
     function snapTargets(excludeIds = []) {
       const exclude = new Set(excludeIds);
+      const guides = currentGuides();
       const vertical = [
         { value: 0, line: { axis: "x", value: 0 } },
         { value: state.wall.width / 2, line: { axis: "x", value: state.wall.width / 2 } },
@@ -788,6 +918,10 @@
         { value: state.wall.height / 2, line: { axis: "y", value: state.wall.height / 2 } },
         { value: state.wall.height, line: { axis: "y", value: state.wall.height } }
       ];
+      if (guides.visible !== false) {
+        guides.vertical.forEach(value => vertical.push({ value, line: { axis: "x", value } }));
+        guides.horizontal.forEach(value => horizontal.push({ value, line: { axis: "y", value } }));
+      }
       state.items.forEach(item => {
         if (exclude.has(item.id)) return;
         vertical.push({ value: item.x, line: { axis: "x", value: item.x } }, { value: item.x + item.width / 2, line: { axis: "x", value: item.x + item.width / 2 } }, { value: item.x + item.width, line: { axis: "x", value: item.x + item.width } });
@@ -828,6 +962,7 @@
       const overallHeightX = exportMode ? geom.x - 70 : geom.x - 34;
       drawDimension(geom.x, overallWidthY, geom.x + geom.w, overallWidthY, `${state.wall.width} mm`, 14, false, surroundMark);
       drawDimension(overallHeightX, geom.y, overallHeightX, geom.y + geom.h, `${state.wall.height} mm`, 18, true, surroundMark);
+      drawGuides(geom, width, height);
       drawSnapLines(geom);
 
       const itemBoxes = state.items.map(item => screenBoxForItem(geom, item));
@@ -872,6 +1007,7 @@
         }
       });
 
+      drawRulers(geom, width, height);
       els.scaleLabel.textContent = `2D zoom ${Math.round(state.view2d.zoom * 100)}% | scale 1 px = ${Math.round(1 / geom.scale)} mm`;
     }
 
@@ -1577,4 +1713,3 @@
       const b = num & 255;
       return (r * 299 + g * 587 + b * 114) / 1000 < 135;
     }
-

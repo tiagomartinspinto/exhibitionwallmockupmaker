@@ -114,6 +114,9 @@
       const isHand = activeTool() === "hand";
       els.toolSelect.classList.toggle("active", !isHand);
       els.toolHand.classList.toggle("active", isHand);
+      if (els.guideToggle) {
+        els.guideToggle.classList.toggle("active", currentGuides().visible !== false);
+      }
       if (state.panDrag && is2dView()) {
         els.canvas.style.cursor = "grabbing";
       } else {
@@ -128,6 +131,33 @@
       updateToolButtons();
       save();
       render({ canvasOnly: true });
+    }
+
+    function guideAtPoint(point) {
+      if (state.view !== "elevation") return null;
+      if (currentGuides().visible === false) return null;
+      const width = els.canvas.width / (window.devicePixelRatio || 1);
+      const height = els.canvas.height / (window.devicePixelRatio || 1);
+      const geom = elevationGeometry(width, height);
+      const guides = currentGuides();
+      const threshold = 6;
+      for (const value of guides.vertical) {
+        const x = mmX(geom, value);
+        if (Math.abs(point.x - x) <= threshold) return { axis: "x", value };
+      }
+      for (const value of guides.horizontal) {
+        const y = mmY(geom, value);
+        if (Math.abs(point.y - y) <= threshold) return { axis: "y", value };
+      }
+      return null;
+    }
+
+    function rulerHit(point) {
+      if (state.view !== "elevation") return null;
+      const rulerSize = 28;
+      if (point.y <= rulerSize && point.x > rulerSize) return { axis: "x" };
+      if (point.x <= rulerSize && point.y > rulerSize) return { axis: "y" };
+      return null;
     }
 
     function isEditableTarget(target) {
@@ -221,4 +251,3 @@
       save();
       render();
     }
-

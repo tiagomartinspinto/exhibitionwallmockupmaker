@@ -30,6 +30,40 @@
     function startDrag(event) {
       const middlePan = event.button === 1 && is2dView();
       if (event.button !== undefined && event.button !== 0 && !middlePan) return;
+      const point = pointerPosition(event);
+      if (state.view === "elevation" && activeTool() !== "hand") {
+        const ruler = rulerHit(point);
+        if (ruler) {
+          const width = els.canvas.width / (window.devicePixelRatio || 1);
+          const height = els.canvas.height / (window.devicePixelRatio || 1);
+          const geom = elevationGeometry(width, height);
+          state.guides.visible = true;
+          state.guideDrag = {
+            axis: ruler.axis,
+            newGuide: true,
+            source: "ruler",
+            value: ruler.axis === "x" ? clamp(Math.round(screenToWallX(geom, point.x)), 0, state.wall.width) : clamp(Math.round(screenToWallY(geom, point.y)), 0, state.wall.height)
+          };
+          if (typeof els.canvas.setPointerCapture === "function") {
+            els.canvas.setPointerCapture(event.pointerId);
+          }
+          render({ canvasOnly: true });
+          return;
+        }
+        const guide = guideAtPoint(point);
+        if (guide) {
+          state.guideDrag = {
+            axis: guide.axis,
+            source: "guide",
+            value: guide.value
+          };
+          if (typeof els.canvas.setPointerCapture === "function") {
+            els.canvas.setPointerCapture(event.pointerId);
+          }
+          render({ canvasOnly: true });
+          return;
+        }
+      }
       if ((activeTool() === "hand" && is2dView()) || middlePan) {
         state.panDrag = {
           startX: event.clientX,
@@ -77,7 +111,6 @@
         return;
       }
       if (state.view !== "elevation") return;
-      const point = pointerPosition(event);
       const canvasWidth = els.canvas.width / (window.devicePixelRatio || 1);
       const canvasHeight = els.canvas.height / (window.devicePixelRatio || 1);
       const handleGeom = elevationGeometry(canvasWidth, canvasHeight);
@@ -123,6 +156,19 @@
     }
 
     function moveDrag(event) {
+      if (state.guideDrag && state.view === "elevation") {
+        const width = els.canvas.width / (window.devicePixelRatio || 1);
+        const height = els.canvas.height / (window.devicePixelRatio || 1);
+        const geom = elevationGeometry(width, height);
+        const point = pointerPosition(event);
+        if (state.guideDrag.axis === "x") {
+          state.guideDrag.value = clamp(Math.round(screenToWallX(geom, point.x)), 0, state.wall.width);
+        } else {
+          state.guideDrag.value = clamp(Math.round(screenToWallY(geom, point.y)), 0, state.wall.height);
+        }
+        render({ canvasOnly: true });
+        return;
+      }
       if (state.panDrag && is2dView()) {
         state.view2d.panX = Math.round(state.panDrag.panX + event.clientX - state.panDrag.startX);
         state.view2d.panY = Math.round(state.panDrag.panY + event.clientY - state.panDrag.startY);
@@ -225,6 +271,22 @@
     }
 
     function stopDrag(event) {
+      if (state.guideDrag) {
+        const guides = currentGuides();
+        const axisKey = state.guideDrag.axis === "x" ? "vertical" : "horizontal";
+        const next = guides[axisKey].filter(value => value !== state.guideDrag.value);
+        next.push(state.guideDrag.value);
+        guides[axisKey] = [...new Set(next)].sort((a, b) => a - b);
+        state.guides = guides;
+        state.guideDrag = null;
+        if (event.pointerId !== undefined && typeof els.canvas.hasPointerCapture === "function" && els.canvas.hasPointerCapture(event.pointerId)) {
+          els.canvas.releasePointerCapture(event.pointerId);
+        }
+        syncActiveWallRecord();
+        save();
+        render();
+        return;
+      }
       if (state.panDrag) {
         state.panDrag = null;
         if (event.pointerId !== undefined && typeof els.canvas.hasPointerCapture === "function" && els.canvas.hasPointerCapture(event.pointerId)) {
@@ -264,6 +326,19 @@
       render();
     }
 
+    function removeGuideAtPoint(point) {
+      const guide = guideAtPoint(point);
+      if (!guide) return false;
+      const guides = currentGuides();
+      const axisKey = guide.axis === "x" ? "vertical" : "horizontal";
+      guides[axisKey] = guides[axisKey].filter(value => value !== guide.value);
+      state.guides = guides;
+      syncActiveWallRecord();
+      save();
+      render();
+      return true;
+    }
+
     function serializedItem(item) {
       const normalized = normalizeItem(item);
       return {
@@ -293,6 +368,7 @@
           color: wall.wall?.color || "#f5f4ea"
         },
         items: Array.isArray(wall.items) ? wall.items.map(serializedItem) : [],
+        guides: normalizeGuides(wall.guides || state.guides || defaultGuides()),
         placement: {
           x: number(wall.placement?.x, 1000),
           y: number(wall.placement?.y, 1000),
@@ -392,11 +468,13 @@
         name: wall.name || `Wall ${index + 1}`,
         wall: { width: 6000, height: 3000, depth: 120, color: "#f5f4ea", ...wall.wall },
         items: Array.isArray(wall.items) ? wall.items.map(normalizeItem) : [],
+        guides: normalizeGuides(wall.guides || defaultGuides()),
         placement: { x: 1000, y: 1000, rotation: 0, ...wall.placement }
       })) : state.walls;
       if (!state.walls.length) {
         state.wall = { ...state.wall, ...parsed.wall };
         state.items = Array.isArray(parsed.items) ? parsed.items.map(normalizeItem) : state.items;
+        state.guides = normalizeGuides(parsed.guides || defaultGuides());
       }
       ensureWalls();
       loadActiveWall();

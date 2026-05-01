@@ -27,6 +27,7 @@ It brings together:
 - place title text, explanatory text, screens, graphics, objects, and supports
 - drag, resize, align, and distribute objects on the wall
 - zoom and pan in 2D views with a hand tool
+- use rulers and drag-out guides in the 2D wall view
 - inspect the wall in 3D and preview the full exhibition room
 - upload images and preview them in both 2D and 3D
 - save a project file locally on your machine and reopen it later
@@ -69,6 +70,7 @@ The app supports explicit project files in addition to browser autosave.
 - browser autosave keeps a local working copy in the background
 - when a real project file handle is available, the app also autosaves back to that file on a calmer timer
 - the interface shows the timestamp of the last save
+- guides are saved per wall and can be reused when reopening a project
 
 Project files are stored as JSON on the user's machine.
 
