@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Exhibition Wall Mockup Maker by @tiagomartinspinto</title>
-  <link rel="stylesheet" href="css/styles.css?v=2026-05-01-5">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/styles.css?v=2026-05-09-3">
 </head>
 <body>
   <div class="app">
@@ -33,7 +34,7 @@
         <input id="projectFileInput" type="file" accept=".json,.ewmm" hidden>
       </section>
 
-      <section class="section">
+      <section class="section" data-panel="space2d">
         <h2>Exhibition Room</h2>
         <div class="grid-2">
           <label>Space width mm
@@ -57,7 +58,58 @@
         </label>
       </section>
 
-      <section class="section">
+      <section class="section" data-panel="space2d">
+        <h2>Room placeholder</h2>
+        <label>Name
+          <input id="roomElementName" value="Chair">
+        </label>
+        <div class="grid-2">
+          <label>Type
+            <select id="roomElementType">
+              <option value="chair">Chair</option>
+              <option value="projection">Projection screen</option>
+              <option value="table">Table</option>
+              <option value="other">Other placeholder</option>
+            </select>
+          </label>
+          <label>Shape
+            <select id="roomElementShape">
+              <option value="rect">rectangular</option>
+              <option value="circle">circular</option>
+            </select>
+          </label>
+        </div>
+        <label>Color
+          <input id="roomElementColor" type="color" value="#60748a">
+        </label>
+        <div class="grid-2">
+          <label>Center X mm
+            <input id="roomElementX" type="number" step="50" value="3000">
+          </label>
+          <label>Center Y mm
+            <input id="roomElementY" type="number" step="50" value="3000">
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>Width mm
+            <input id="roomElementW" type="number" min="50" step="50" value="520">
+          </label>
+          <label>Depth mm
+            <input id="roomElementD" type="number" min="50" step="50" value="520">
+          </label>
+        </div>
+        <button id="addRoomElement" type="button">Add placeholder</button>
+      </section>
+
+      <section class="section" data-panel="space2d">
+        <h2>Room placeholders</h2>
+        <div id="roomElementList" class="item-list"></div>
+        <div class="button-row">
+          <button id="clearRoomElements" class="danger" type="button">Clear</button>
+        </div>
+      </section>
+
+      <section class="section" data-panel="elevation space2d">
         <h2>Wall</h2>
         <div id="wallTabs" class="button-row"></div>
         <div class="wall-actions">
@@ -85,12 +137,18 @@
             <input id="wallColor" type="color" value="#f5f4ea">
           </label>
         </div>
-        <p class="small">Space position is used only for Plan and Room views. You can also drag walls directly in Plan.</p>
+        <label>Editing side
+          <select id="wallSide">
+            <option value="front">Front</option>
+            <option value="back">Back</option>
+          </select>
+        </label>
+        <p class="small">Space position is used only for Plan and Room views. X/Y is the wall center. You can also drag walls directly in Plan.</p>
         <div class="grid-2">
-          <label>Wall X in space mm
+          <label>Wall center X mm
             <input id="wallSpaceX" type="number" step="100" value="1000">
           </label>
-          <label>Wall Y in space mm
+          <label>Wall center Y mm
             <input id="wallSpaceY" type="number" step="100" value="1000">
           </label>
         </div>
@@ -99,7 +157,7 @@
         </label>
       </section>
 
-      <section class="section">
+      <section class="section" data-panel="elevation">
         <h2>Object</h2>
         <label>Name
           <input id="itemName" value="Artwork">
@@ -107,20 +165,29 @@
         <div class="grid-2">
           <label>Type
             <select id="itemType">
-              <option value="title">Title text</option>
-              <option value="text">Explanatory text</option>
-              <option value="screen">Screen / moving image</option>
-              <option value="graphic">Printed graphic / still visual</option>
-              <option value="object">Physical object / prototype</option>
-              <option value="support">Support / display hardware</option>
+              <option value="mdf">MDF cutout / sticker</option>
+              <option value="object">Object / prototype</option>
+              <option value="graphic">Printed graphic</option>
+              <option value="screen">Screen</option>
+              <option value="support">Supporting structure / shelf</option>
+              <option value="text">Text</option>
             </select>
           </label>
+          <label>Side
+            <select id="itemSide">
+              <option value="front">Front</option>
+              <option value="back">Back</option>
+            </select>
+          </label>
+        </div>
+        <div class="grid-2">
           <label>Shape
             <select id="itemShape">
               <option value="rect">rectangular</option>
               <option value="circle">circular</option>
             </select>
           </label>
+          <span aria-hidden="true"></span>
         </div>
         <label>Color
           <input id="itemColor" type="color" value="#2f6f9f">
@@ -128,8 +195,15 @@
         <label>Visible text
           <textarea id="itemText" spellcheck="true" placeholder="Optional words shown on the object"></textarea>
         </label>
+        <label>Notes
+          <textarea id="itemNotes" spellcheck="true" placeholder="Production notes, materials, or reminders"></textarea>
+        </label>
         <label>Image
           <input id="itemImage" type="file" accept="image/*">
+        </label>
+        <label class="checkbox-row">
+          <input id="itemHanging" type="checkbox">
+          Hanging from top
         </label>
         <div class="grid-2">
           <label>X from left mm
@@ -150,7 +224,7 @@
         <button id="addItem">Add to wall</button>
       </section>
 
-      <section class="section">
+      <section class="section" data-panel="elevation">
         <h2>Objects</h2>
         <div id="itemList" class="item-list"></div>
         <div class="button-row">
@@ -194,12 +268,12 @@
             <button id="zoomOut" class="mini-button" type="button" title="Zoom out">-</button>
             <button id="zoomIn" class="mini-button" type="button" title="Zoom in">+</button>
             <button id="resetView" class="mini-button" type="button" title="Reset view">Reset</button>
-            <button id="rotateXDown" class="mini-button" type="button" title="Rotate X backward">X-</button>
-            <button id="rotateXUp" class="mini-button" type="button" title="Rotate X forward">X+</button>
-            <button id="rotateYLeft" class="mini-button" type="button" title="Rotate Y left">Y-</button>
-            <button id="rotateYRight" class="mini-button" type="button" title="Rotate Y right">Y+</button>
-            <button id="rotateZLeft" class="mini-button" type="button" title="Rotate Z left">Z-</button>
-            <button id="rotateZRight" class="mini-button" type="button" title="Rotate Z right">Z+</button>
+            <button id="rotateXDown" class="mini-button" type="button" title="Rotate X backward" hidden>X-</button>
+            <button id="rotateXUp" class="mini-button" type="button" title="Rotate X forward" hidden>X+</button>
+            <button id="rotateYLeft" class="mini-button" type="button" title="Rotate preview left" hidden>Y-</button>
+            <button id="rotateYRight" class="mini-button" type="button" title="Rotate preview right" hidden>Y+</button>
+            <button id="rotateZLeft" class="mini-button" type="button" title="Rotate Z left" hidden>Z-</button>
+            <button id="rotateZRight" class="mini-button" type="button" title="Rotate Z right" hidden>Z+</button>
           </div>
           <div class="view-controls" aria-label="Alignment controls">
             <span class="control-label">Align</span>
@@ -234,12 +308,12 @@
     </main>
   </div>
 
-  <script src="js/core.js?v=2026-05-01-5"></script>
-  <script src="js/model.js?v=2026-05-01-5"></script>
-  <script src="js/rendering.js?v=2026-05-01-5"></script>
-  <script src="js/ui.js?v=2026-05-01-5"></script>
-  <script src="js/interactions.js?v=2026-05-01-5"></script>
-  <script src="js/export.js?v=2026-05-01-5"></script>
-  <script src="js/boot.js?v=2026-05-01-5"></script>
+  <script src="js/core.js?v=2026-05-09-3"></script>
+  <script src="js/model.js?v=2026-05-09-3"></script>
+  <script src="js/rendering.js?v=2026-05-09-3"></script>
+  <script src="js/ui.js?v=2026-05-09-3"></script>
+  <script src="js/interactions.js?v=2026-05-09-3"></script>
+  <script src="js/export.js?v=2026-05-09-3"></script>
+  <script src="js/boot.js?v=2026-05-09-3"></script>
 </body>
 </html>

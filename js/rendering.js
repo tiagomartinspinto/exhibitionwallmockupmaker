@@ -89,12 +89,24 @@
       drawArrowHead(x2, y2, angle, color);
     }
 
+    const EXPORT_TEXT_BOOST = 16;
+    const EXPORT_TEXT_MAX_SIZE = 36;
+
+    function isExportCanvas() {
+      return activeCanvas !== els.canvas;
+    }
+
+    function effectiveTextSize(size = 12, options = {}) {
+      if (!isExportCanvas() || options.noExportBoost === true) return size;
+      return Math.min(size + EXPORT_TEXT_BOOST, EXPORT_TEXT_MAX_SIZE);
+    }
+
     function drawText(text, x, y, options = {}) {
       activeCtx.save();
       let value = String(text);
       activeCtx.fillStyle = options.color || "#1d1d1d";
-      const boost = activeCanvas !== els.canvas && options.noExportBoost !== true ? 5 : 0;
-      activeCtx.font = `${options.weight || 700} ${(options.size || 12) + boost}px Inter, system-ui, sans-serif`;
+      const fontSize = effectiveTextSize(options.size || 12, options);
+      activeCtx.font = `${options.weight || 700} ${fontSize}px Inter, system-ui, sans-serif`;
       activeCtx.textAlign = options.align || "center";
       activeCtx.textBaseline = options.baseline || "middle";
       activeCtx.lineJoin = "round";
@@ -127,22 +139,24 @@
     }
 
     function drawDimension(x1, y1, x2, y2, label, offset = 18, vertical = false, color = "#4b5750") {
+      const labelOptions = { color, halo: contrastHalo(color) };
+      const labelOffset = Math.max(offset, isExportCanvas() ? Math.ceil(effectiveTextSize(12, labelOptions) * 0.75) : offset);
       if (vertical) {
         drawArrowDimension(x1, y1, x2, y2, color);
         drawLine(x1 - 5, y1, x1 + 5, y1, color);
         drawLine(x2 - 5, y2, x2 + 5, y2, color);
-        drawText(label, x1 - offset, (y1 + y2) / 2, { rotate: -Math.PI / 2, color, halo: contrastHalo(color) });
+        drawText(label, x1 - labelOffset, (y1 + y2) / 2, { rotate: -Math.PI / 2, ...labelOptions });
       } else {
         drawArrowDimension(x1, y1, x2, y2, color);
         drawLine(x1, y1 - 5, x1, y1 + 5, color);
         drawLine(x2, y2 - 5, x2, y2 + 5, color);
-        drawText(label, (x1 + x2) / 2, y1 - offset, { color, halo: contrastHalo(color) });
+        drawText(label, (x1 + x2) / 2, y1 - labelOffset, labelOptions);
       }
     }
 
-    function textWidth(text, size = 12, weight = 700) {
+    function textWidth(text, size = 12, weight = 700, options = {}) {
       activeCtx.save();
-      activeCtx.font = `${weight} ${size}px Inter, system-ui, sans-serif`;
+      activeCtx.font = `${weight} ${effectiveTextSize(size, options)}px Inter, system-ui, sans-serif`;
       const width = activeCtx.measureText(String(text)).width;
       activeCtx.restore();
       return width;
@@ -159,7 +173,7 @@
       const color = options.color || "#1d1d1d";
       const halo = options.halo || contrastHalo(color);
       const size = options.size || 11;
-      const gap = size + 4;
+      const gap = effectiveTextSize(size, options) + 4;
       drawLine(anchor.x, anchor.y, labelPoint.x, labelPoint.y, color, [3, 3]);
       lines.forEach((line, index) => {
         drawText(line, labelPoint.x, labelPoint.y + index * gap, {
@@ -370,15 +384,16 @@
     function estimatedLabelBox(point, text, options = {}) {
       const size = options.size || 10;
       const weight = options.weight || 600;
+      const measuredSize = effectiveTextSize(size, options);
       const paddingX = options.paddingX || 10;
       const paddingY = options.paddingY || 6;
       if (options.vertical) {
-        const width = size + paddingX * 1.2;
-        const height = Math.min(options.maxHeight || 220, textWidth(text, size, weight) + paddingY * 2);
+        const width = measuredSize + paddingX * 1.2;
+        const height = Math.min(options.maxHeight || 220, textWidth(text, size, weight, options) + paddingY * 2);
         return { x: point.x - width / 2, y: point.y - height / 2, w: width, h: height };
       }
-      const width = Math.min(options.maxWidth || 240, textWidth(text, size, weight) + paddingX * 2);
-      const height = size + paddingY * 2;
+      const width = Math.min(options.maxWidth || 240, textWidth(text, size, weight, options) + paddingX * 2);
+      const height = measuredSize + paddingY * 2;
       return { x: point.x - width / 2, y: point.y - height / 2, w: width, h: height };
     }
 
@@ -723,11 +738,12 @@
 
     function overlapIds() {
       const ids = new Set();
-      for (let i = 0; i < state.items.length; i += 1) {
-        for (let j = i + 1; j < state.items.length; j += 1) {
-          if (itemsOverlap(state.items[i], state.items[j])) {
-            ids.add(state.items[i].id);
-            ids.add(state.items[j].id);
+      const items = itemsForSide(activeWallSide());
+      for (let i = 0; i < items.length; i += 1) {
+        for (let j = i + 1; j < items.length; j += 1) {
+          if (itemsOverlap(items[i], items[j])) {
+            ids.add(items[i].id);
+            ids.add(items[j].id);
           }
         }
       }
@@ -783,6 +799,29 @@
       const drawW = image.naturalWidth * ratio;
       const drawH = image.naturalHeight * ratio;
       activeCtx.drawImage(image, x + (w - drawW) / 2, y + (h - drawH) / 2, drawW, drawH);
+      activeCtx.restore();
+    }
+
+    function hangingAnchorOffsets(item) {
+      return item.shape === "circle" ? [0.34, 0.66] : [0.22, 0.78];
+    }
+
+    function drawHangingLines2D(geom, item, box, color) {
+      if (!item.hanging) return;
+      const topY = box.y;
+      const wallTopY = geom.y;
+      const stroke = color || contrastText(state.wall.color);
+      activeCtx.save();
+      activeCtx.lineWidth = activeCanvas !== els.canvas ? 2.8 : 1.4;
+      activeCtx.strokeStyle = stroke;
+      activeCtx.setLineDash([]);
+      hangingAnchorOffsets(item).forEach(offset => {
+        const x = box.x + box.w * offset;
+        activeCtx.beginPath();
+        activeCtx.moveTo(x, wallTopY);
+        activeCtx.lineTo(x, topY);
+        activeCtx.stroke();
+      });
       activeCtx.restore();
     }
 
@@ -882,7 +921,7 @@
     function selectedSingleItem() {
       const ids = selectedIds();
       if (ids.length !== 1) return null;
-      return state.items.find(item => item.id === ids[0]) || null;
+      return state.items.find(item => item.id === ids[0] && itemSide(item) === activeWallSide()) || null;
     }
 
     function resizeHandleAt(point, geom) {
@@ -923,7 +962,7 @@
         guides.vertical.forEach(value => vertical.push({ value, line: { axis: "x", value } }));
         guides.horizontal.forEach(value => horizontal.push({ value, line: { axis: "y", value } }));
       }
-      state.items.forEach(item => {
+      itemsForSide(activeWallSide()).forEach(item => {
         if (exclude.has(item.id)) return;
         vertical.push({ value: item.x, line: { axis: "x", value: item.x } }, { value: item.x + item.width / 2, line: { axis: "x", value: item.x + item.width / 2 } }, { value: item.x + item.width, line: { axis: "x", value: item.x + item.width } });
         horizontal.push({ value: item.y, line: { axis: "y", value: item.y } }, { value: item.y + item.height / 2, line: { axis: "y", value: item.y + item.height / 2 } }, { value: item.y + item.height, line: { axis: "y", value: item.y + item.height } });
@@ -950,6 +989,7 @@
       const wallMark = contrastText(state.wall.color);
       const surroundMark = activeCanvas === els.canvas ? contrastText(sceneSurroundColor()) : "#4b5750";
       const overlaps = overlapIds();
+      const visibleItems = itemsForSide(activeWallSide());
       const canvasSize = { width, height };
       activeCtx.fillStyle = activeCanvas === els.canvas ? sceneSurroundColor() : "#f9fbf7";
       activeCtx.fillRect(0, 0, width, height);
@@ -966,7 +1006,7 @@
       drawGuides(geom, width, height);
       drawSnapLines(geom);
 
-      const itemBoxes = state.items.map(item => screenBoxForItem(geom, item));
+      const itemBoxes = visibleItems.map(item => screenBoxForItem(geom, item));
       if (exportMode) {
         drawExportPositionGuides(geom, itemBoxes);
       }
@@ -978,6 +1018,7 @@
         const showFullMeasures = selected || overlap;
         const stroke = invalid || overlap ? "#b3261e" : selected ? "#d7d3cb" : "#1f2924";
 
+        drawHangingLines2D(geom, item, { x, y, w, h }, wallMark);
         drawItemShape(item, x, y, w, h, { stroke, lineWidth: invalid || overlap || selected ? 3 : 1.5 });
 
         if (item.type === "screen") {
@@ -1009,7 +1050,7 @@
       });
 
       drawRulers(geom, width, height);
-      els.scaleLabel.textContent = `2D zoom ${Math.round(state.view2d.zoom * 100)}% | scale 1 px = ${Math.round(1 / geom.scale)} mm`;
+      els.scaleLabel.textContent = `2D ${sideLabel(activeWallSide()).toLowerCase()} zoom ${Math.round(state.view2d.zoom * 100)}% | scale 1 px = ${Math.round(1 / geom.scale)} mm`;
     }
 
     function validHexColor(value, fallback) {
@@ -1030,7 +1071,6 @@
       if (type === "support") return 42;
       if (type === "object") return 86;
       if (type === "graphic") return 20;
-      if (type === "title") return 16;
       if (type === "text") return 12;
       return 24;
     }
@@ -1088,8 +1128,8 @@
       const size = label.size || 11;
       const weight = label.weight || 700;
       const maxWidth = label.maxWidth || 140;
-      const rawWidth = Math.min(maxWidth, textWidth(label.text, size, weight) + 18);
-      const rawHeight = size + 12;
+      const rawWidth = Math.min(maxWidth, textWidth(label.text, size, weight, label) + 18);
+      const rawHeight = effectiveTextSize(size, label) + 12;
       const candidates = [
         { x: label.x, y: label.y },
         { x: label.x, y: label.y - rawHeight - 4 },
@@ -1243,7 +1283,9 @@
         face([{ x: 0, y: 0, z: frontZ }, { x: state.wall.width, y: 0, z: frontZ }, { x: state.wall.width, y: state.wall.height, z: frontZ }, { x: 0, y: state.wall.height, z: frontZ }], state.wall.color, "#303137", "front")
       ];
       const frontFace = faces.find(faceDef => faceDef.name === "front");
+      const backFace = faces.find(faceDef => faceDef.name === "back");
       const frontIsVisible = frontFace ? visibleFace(frontFace.points) : true;
+      const backIsVisible = backFace ? visibleFace(backFace.points) : false;
 
       const renderables = faces.map(faceDef => ({
         z: faceDef.z,
@@ -1253,34 +1295,42 @@
         }
       }));
 
-      if (frontIsVisible) state.items.forEach(rawItem => {
+      state.items.forEach(rawItem => {
         const item = normalizeItem(rawItem);
+        const side = itemSide(item);
+        if ((side === "front" && !frontIsVisible) || (side === "back" && !backIsVisible)) return;
+        const sideSign = side === "front" ? 1 : -1;
         const gap = 6;
         const relief = itemReliefDepth(item);
-        const zBackItem = frontZ + gap;
-        const zFrontItem = zBackItem + relief;
+        const mountZ = side === "front" ? frontZ : backZ;
+        const zBackItem = mountZ + sideSign * gap;
+        const zFrontItem = zBackItem + sideSign * relief;
+        const left = side === "front" ? item.x : state.wall.width - item.x - item.width;
+        const right = side === "front" ? item.x + item.width : state.wall.width - item.x;
         const shadowPoints = [
-          { x: item.x + 8, y: Math.max(0, item.y - 8), z: frontZ + 1 },
-          { x: item.x + item.width + 8, y: Math.max(0, item.y - 8), z: frontZ + 1 },
-          { x: item.x + item.width + 16, y: Math.min(state.wall.height, item.y + item.height - 6), z: frontZ + 1 },
-          { x: item.x + 16, y: Math.min(state.wall.height, item.y + item.height - 6), z: frontZ + 1 }
+          { x: left + 8, y: Math.max(0, item.y - 8), z: mountZ + sideSign },
+          { x: right + 8, y: Math.max(0, item.y - 8), z: mountZ + sideSign },
+          { x: right + 16, y: Math.min(state.wall.height, item.y + item.height - 6), z: mountZ + sideSign },
+          { x: left + 16, y: Math.min(state.wall.height, item.y + item.height - 6), z: mountZ + sideSign }
         ].map(project);
         const backPoints3d = [
-          { x: item.x, y: item.y, z: zBackItem },
-          { x: item.x + item.width, y: item.y, z: zBackItem },
-          { x: item.x + item.width, y: item.y + item.height, z: zBackItem },
-          { x: item.x, y: item.y + item.height, z: zBackItem }
+          { x: left, y: item.y, z: zBackItem },
+          { x: right, y: item.y, z: zBackItem },
+          { x: right, y: item.y + item.height, z: zBackItem },
+          { x: left, y: item.y + item.height, z: zBackItem }
         ];
         const frontPoints3d = [
-          { x: item.x, y: item.y, z: zFrontItem },
-          { x: item.x + item.width, y: item.y, z: zFrontItem },
-          { x: item.x + item.width, y: item.y + item.height, z: zFrontItem },
-          { x: item.x, y: item.y + item.height, z: zFrontItem }
+          { x: left, y: item.y, z: zFrontItem },
+          { x: right, y: item.y, z: zFrontItem },
+          { x: right, y: item.y + item.height, z: zFrontItem },
+          { x: left, y: item.y + item.height, z: zFrontItem }
         ];
         const backPoints = backPoints3d.map(project);
         const frontPoints = frontPoints3d.map(project);
-        const frontCenter = projectedCenter(frontPoints);
-        const frontAngle = Math.atan2(frontPoints[1].y - frontPoints[0].y, frontPoints[1].x - frontPoints[0].x);
+        const displayBackPoints = side === "back" ? [backPoints[1], backPoints[0], backPoints[3], backPoints[2]] : backPoints;
+        const displayFrontPoints = side === "back" ? [frontPoints[1], frontPoints[0], frontPoints[3], frontPoints[2]] : frontPoints;
+        const frontCenter = projectedCenter(displayFrontPoints);
+        const frontAngle = Math.atan2(displayFrontPoints[1].y - displayFrontPoints[0].y, displayFrontPoints[1].x - displayFrontPoints[0].x);
         const sideStroke = shade(item.color, -34);
         const sideFill = shade(item.color, -22);
         const topFill = shade(item.color, -12);
@@ -1292,17 +1342,17 @@
 
         if (item.shape === "circle") {
           renderables.push({
-            z: averageProjectedZ(backPoints),
-            draw: () => drawProjectedEllipse(item, backPoints, shade(item.color, -26), sideStroke, { center: projectedCenter(backPoints), rotation: frontAngle, drawImage: false })
+            z: averageProjectedZ(displayBackPoints),
+            draw: () => drawProjectedEllipse(item, displayBackPoints, shade(item.color, -26), sideStroke, { center: projectedCenter(displayBackPoints), rotation: frontAngle, drawImage: false })
           });
           renderables.push({
-            z: averageProjectedZ(frontPoints) - 0.2,
+            z: averageProjectedZ(displayFrontPoints) - 0.2,
             draw: () => {
               [0, 1, 2, 3].forEach(index => drawLine(backPoints[index].x, backPoints[index].y, frontPoints[index].x, frontPoints[index].y, sideStroke));
             }
           });
           renderables.push({
-            z: averageProjectedZ(frontPoints),
+            z: averageProjectedZ(displayFrontPoints),
             draw: () => {
               if (item.illuminated) {
                 const glow = activeCtx.createRadialGradient(frontCenter.x, frontCenter.y, 0, frontCenter.x, frontCenter.y, 72 * state.view3d.zoom);
@@ -1311,7 +1361,7 @@
                 activeCtx.fillStyle = glow;
                 activeCtx.fillRect(frontCenter.x - 110, frontCenter.y - 110, 220, 220);
               }
-              drawProjectedEllipse(item, frontPoints, item.color, "#1f2924", { center: frontCenter, rotation: frontAngle });
+              drawProjectedEllipse(item, displayFrontPoints, item.color, "#1f2924", { center: frontCenter, rotation: frontAngle });
             }
           });
         } else {
@@ -1331,7 +1381,7 @@
             });
           });
           renderables.push({
-            z: averageProjectedZ(frontPoints),
+            z: averageProjectedZ(displayFrontPoints),
             draw: () => {
               if (item.illuminated) {
                 const glow = activeCtx.createRadialGradient(frontCenter.x, frontCenter.y, 0, frontCenter.x, frontCenter.y, 72 * state.view3d.zoom);
@@ -1340,8 +1390,8 @@
                 activeCtx.fillStyle = glow;
                 activeCtx.fillRect(frontCenter.x - 110, frontCenter.y - 110, 220, 220);
               }
-              fillProjectedFace(frontPoints, item.color, "#1f2924", 1.4);
-              drawProjectedImage(item, frontPoints, {
+              fillProjectedFace(displayFrontPoints, item.color, "#1f2924", 1.4);
+              drawProjectedImage(item, displayFrontPoints, {
                 center: frontCenter,
                 rotation: frontAngle
               });
@@ -1353,7 +1403,7 @@
       renderables.sort((a, b) => a.z - b.z).forEach(renderable => renderable.draw());
       applyCinematicLight(width, height);
       drawAxisGizmo(width, height, rotY, rotX, rotZ);
-      els.scaleLabel.textContent = `3D zoom ${Math.round(state.view3d.zoom * 100)}% | X ${Math.round(state.view3d.rotX ?? state.view3d.pitch ?? -10)} deg | Y ${Math.round(state.view3d.rotY ?? state.view3d.yaw ?? 24)} deg | Z ${Math.round(state.view3d.rotZ ?? state.view3d.roll ?? 0)} deg`;
+      els.scaleLabel.textContent = `3D wall preview zoom ${Math.round(state.view3d.zoom * 100)}% | Y ${Math.round(state.view3d.rotY ?? state.view3d.yaw ?? 24)} deg`;
     }
 
     function spaceGeometry(width, height) {
@@ -1368,14 +1418,70 @@
       return { x: geom.x + x * geom.scale, y: geom.y + geom.h - y * geom.scale };
     }
 
+    function roomElementScreenBox(geom, rawElement) {
+      const element = normalizeRoomElement(rawElement);
+      const x = geom.x + (element.x - element.width / 2) * geom.scale;
+      const y = geom.y + geom.h - (element.y + element.depth / 2) * geom.scale;
+      return {
+        element,
+        x,
+        y,
+        w: element.width * geom.scale,
+        h: element.depth * geom.scale
+      };
+    }
+
+    function drawRoomElement2D(box, floorMark) {
+      const { element, x, y, w, h } = box;
+      const selected = element.id === state.selectedRoomElementId;
+      const ink = contrastText(element.color);
+      activeCtx.save();
+      activeCtx.fillStyle = element.color;
+      activeCtx.strokeStyle = selected ? "#d7d3cb" : shade(element.color, -36);
+      activeCtx.lineWidth = selected ? 3 : 1.5;
+      if (element.shape === "circle") {
+        activeCtx.beginPath();
+        activeCtx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+        activeCtx.fill();
+        activeCtx.stroke();
+      } else {
+        activeCtx.fillRect(x, y, w, h);
+        activeCtx.strokeRect(x, y, w, h);
+      }
+      if (element.type === "projection") {
+        activeCtx.strokeStyle = "rgba(255,255,255,0.38)";
+        activeCtx.lineWidth = Math.max(1, Math.min(5, h * 0.16));
+        activeCtx.beginPath();
+        activeCtx.moveTo(x + 8, y + h / 2);
+        activeCtx.lineTo(x + w - 8, y + h / 2);
+        activeCtx.stroke();
+      }
+      activeCtx.restore();
+      const label = element.name || roomElementTypeLabel(element.type);
+      const maxWidth = Math.max(42, w - 10);
+      const labelFits = w > 72 && h > 34;
+      if (labelFits) {
+        drawText(label, x + w / 2, y + h / 2, { color: ink, halo: contrastHalo(ink), size: selected ? 12 : 10, weight: 700, maxWidth });
+      } else {
+        drawLeaderLabel([label], { x: x + w / 2, y: y + h / 2 }, { x: x + w / 2 + 84, y: y + h / 2 - 16 }, {
+          color: floorMark,
+          halo: contrastHalo(floorMark),
+          size: 10,
+          maxWidth: 140
+        });
+      }
+    }
+
     function wallSpaceEndpoints(wall) {
       const placement = wall.placement || { x: 0, y: 0, rotation: 0 };
       const angle = (placement.rotation || 0) * Math.PI / 180;
-      const dx = Math.cos(angle) * wall.wall.width;
-      const dy = Math.sin(angle) * wall.wall.width;
+      const half = wall.wall.width / 2;
+      const dx = Math.cos(angle) * half;
+      const dy = Math.sin(angle) * half;
       return {
-        a: { x: placement.x, y: placement.y },
-        b: { x: placement.x + dx, y: placement.y + dy }
+        a: { x: placement.x - dx, y: placement.y - dy },
+        b: { x: placement.x + dx, y: placement.y + dy },
+        center: { x: placement.x, y: placement.y }
       };
     }
 
@@ -1395,6 +1501,8 @@
       drawText(`${state.space.width} mm`, geom.x + geom.w / 2, geom.y + geom.h + 34, { color: surroundMark, halo: contrastHalo(surroundMark), size: 13 });
       drawText(`${state.space.depth} mm`, geom.x - 34, geom.y + geom.h / 2, { rotate: -Math.PI / 2, color: surroundMark, halo: contrastHalo(surroundMark), size: 13 });
 
+      (state.roomElements || []).map(element => roomElementScreenBox(geom, element)).forEach(box => drawRoomElement2D(box, floorMark));
+
       state.walls.forEach((wall, index) => {
         const ends = wallSpaceEndpoints(wall);
         const a = spacePoint(geom, ends.a.x, ends.a.y);
@@ -1408,10 +1516,27 @@
         activeCtx.lineTo(b.x, b.y);
         activeCtx.stroke();
         const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+        const angle = ((wall.placement && wall.placement.rotation) || 0) * Math.PI / 180;
+        const nx = -Math.sin(angle);
+        const ny = Math.cos(angle);
+        const sideMarkLength = Math.max(260, Math.min(520, wall.wall.depth * 3));
+        const frontMark = spacePoint(geom, ends.center.x + nx * sideMarkLength, ends.center.y + ny * sideMarkLength);
+        const backMark = spacePoint(geom, ends.center.x - nx * sideMarkLength, ends.center.y - ny * sideMarkLength);
+        drawLine(mid.x, mid.y, frontMark.x, frontMark.y, selected ? "#d7d3cb" : floorMark, [3, 4]);
+        drawText("F", frontMark.x, frontMark.y, { color: selected ? "#d7d3cb" : floorMark, halo: contrastHalo(floorMark), size: 10, weight: 800 });
+        drawText("B", backMark.x, backMark.y, { color: floorMark, halo: contrastHalo(floorMark), size: 10, weight: 800 });
+        activeCtx.fillStyle = selected ? "#090a0b" : floorMark;
+        activeCtx.strokeStyle = selected ? "#d7d3cb" : "rgba(255,255,255,0.35)";
+        activeCtx.lineWidth = 1.5;
+        activeCtx.beginPath();
+        activeCtx.arc(mid.x, mid.y, selected ? 5 : 4, 0, Math.PI * 2);
+        activeCtx.fill();
+        activeCtx.stroke();
         drawText(wall.name || `Wall ${index + 1}`, mid.x, mid.y - 18, { color: selected ? "#d7d3cb" : floorMark, halo: contrastHalo(floorMark), size: 12 });
         drawText(`${wall.wall.width} mm`, mid.x, mid.y + 18, { color: floorMark, halo: contrastHalo(floorMark), size: 10, weight: 600 });
       });
-      els.scaleLabel.textContent = `Floor plan zoom ${Math.round(state.view2d.zoom * 100)}% | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | ${activeTool() === "hand" ? "drag to pan" : "drag walls to move"}`;
+      const elementCount = (state.roomElements || []).length;
+      els.scaleLabel.textContent = `Floor plan zoom ${Math.round(state.view2d.zoom * 100)}% | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | ${elementCount} placeholder${elementCount === 1 ? "" : "s"} | ${activeTool() === "hand" ? "drag to pan" : "drag walls or placeholders to move"}`;
     }
 
     function drawSpace3D() {
@@ -1493,6 +1618,33 @@
       fillProjectedFace(floorOutline, activeCanvas === els.canvas ? shade(floorColor, -10) : "#edf2e9", activeCanvas === els.canvas ? shade(floorColor, 10) : "#d9e0d7", 1);
       const faces = [];
 
+      (state.roomElements || []).forEach(rawElement => {
+        const element = normalizeRoomElement(rawElement);
+        const left = element.x - element.width / 2;
+        const right = element.x + element.width / 2;
+        const near = element.y - element.depth / 2;
+        const far = element.y + element.depth / 2;
+        const floorLift = 12;
+        const points3d = [
+          { x: left, y: floorLift, z: near },
+          { x: right, y: floorLift, z: near },
+          { x: right, y: floorLift, z: far },
+          { x: left, y: floorLift, z: far }
+        ];
+        const projected = points3d.map(projectRoom);
+        faces.push({
+          points: projected,
+          fill: element.color,
+          stroke: element.id === state.selectedRoomElementId ? "#d7d3cb" : shade(element.color, -34),
+          z: averageProjectedZ(projected) - 8,
+          always: true,
+          custom: element.shape === "circle",
+          drawExtra: element.shape === "circle"
+            ? points => drawProjectedEllipse({ ...element, image: "" }, points, element.color, element.id === state.selectedRoomElementId ? "#d7d3cb" : shade(element.color, -34), { drawImage: false })
+            : null
+        });
+      });
+
       state.walls.forEach((wall, index) => {
         const ends = wallSpaceEndpoints(wall);
         const wallHeight = wall.wall.height;
@@ -1545,14 +1697,17 @@
         faces.push(face3d(wallTop, shade(wall.wall.color, -12), edgeStroke));
         faces.push(wallFaceDef);
 
-        if (!visibleFace(wallFaceDef.points)) return;
         (wall.items || []).forEach(rawItem => {
           const item = normalizeItem(rawItem);
+          const side = itemSide(item);
+          const sideFace = side === "front" ? wallFaceDef : wallBackDef;
+          if (!visibleFace(sideFace.points)) return;
+          const sideSign = side === "front" ? 1 : -1;
           const gap = 8;
-          const backOffset = halfDepth + gap;
-          const frontOffset = backOffset + itemReliefDepth(item);
-          const left = item.x;
-          const right = item.x + item.width;
+          const backOffset = sideSign * (halfDepth + gap);
+          const frontOffset = backOffset + sideSign * itemReliefDepth(item);
+          const left = side === "front" ? item.x : wall.wall.width - item.x - item.width;
+          const right = side === "front" ? item.x + item.width : wall.wall.width - item.x;
           const bottom = item.y;
           const top = item.y + item.height;
           const backPoints3d = [
@@ -1569,16 +1724,18 @@
           ];
           const backProjected = backPoints3d.map(projectRoom);
           const frontProjected = frontPoints3d.map(projectRoom);
-          const frontCenter = projectedCenter(frontProjected);
-          const rotation = Math.atan2(frontProjected[1].y - frontProjected[0].y, frontProjected[1].x - frontProjected[0].x);
+          const displayBackProjected = side === "back" ? [backProjected[1], backProjected[0], backProjected[3], backProjected[2]] : backProjected;
+          const displayFrontProjected = side === "back" ? [frontProjected[1], frontProjected[0], frontProjected[3], frontProjected[2]] : frontProjected;
+          const frontCenter = projectedCenter(displayFrontProjected);
+          const rotation = Math.atan2(displayFrontProjected[1].y - displayFrontProjected[0].y, displayFrontProjected[1].x - displayFrontProjected[0].x);
           const sideStroke = shade(item.color, -34);
           const sideFill = shade(item.color, -22);
           const topFill = shade(item.color, -12);
           const shadowPoints = [
-            { x: ends.a.x + ux * (left + 8) + nx * (halfDepth + 2), y: Math.max(0, bottom - 8), z: ends.a.y + uy * (left + 8) + ny * (halfDepth + 2) },
-            { x: ends.a.x + ux * (right + 8) + nx * (halfDepth + 2), y: Math.max(0, bottom - 8), z: ends.a.y + uy * (right + 8) + ny * (halfDepth + 2) },
-            { x: ends.a.x + ux * (right + 16) + nx * (halfDepth + 2), y: Math.min(wallHeight, top - 6), z: ends.a.y + uy * (right + 16) + ny * (halfDepth + 2) },
-            { x: ends.a.x + ux * (left + 16) + nx * (halfDepth + 2), y: Math.min(wallHeight, top - 6), z: ends.a.y + uy * (left + 16) + ny * (halfDepth + 2) }
+            { x: ends.a.x + ux * (left + 8) + nx * sideSign * (halfDepth + 2), y: Math.max(0, bottom - 8), z: ends.a.y + uy * (left + 8) + ny * sideSign * (halfDepth + 2) },
+            { x: ends.a.x + ux * (right + 8) + nx * sideSign * (halfDepth + 2), y: Math.max(0, bottom - 8), z: ends.a.y + uy * (right + 8) + ny * sideSign * (halfDepth + 2) },
+            { x: ends.a.x + ux * (right + 16) + nx * sideSign * (halfDepth + 2), y: Math.min(wallHeight, top - 6), z: ends.a.y + uy * (right + 16) + ny * sideSign * (halfDepth + 2) },
+            { x: ends.a.x + ux * (left + 16) + nx * sideSign * (halfDepth + 2), y: Math.min(wallHeight, top - 6), z: ends.a.y + uy * (left + 16) + ny * sideSign * (halfDepth + 2) }
           ].map(projectRoom);
           faces.push({
             points: shadowPoints,
@@ -1588,18 +1745,18 @@
           });
           if (item.shape === "circle") {
             faces.push({
-              points: backProjected,
+              points: displayBackProjected,
               fill: shade(item.color, -26),
               stroke: sideStroke,
-              z: averageProjectedZ(backProjected),
+              z: averageProjectedZ(displayBackProjected),
               custom: true,
               drawExtra: projected => drawProjectedEllipse(item, projected, shade(item.color, -26), sideStroke, { center: projectedCenter(projected), rotation, drawImage: false })
             });
             faces.push({
-              points: frontProjected,
+              points: displayFrontProjected,
               fill: item.color,
               stroke: "#1f2924",
-              z: averageProjectedZ(frontProjected),
+              z: averageProjectedZ(displayFrontProjected),
               custom: true,
               drawExtra: projected => {
                 if (item.illuminated) {
@@ -1622,10 +1779,10 @@
               faces.push(face3d(faceDef.points, faceDef.fill, sideStroke));
             });
             faces.push({
-              points: frontProjected,
+              points: displayFrontProjected,
               fill: item.color,
               stroke: "#1f2924",
-              z: averageProjectedZ(frontProjected),
+              z: averageProjectedZ(displayFrontProjected),
               drawExtra: projected => {
                 if (item.illuminated) {
                   const glow = activeCtx.createRadialGradient(frontCenter.x, frontCenter.y, 0, frontCenter.x, frontCenter.y, 74 * state.view3d.zoom);
@@ -1646,7 +1803,7 @@
 
       const sortedFaces = faces.sort((a, b) => a.z - b.z);
       sortedFaces.forEach(face => {
-        if (!visibleFace(face.points)) return;
+        if (!face.always && !visibleFace(face.points)) return;
         if (face.custom) {
           if (typeof face.drawExtra === "function") face.drawExtra(face.points);
           return;
@@ -1657,7 +1814,7 @@
 
       applyCinematicLight(width, height);
       drawAxisGizmo(width, height, rotY, rotX, rotZ);
-      els.scaleLabel.textContent = `Space 3D | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | X ${Math.round(state.view3d.rotX ?? -10)} deg | Y ${Math.round(state.view3d.rotY ?? 24)} deg | Z ${Math.round(state.view3d.rotZ ?? 0)} deg`;
+      els.scaleLabel.textContent = `3D room preview | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | ${(state.roomElements || []).length} placeholder${(state.roomElements || []).length === 1 ? "" : "s"} | Y ${Math.round(state.view3d.rotY ?? 24)} deg`;
     }
 
     function drawAxisGizmo(width, height, yaw, pitch, roll) {

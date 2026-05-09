@@ -2,17 +2,18 @@
       els.itemList.innerHTML = "";
       const overlaps = overlapIds();
       const count = selectedIds().length;
+      const visibleItems = itemsForSide(activeWallSide());
       const overlapText = overlaps.size ? `${overlaps.size} object${overlaps.size === 1 ? "" : "s"} need overlap attention.` : "No overlaps detected.";
-      els.overlapSummary.textContent = `${overlapText} ${count} selected. Shift-click objects to select more than one.`;
-      if (!state.items.length) {
+      els.overlapSummary.textContent = `${sideLabel(activeWallSide())} side. ${overlapText} ${count} selected. Shift-click objects to select more than one.`;
+      if (!visibleItems.length) {
         const empty = document.createElement("p");
         empty.className = "small";
-        empty.textContent = "No objects yet.";
+        empty.textContent = `No ${sideLabel(activeWallSide()).toLowerCase()} objects yet.`;
         els.itemList.append(empty);
         return;
       }
 
-      state.items.forEach(item => {
+      visibleItems.forEach(item => {
         item = normalizeItem(item);
         const row = document.createElement("article");
         row.className = `item-row${isSelected(item.id) ? " selected" : ""}${overlaps.has(item.id) ? " overlap" : ""}`;
@@ -22,9 +23,35 @@
             <strong><span class="swatch" style="background:${item.color}"></span>${itemCode(item)} ${escapeHtml(item.name)}</strong>
             <button class="danger" type="button" data-remove="${item.id}">Remove</button>
           </header>
-          <div class="small">${itemTypeLabel(item.type)}, ${item.shape === "circle" ? "circular" : "rectangular"}${item.illuminated ? ", illuminated" : ""} | ${itemPositionLabel(item)} | ${itemSizeLabel(item)}${overlaps.has(item.id) ? " | OVERLAP" : ""}</div>
+          <div class="small">${itemSideLabel(item)} | ${itemTypeLabel(item.type)}, ${item.shape === "circle" ? "circular" : "rectangular"}${item.illuminated ? ", illuminated" : ""}${item.hanging ? ", hanging" : ""} | ${itemPositionLabel(item)} | ${itemSizeLabel(item)}${item.notes ? ` | ${escapeHtml(item.notes)}` : ""}${overlaps.has(item.id) ? " | OVERLAP" : ""}</div>
         `;
         els.itemList.append(row);
+      });
+    }
+
+    function renderRoomElementList() {
+      if (!els.roomElementList) return;
+      els.roomElementList.innerHTML = "";
+      const elements = (state.roomElements || []).map(normalizeRoomElement);
+      if (!elements.length) {
+        const empty = document.createElement("p");
+        empty.className = "small";
+        empty.textContent = "No room placeholders yet.";
+        els.roomElementList.append(empty);
+        return;
+      }
+      elements.forEach(element => {
+        const row = document.createElement("article");
+        row.className = `item-row${element.id === state.selectedRoomElementId ? " selected" : ""}`;
+        row.dataset.roomSelect = element.id;
+        row.innerHTML = `
+          <header>
+            <strong><span class="swatch" style="background:${element.color}"></span>${escapeHtml(element.name)}</strong>
+            <button class="danger" type="button" data-room-remove="${element.id}">Remove</button>
+          </header>
+          <div class="small">${roomElementTypeLabel(element.type)}, ${element.shape === "circle" ? "circular" : "rectangular"} | center ${Math.round(element.x)}, ${Math.round(element.y)} mm | ${Math.round(element.width)} x ${Math.round(element.depth)} mm</div>
+        `;
+        els.roomElementList.append(row);
       });
     }
 
@@ -41,9 +68,12 @@
     function render(options = {}) {
       if (!options.canvasOnly) {
         if (!options.skipList) renderItemList();
+        renderRoomElementList();
         renderWallTabs();
         updateProjectHeader();
         syncItemInputs();
+        syncRoomElementInputs();
+        updateContextPanels();
         updateToolButtons();
       }
       if (state.view === "elevation") {
@@ -71,7 +101,11 @@
         state.items = layout.items.map(item => ({
           id: uid(),
           name: item.name || titleCase(item.type || "Object"),
-        type: canonicalItemType(item.type),
+          type: canonicalItemType(item.type),
+          side: normalizeWallSide(item.side || activeWallSide()),
+          shape: validShapeForType(item.type, item.shape || "rect"),
+          text: item.text || "",
+          notes: item.notes || "",
           x: number(item.x, 0),
           y: number(item.y, 0),
           width: Math.max(10, number(item.width, 100)),
@@ -122,6 +156,35 @@
       } else {
         els.canvas.style.cursor = isHand && is2dView() ? "grab" : "";
       }
+    }
+
+    function updateContextPanels() {
+      document.querySelectorAll("[data-panel]").forEach(section => {
+        const views = String(section.dataset.panel || "").split(/\s+/).filter(Boolean);
+        section.hidden = views.length ? !views.includes(state.view) : false;
+      });
+      updatePreviewControls();
+    }
+
+    function setHidden(element, hidden) {
+      if (element) element.hidden = hidden;
+    }
+
+    function updatePreviewControls() {
+      const is3d = state.view === "perspective" || state.view === "space3d";
+      const isElevation = state.view === "elevation";
+      setHidden(els.rotateXDown, true);
+      setHidden(els.rotateXUp, true);
+      setHidden(els.rotateZLeft, true);
+      setHidden(els.rotateZRight, true);
+      setHidden(els.rotateYLeft, !is3d);
+      setHidden(els.rotateYRight, !is3d);
+      setHidden(els.toolSelect, !is2dView());
+      setHidden(els.toolHand, !is2dView());
+      setHidden(els.guideToggle, !isElevation);
+      setHidden(els.clearGuides, !isElevation);
+      const alignGroup = els.alignLeft?.closest(".view-controls");
+      if (alignGroup) alignGroup.hidden = !isElevation;
     }
 
     function setTool(tool) {

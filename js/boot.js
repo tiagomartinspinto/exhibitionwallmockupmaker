@@ -27,6 +27,10 @@
       input.addEventListener("input", syncWallFromInputs);
     });
 
+    on(els.wallSide, "change", () => {
+      switchWallSide(els.wallSide.value);
+    });
+
     document.querySelectorAll("#spaceWidth,#spaceDepth,#spaceFloorColor,#spaceSurroundColor,#spaceCinematicLight").forEach(input => {
       input.addEventListener("input", syncSpaceFromInputs);
       input.addEventListener("change", syncSpaceFromInputs);
@@ -112,9 +116,12 @@
       addItem({
         name: els.itemName.value,
         type: els.itemType.value,
+        side: els.itemSide.value,
         shape: els.itemShape.value,
         color: els.itemColor.value,
         text: els.itemText.value,
+        notes: els.itemNotes.value,
+        hanging: els.itemHanging.checked,
         image: els.itemImage.dataset.image || "",
         x: els.itemX.value,
         y: els.itemY.value,
@@ -127,7 +134,8 @@
 
     const clearItemsButton = document.querySelector("#clearItems");
     on(clearItemsButton, "click", () => {
-      state.items = [];
+      const side = activeWallSide();
+      state.items = state.items.filter(item => itemSide(item) !== side);
       setSelection([]);
       save();
       render();
@@ -137,10 +145,10 @@
     on(sampleButton, "click", () => {
       state.wall = { width: 6000, height: 3000, depth: 120, color: "#f5f4ea" };
       state.items = [
-        { id: uid(), name: "Artwork", type: "graphic", shape: "rect", text: "", illuminated: false, x: 900, y: 900, width: 1200, height: 800, color: "#2f6f9f" },
-        { id: uid(), name: "Wall text", type: "text", shape: "rect", text: "Intro text", illuminated: false, x: 2400, y: 1700, width: 900, height: 220, color: "#eff6ff" },
-        { id: uid(), name: "Round light", type: "object", shape: "circle", text: "", illuminated: true, x: 3300, y: 2050, width: 420, height: 420, color: "#f7d154" },
-        { id: uid(), name: "Screen", type: "screen", shape: "rect", text: "", illuminated: false, x: 3600, y: 650, width: 1800, height: 900, color: "#151515" }
+        { id: uid(), name: "Printed graphic", type: "graphic", side: "front", shape: "rect", text: "", notes: "", hanging: false, illuminated: false, x: 900, y: 900, width: 1200, height: 800, color: "#2f6f9f" },
+        { id: uid(), name: "Text", type: "text", side: "front", shape: "rect", text: "Intro text", notes: "", hanging: false, illuminated: false, x: 2400, y: 1700, width: 900, height: 220, color: "#f4f1e8" },
+        { id: uid(), name: "Object / prototype", type: "object", side: "front", shape: "circle", text: "", notes: "Needs power nearby", hanging: true, illuminated: true, x: 3300, y: 2050, width: 420, height: 420, color: "#6e63b6" },
+        { id: uid(), name: "Screen", type: "screen", side: "back", shape: "rect", text: "", notes: "Back-side media test", hanging: false, illuminated: false, x: 3600, y: 650, width: 1800, height: 900, color: "#151515" }
       ];
       setSelection([]);
       syncInputsFromWall();
@@ -179,23 +187,92 @@
       }
     }
 
-    [els.itemName, els.itemShape, els.itemColor, els.itemText, els.itemX, els.itemY, els.itemW, els.itemH].forEach(input => {
+    [els.itemName, els.itemShape, els.itemColor, els.itemText, els.itemNotes, els.itemHanging, els.itemX, els.itemY, els.itemW, els.itemH].forEach(input => {
       input.addEventListener("input", () => handleItemEditorChange(true));
       input.addEventListener("change", () => handleItemEditorChange(true));
     });
 
+    on(els.itemSide, "change", () => {
+      if (selectedSingleItem()) {
+        handleItemEditorChange(true);
+      } else {
+        switchWallSide(els.itemSide.value);
+      }
+    });
+
+    on(els.itemType, "focus", () => {
+      els.itemType.dataset.previousType = canonicalItemType(els.itemType.value);
+    });
+
     on(els.itemType, "change", () => {
       const item = selectedSingleItem();
-      if (!item) {
-        els.itemColor.value = colorForType(els.itemType.value);
+      const previousType = els.itemType.dataset.previousType || (item ? canonicalItemType(item.type) : null);
+      applyItemTypeDefaults(previousType);
+      els.itemType.dataset.previousType = canonicalItemType(els.itemType.value);
+      handleItemEditorChange(true);
+    });
+
+    function handleRoomElementEditorChange() {
+      if (syncSelectedRoomElementFromInputs()) {
+        save();
+        render();
       }
-      handleItemEditorChange(Boolean(item));
+    }
+
+    [els.roomElementName, els.roomElementShape, els.roomElementColor, els.roomElementX, els.roomElementY, els.roomElementW, els.roomElementD].forEach(input => {
+      input.addEventListener("input", handleRoomElementEditorChange);
+      input.addEventListener("change", handleRoomElementEditorChange);
+    });
+
+    on(els.roomElementType, "focus", () => {
+      els.roomElementType.dataset.previousType = canonicalRoomElementType(els.roomElementType.value);
+    });
+
+    on(els.roomElementType, "change", () => {
+      const previousType = els.roomElementType.dataset.previousType || selectedRoomElement()?.type || null;
+      applyRoomElementTypeDefaults(previousType);
+      els.roomElementType.dataset.previousType = canonicalRoomElementType(els.roomElementType.value);
+      handleRoomElementEditorChange();
+    });
+
+    on(els.addRoomElement, "click", () => {
+      addRoomElement({
+        name: els.roomElementName.value,
+        type: els.roomElementType.value,
+        shape: els.roomElementShape.value,
+        color: els.roomElementColor.value,
+        x: els.roomElementX.value,
+        y: els.roomElementY.value,
+        width: els.roomElementW.value,
+        depth: els.roomElementD.value
+      });
+    });
+
+    on(els.clearRoomElements, "click", () => {
+      state.roomElements = [];
+      state.selectedRoomElementId = null;
+      save();
+      render();
+    });
+
+    on(els.roomElementList, "click", event => {
+      const remove = event.target.closest("[data-room-remove]");
+      if (remove) {
+        deleteRoomElement(remove.dataset.roomRemove);
+        return;
+      }
+      const row = event.target.closest("[data-room-select]");
+      if (row) {
+        setRoomElementSelection(row.dataset.roomSelect);
+        render();
+      }
     });
 
     document.querySelectorAll(".tab[data-view]").forEach(button => {
       button.addEventListener("click", () => {
         state.view = button.dataset.view;
         document.querySelectorAll(".tab[data-view]").forEach(tab => tab.classList.toggle("active", tab === button));
+        state.selectedRoomElementId = null;
         save();
         render();
       });
@@ -279,5 +356,7 @@
     syncInputsFromWall();
     syncInputsFromSpace();
     syncInputsFromProject();
+    syncRoomElementInputs();
+    updateContextPanels();
     document.querySelectorAll(".tab[data-view]").forEach(tab => tab.classList.toggle("active", tab.dataset.view === state.view));
     resizeCanvas();

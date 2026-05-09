@@ -10,20 +10,52 @@
       };
     }
 
+    function normalizeWallSide(side) {
+      return String(side || "front").toLowerCase() === "back" ? "back" : "front";
+    }
+
+    function sideLabel(side) {
+      return normalizeWallSide(side) === "back" ? "Back" : "Front";
+    }
+
+    function activeWallSide() {
+      state.activeSide = normalizeWallSide(state.activeSide);
+      return state.activeSide;
+    }
+
+    function itemSide(item) {
+      return normalizeWallSide(item?.side);
+    }
+
+    function itemsForSide(side = activeWallSide(), items = state.items) {
+      const normalizedSide = normalizeWallSide(side);
+      return items.filter(item => itemSide(item) === normalizedSide);
+    }
+
+    function switchWallSide(side) {
+      state.activeSide = normalizeWallSide(side);
+      setSelection([]);
+      if (els.wallSide) els.wallSide.value = state.activeSide;
+      if (els.itemSide) els.itemSide.value = state.activeSide;
+      save();
+      render();
+    }
+
     function makeWall(name, wall = {}, items = [], placement = {}, guides = {}) {
+      const wallWidth = Math.max(100, number(wall.width, 6000));
       return {
         id: uid(),
         name,
         wall: { width: 6000, height: 3000, depth: 120, color: "#f5f4ea", ...wall },
         items: items.map(normalizeItem),
-        placement: { x: 1000, y: 1000, rotation: 0, ...placement },
+        placement: { x: 1000 + wallWidth / 2, y: 1000, rotation: 0, anchor: "center", ...placement },
         guides: normalizeGuides(guides)
       };
     }
 
     function ensureWalls() {
       if (!Array.isArray(state.walls) || !state.walls.length) {
-        const first = makeWall("Wall A", state.wall, state.items, { x: 1000, y: 1200, rotation: 0 });
+        const first = makeWall("Wall A", state.wall, state.items, { x: state.space.width / 2, y: 1200, rotation: 0 });
         first.id = state.activeWallId || "wall-a";
         state.walls = [first];
         state.activeWallId = first.id;
@@ -48,7 +80,8 @@
       record.placement = {
         x: number(els.wallSpaceX?.value, record.placement?.x ?? 1000),
         y: number(els.wallSpaceY?.value, record.placement?.y ?? 1000),
-        rotation: number(els.wallSpaceRotation?.value, record.placement?.rotation ?? 0)
+        rotation: number(els.wallSpaceRotation?.value, record.placement?.rotation ?? 0),
+        anchor: "center"
       };
     }
 
@@ -89,6 +122,7 @@
       els.wallHeight.value = state.wall.height;
       els.wallDepth.value = state.wall.depth;
       els.wallColor.value = state.wall.color;
+      if (els.wallSide) els.wallSide.value = activeWallSide();
       els.wallSpaceX.value = record?.placement?.x ?? 0;
       els.wallSpaceY.value = record?.placement?.y ?? 0;
       els.wallSpaceRotation.value = record?.placement?.rotation ?? 0;
@@ -100,6 +134,7 @@
       state.space.floorColor = els.spaceFloorColor.value || state.space.floorColor;
       state.space.surroundColor = els.spaceSurroundColor.value || state.space.surroundColor;
       state.space.cinematicLight = Boolean(els.spaceCinematicLight.checked);
+      (state.roomElements || []).forEach(clampRoomElementToSpace);
       save();
       render();
     }
@@ -110,6 +145,213 @@
       els.spaceFloorColor.value = state.space.floorColor || "#101113";
       els.spaceSurroundColor.value = state.space.surroundColor || "#070708";
       els.spaceCinematicLight.checked = state.space.cinematicLight !== false;
+    }
+
+    function roomElementTypeConfig(type) {
+      const configs = {
+        chair: {
+          defaultName: "Chair",
+          defaultShape: "rect",
+          shapes: ["rect", "circle"],
+          defaultWidth: 520,
+          defaultDepth: 520,
+          color: "#60748a"
+        },
+        projection: {
+          defaultName: "Projection screen",
+          defaultShape: "rect",
+          shapes: ["rect"],
+          defaultWidth: 2500,
+          defaultDepth: 180,
+          color: "#27364f"
+        },
+        table: {
+          defaultName: "Table",
+          defaultShape: "rect",
+          shapes: ["rect", "circle"],
+          defaultWidth: 1800,
+          defaultDepth: 900,
+          color: "#8a7a54"
+        },
+        other: {
+          defaultName: "Other placeholder",
+          defaultShape: "rect",
+          shapes: ["rect", "circle"],
+          defaultWidth: 900,
+          defaultDepth: 900,
+          color: "#777e6b"
+        }
+      };
+      return configs[canonicalRoomElementType(type)] || configs.other;
+    }
+
+    function canonicalRoomElementType(type) {
+      const value = String(type || "other").toLowerCase();
+      if (value === "chair" || value === "seat" || value === "seating") return "chair";
+      if (value === "projection" || value === "projection screen" || value === "projector screen" || value === "screen") return "projection";
+      if (value === "table" || value === "desk") return "table";
+      return "other";
+    }
+
+    function roomElementTypeLabel(type) {
+      return {
+        chair: "Chair",
+        projection: "Projection screen",
+        table: "Table",
+        other: "Other placeholder"
+      }[canonicalRoomElementType(type)] || "Other placeholder";
+    }
+
+    function roomElementDefaultColor(type) {
+      return roomElementTypeConfig(type).color;
+    }
+
+    function validRoomElementShape(type, shape) {
+      const config = roomElementTypeConfig(type);
+      return config.shapes.includes(shape) ? shape : config.defaultShape;
+    }
+
+    function defaultRoomElementNames() {
+      return ["chair", "projection", "table", "other"].map(type => roomElementTypeConfig(type).defaultName);
+    }
+
+    function clampRoomElementToSpace(element) {
+      const halfW = Math.max(25, element.width / 2);
+      const halfD = Math.max(25, element.depth / 2);
+      element.x = clamp(number(element.x, state.space.width / 2), halfW, Math.max(halfW, state.space.width - halfW));
+      element.y = clamp(number(element.y, state.space.depth / 2), halfD, Math.max(halfD, state.space.depth - halfD));
+    }
+
+    function normalizeRoomElement(element = {}) {
+      const type = canonicalRoomElementType(element.type);
+      const config = roomElementTypeConfig(type);
+      const normalized = {
+        id: element.id || uid(),
+        name: element.name || config.defaultName,
+        type,
+        shape: validRoomElementShape(type, element.shape || config.defaultShape),
+        x: number(element.x, state.space.width / 2),
+        y: number(element.y, state.space.depth / 2),
+        width: Math.max(50, number(element.width, config.defaultWidth)),
+        depth: Math.max(50, number(element.depth, config.defaultDepth)),
+        color: element.color || config.color
+      };
+      clampRoomElementToSpace(normalized);
+      return normalized;
+    }
+
+    function selectedRoomElement() {
+      return (state.roomElements || []).find(element => element.id === state.selectedRoomElementId) || null;
+    }
+
+    function setRoomElementSelection(id) {
+      const exists = (state.roomElements || []).some(element => element.id === id);
+      state.selectedRoomElementId = exists ? id : null;
+      if (state.selectedRoomElementId) setSelection([]);
+      syncRoomElementInputs();
+    }
+
+    function defaultRoomElementFormState() {
+      const type = canonicalRoomElementType(els.roomElementType?.value || "chair");
+      const config = roomElementTypeConfig(type);
+      return {
+        name: config.defaultName,
+        type,
+        shape: config.defaultShape,
+        color: config.color,
+        x: state.space.width / 2,
+        y: state.space.depth / 2,
+        width: config.defaultWidth,
+        depth: config.defaultDepth
+      };
+    }
+
+    function syncRoomElementTypeControls(type, preferredShape = els.roomElementShape?.value) {
+      if (!els.roomElementShape) return;
+      const config = roomElementTypeConfig(type);
+      const current = validRoomElementShape(type, preferredShape);
+      els.roomElementShape.innerHTML = "";
+      config.shapes.forEach(shape => {
+        const option = document.createElement("option");
+        option.value = shape;
+        option.textContent = shape === "circle" ? "circular" : "rectangular";
+        els.roomElementShape.append(option);
+      });
+      els.roomElementShape.value = current;
+    }
+
+    function applyRoomElementTypeDefaults(previousType = null) {
+      const type = canonicalRoomElementType(els.roomElementType.value);
+      const config = roomElementTypeConfig(type);
+      const previousConfig = previousType ? roomElementTypeConfig(previousType) : null;
+      syncRoomElementTypeControls(type, els.roomElementShape.value);
+      if (!els.roomElementName.value || defaultRoomElementNames().includes(els.roomElementName.value)) {
+        els.roomElementName.value = config.defaultName;
+      }
+      if (!els.roomElementColor.value || ["chair", "projection", "table", "other"].some(candidate => els.roomElementColor.value.toLowerCase() === roomElementDefaultColor(candidate))) {
+        els.roomElementColor.value = config.color;
+      }
+      if (!els.roomElementW.value || (previousConfig && Number(els.roomElementW.value) === previousConfig.defaultWidth)) {
+        els.roomElementW.value = config.defaultWidth;
+      }
+      if (!els.roomElementD.value || (previousConfig && Number(els.roomElementD.value) === previousConfig.defaultDepth)) {
+        els.roomElementD.value = config.defaultDepth;
+      }
+    }
+
+    function syncRoomElementInputs() {
+      if (!els.roomElementName) return;
+      const selected = selectedRoomElement();
+      const source = selected ? normalizeRoomElement(selected) : defaultRoomElementFormState();
+      els.roomElementName.value = source.name || "";
+      els.roomElementType.value = source.type;
+      els.roomElementType.dataset.previousType = source.type;
+      syncRoomElementTypeControls(source.type, source.shape);
+      els.roomElementColor.value = source.color || roomElementDefaultColor(source.type);
+      els.roomElementX.value = Math.round(source.x ?? 0);
+      els.roomElementY.value = Math.round(source.y ?? 0);
+      els.roomElementW.value = Math.round(source.width ?? 50);
+      els.roomElementD.value = Math.round(source.depth ?? 50);
+    }
+
+    function syncSelectedRoomElementFromInputs() {
+      const element = selectedRoomElement();
+      if (!element) return false;
+      element.name = els.roomElementName.value || roomElementTypeLabel(els.roomElementType.value);
+      element.type = canonicalRoomElementType(els.roomElementType.value);
+      element.shape = validRoomElementShape(element.type, els.roomElementShape.value || element.shape);
+      element.color = els.roomElementColor.value || roomElementDefaultColor(element.type);
+      element.x = number(els.roomElementX.value, element.x);
+      element.y = number(els.roomElementY.value, element.y);
+      element.width = Math.max(50, number(els.roomElementW.value, element.width));
+      element.depth = Math.max(50, number(els.roomElementD.value, element.depth));
+      clampRoomElementToSpace(element);
+      return true;
+    }
+
+    function addRoomElement(rawElement = {}) {
+      const element = normalizeRoomElement({
+        name: rawElement.name,
+        type: rawElement.type,
+        shape: rawElement.shape,
+        color: rawElement.color,
+        x: rawElement.x,
+        y: rawElement.y,
+        width: rawElement.width,
+        depth: rawElement.depth
+      });
+      if (!Array.isArray(state.roomElements)) state.roomElements = [];
+      state.roomElements.push(element);
+      state.selectedRoomElementId = element.id;
+      save();
+      render();
+    }
+
+    function deleteRoomElement(id) {
+      state.roomElements = (state.roomElements || []).filter(element => element.id !== id);
+      if (state.selectedRoomElementId === id) state.selectedRoomElementId = null;
+      save();
+      render();
     }
 
     function updateProjectHeader() {
@@ -170,16 +412,21 @@
     }
 
     function defaultItemFormState() {
+      const type = canonicalItemType(els.itemType?.value || "graphic");
+      const config = itemTypeConfig(type);
       return {
-        name: "Artwork",
-        type: "graphic",
-        shape: "rect",
-        color: colorForType("graphic"),
+        name: config.defaultName,
+        type,
+        side: activeWallSide(),
+        shape: config.defaultShape,
+        color: colorForType(type),
         text: "",
+        notes: "",
+        hanging: false,
         x: 900,
         y: 900,
-        width: 1200,
-        height: 800
+        width: config.defaultWidth,
+        height: config.defaultHeight
       };
     }
 
@@ -188,9 +435,13 @@
       const source = item ? normalizeItem(item) : defaultItemFormState();
       els.itemName.value = source.name || "";
       els.itemType.value = canonicalItemType(source.type);
-      els.itemShape.value = source.shape || "rect";
+      els.itemType.dataset.previousType = canonicalItemType(source.type);
+      els.itemSide.value = normalizeWallSide(source.side || activeWallSide());
+      syncItemTypeControls(source.type, source.shape);
       els.itemColor.value = source.color || colorForType(source.type);
       els.itemText.value = source.text || "";
+      els.itemNotes.value = source.notes || "";
+      if (els.itemHanging) els.itemHanging.checked = Boolean(source.hanging);
       els.itemX.value = Math.round(source.x ?? 0);
       els.itemY.value = Math.round(source.y ?? 0);
       els.itemW.value = Math.round(source.width ?? 100);
@@ -207,9 +458,14 @@
       if (!item) return false;
       item.name = els.itemName.value || item.name;
       item.type = canonicalItemType(els.itemType.value);
-      item.shape = els.itemShape.value || item.shape;
+      item.side = normalizeWallSide(els.itemSide.value);
+      state.activeSide = item.side;
+      if (els.wallSide) els.wallSide.value = state.activeSide;
+      item.shape = validShapeForType(item.type, els.itemShape.value || item.shape);
       item.color = els.itemColor.value || item.color;
       item.text = els.itemText.value || "";
+      item.notes = els.itemNotes.value || "";
+      item.hanging = Boolean(els.itemHanging?.checked);
       item.x = Math.max(0, number(els.itemX.value, item.x));
       item.y = Math.max(0, number(els.itemY.value, item.y));
       item.width = Math.max(10, number(els.itemW.value, item.width));
@@ -250,12 +506,16 @@
 
     function addItem(item) {
       const type = canonicalItemType(item.type);
+      const side = normalizeWallSide(item.side || activeWallSide());
       state.items.push({
         id: uid(),
         name: item.name || itemTypeLabel(type),
         type,
-        shape: item.shape || "rect",
+        side,
+        shape: validShapeForType(type, item.shape || "rect"),
         text: item.text || "",
+        notes: item.notes || "",
+        hanging: Boolean(item.hanging),
         image: item.image || "",
         illuminated: Boolean(item.illuminated),
         x: Math.max(0, number(item.x, 0)),
@@ -264,6 +524,7 @@
         height: Math.max(10, number(item.height, 100)),
         color: item.color || colorForType(type)
       });
+      state.activeSide = side;
       syncActiveWallRecord();
       save();
       render();
@@ -273,14 +534,128 @@
       return String(text).replace(/\b\w/g, letter => letter.toUpperCase());
     }
 
+    function itemTypeConfig(type) {
+      const configs = {
+        graphic: {
+          defaultName: "Printed graphic",
+          defaultShape: "rect",
+          shapes: ["rect", "circle"],
+          defaultWidth: 1200,
+          defaultHeight: 800,
+          textPlaceholder: "Optional caption or words printed on the graphic",
+          notesPlaceholder: "Print file, material, finish, or mounting notes"
+        },
+        mdf: {
+          defaultName: "MDF cutout / sticker",
+          defaultShape: "rect",
+          shapes: ["rect", "circle"],
+          defaultWidth: 700,
+          defaultHeight: 700,
+          textPlaceholder: "Optional words on the cutout or sticker",
+          notesPlaceholder: "Cut path, material thickness, adhesive, or install notes"
+        },
+        object: {
+          defaultName: "Object / prototype",
+          defaultShape: "rect",
+          shapes: ["rect", "circle"],
+          defaultWidth: 600,
+          defaultHeight: 600,
+          textPlaceholder: "Optional visible label on the object",
+          notesPlaceholder: "Prototype, plinth, fixture, power, or handling notes"
+        },
+        screen: {
+          defaultName: "Screen",
+          defaultShape: "rect",
+          shapes: ["rect"],
+          defaultWidth: 1800,
+          defaultHeight: 900,
+          textPlaceholder: "Optional on-screen title or visible label",
+          notesPlaceholder: "Media file, player, power, cabling, or looping notes"
+        },
+        support: {
+          defaultName: "Supporting structure / shelf",
+          defaultShape: "rect",
+          shapes: ["rect"],
+          defaultWidth: 1200,
+          defaultHeight: 300,
+          textPlaceholder: "Optional visible marking",
+          notesPlaceholder: "Load, bracket, shelf height, finish, or fabrication notes"
+        },
+        text: {
+          defaultName: "Text",
+          defaultShape: "rect",
+          shapes: ["rect"],
+          defaultWidth: 900,
+          defaultHeight: 220,
+          textPlaceholder: "Words shown on the wall",
+          notesPlaceholder: "Typography, language, vinyl, paint, or approval notes"
+        }
+      };
+      return configs[canonicalItemType(type)] || configs.object;
+    }
+
+    function defaultTypeNames() {
+      return ["graphic", "mdf", "object", "screen", "support", "text"].map(type => itemTypeConfig(type).defaultName);
+    }
+
+    function validShapeForType(type, shape) {
+      const config = itemTypeConfig(type);
+      return config.shapes.includes(shape) ? shape : config.defaultShape;
+    }
+
+    function syncItemTypeControls(type, preferredShape = els.itemShape?.value) {
+      if (!els.itemShape) return;
+      const config = itemTypeConfig(type);
+      const current = validShapeForType(type, preferredShape);
+      els.itemShape.innerHTML = "";
+      config.shapes.forEach(shape => {
+        const option = document.createElement("option");
+        option.value = shape;
+        option.textContent = shape === "circle" ? "circular" : "rectangular";
+        els.itemShape.append(option);
+      });
+      els.itemShape.value = current;
+      if (els.itemText) els.itemText.placeholder = config.textPlaceholder;
+      if (els.itemNotes) els.itemNotes.placeholder = config.notesPlaceholder;
+    }
+
+    function applyItemTypeDefaults(previousType = null) {
+      const type = canonicalItemType(els.itemType.value);
+      const config = itemTypeConfig(type);
+      const previousConfig = previousType ? itemTypeConfig(previousType) : null;
+      const item = selectedSingleItem();
+      syncItemTypeControls(type, els.itemShape.value);
+      if (!item) {
+        if (!els.itemName.value || defaultTypeNames().includes(els.itemName.value)) {
+          els.itemName.value = config.defaultName;
+        }
+        if (!els.itemColor.value || ["graphic", "mdf", "object", "screen", "support", "text"].some(candidate => els.itemColor.value.toLowerCase() === colorForType(candidate))) {
+          els.itemColor.value = colorForType(type);
+        }
+        if (!els.itemW.value || (previousConfig && Number(els.itemW.value) === previousConfig.defaultWidth)) {
+          els.itemW.value = config.defaultWidth;
+        }
+        if (!els.itemH.value || (previousConfig && Number(els.itemH.value) === previousConfig.defaultHeight)) {
+          els.itemH.value = config.defaultHeight;
+        }
+        return;
+      }
+      if (previousType && item.color && item.color.toLowerCase() === colorForType(previousType)) {
+        els.itemColor.value = colorForType(type);
+      }
+      if (item.name === itemTypeConfig(previousType || item.type).defaultName) {
+        els.itemName.value = config.defaultName;
+      }
+    }
+
     function colorForType(type) {
       const colors = {
-        title: "#f4f1e8",
         graphic: "#2f6f9f",
-        object: "#4d7898",
+        mdf: "#e58b4a",
+        object: "#6e63b6",
         screen: "#151515",
-        text: "#ffffff",
-        support: "#7b5d46"
+        support: "#7b5d46",
+        text: "#f4f1e8"
       };
       return colors[canonicalItemType(type)] || "#2f6f9f";
     }
@@ -288,23 +663,23 @@
     function canonicalItemType(type) {
       const value = String(type || "object").toLowerCase();
       if (value === "artwork" || value === "printed graphic" || value === "graphic") return "graphic";
-      if (value === "label" || value === "explanatory text") return "text";
-      if (value === "title" || value === "title text") return "title";
-      if (value === "illumination" || value === "prototype" || value === "physical object") return "object";
-      if (value === "shelf" || value === "opening" || value === "mount" || value === "support") return "support";
+      if (value === "cutout" || value === "mdf" || value === "mdf cutout" || value === "sticker" || value === "mdf cutout/sticker" || value === "mdf cutout / sticker") return "mdf";
+      if (value === "label" || value === "explanatory text" || value === "title" || value === "title text" || value === "text") return "text";
+      if (value === "illumination" || value === "prototype" || value === "physical object" || value === "object/prototype" || value === "object / prototype" || value === "object") return "object";
+      if (value === "shelf" || value === "opening" || value === "mount" || value === "support" || value === "supporting structure" || value === "supporting structure/shelf" || value === "supporting structure / shelf") return "support";
       if (value === "screen") return "screen";
       return "object";
     }
 
     function itemTypeLabel(type) {
       return {
-        title: "Title text",
-        text: "Explanatory text",
-        screen: "Screen / moving image",
-        graphic: "Printed graphic / still visual",
-        object: "Physical object / prototype",
-        support: "Support / display hardware"
-      }[canonicalItemType(type)] || "Physical object / prototype";
+        graphic: "Printed graphic",
+        mdf: "MDF cutout / sticker",
+        object: "Object / prototype",
+        screen: "Screen",
+        support: "Supporting structure / shelf",
+        text: "Text"
+      }[canonicalItemType(type)] || "Object / prototype";
     }
 
     function normalizeItem(item) {
@@ -312,20 +687,28 @@
       const type = canonicalItemType(legacyType);
       return {
         shape: "rect",
+        side: "front",
         text: "",
+        notes: "",
+        hanging: false,
         image: "",
         ...item,
         type,
+        side: normalizeWallSide(item.side),
         illuminated: Boolean(item.illuminated || legacyType === "illumination")
       };
     }
 
     function itemCode(item) {
       const normalized = normalizeItem(item);
-      const prefixes = { title: "TT", text: "TX", screen: "SC", graphic: "PG", object: "PO", support: "SP" };
+      const prefixes = { graphic: "PG", mdf: "MS", object: "OP", screen: "SC", support: "SS", text: "TX" };
       const sameType = state.items.filter(candidate => normalizeItem(candidate).type === normalized.type);
       const index = sameType.findIndex(candidate => candidate.id === item.id) + 1;
       return `${prefixes[normalized.type] || "O"}${String(Math.max(1, index)).padStart(2, "0")}`;
+    }
+
+    function itemSideLabel(item) {
+      return sideLabel(normalizeItem(item).side);
     }
 
     function itemSizeLabel(item) {
@@ -345,18 +728,28 @@
 
     function itemTypePrintLabel(type) {
       return {
-        title: "Title text",
-        text: "Text",
-        screen: "Screen",
         graphic: "Graphic",
+        mdf: "MDF/sticker",
         object: "Object",
-        support: "Support"
+        screen: "Screen",
+        support: "Support/shelf",
+        text: "Text"
       }[canonicalItemType(type)] || "Object";
     }
 
     function exportTextLabel(item) {
       const normalized = normalizeItem(item);
       return normalized.text ? `Text to add: ${normalized.text}` : "";
+    }
+
+    function exportNotesLabel(item) {
+      const normalized = normalizeItem(item);
+      return normalized.notes ? `Notes: ${normalized.notes}` : "";
+    }
+
+    function exportMountingLabel(item) {
+      const normalized = normalizeItem(item);
+      return normalized.hanging ? "Mounting: hanging from top" : "";
     }
 
     const imageCache = new Map();
@@ -381,8 +774,10 @@
     }
 
     function setSelection(ids) {
-      state.selectedIds = [...new Set(ids)].filter(id => state.items.some(item => item.id === id));
+      const side = activeWallSide();
+      state.selectedIds = [...new Set(ids)].filter(id => state.items.some(item => item.id === id && itemSide(item) === side));
       state.selectedId = state.selectedIds[0] || null;
+      if (state.selectedId) state.selectedRoomElementId = null;
     }
 
     function toggleSelection(id) {
@@ -397,7 +792,8 @@
 
     function selectedItems() {
       const ids = new Set(selectedIds());
-      return state.items.filter(item => ids.has(item.id));
+      const side = activeWallSide();
+      return state.items.filter(item => ids.has(item.id) && itemSide(item) === side);
     }
 
     function renderWallTabs() {
@@ -425,7 +821,7 @@
     function addWall() {
       syncActiveWallRecord();
       const label = `Wall ${String.fromCharCode(65 + state.walls.length)}`;
-      const wall = makeWall(label, { width: 4000, height: state.wall.height, depth: state.wall.depth, color: state.wall.color }, [], { x: 1000 + state.walls.length * 700, y: 2200, rotation: 0 });
+      const wall = makeWall(label, { width: 4000, height: state.wall.height, depth: state.wall.depth, color: state.wall.color }, [], { x: state.space.width / 2 + state.walls.length * 700, y: 2200, rotation: 0 });
       state.walls.push(wall);
       state.activeWallId = wall.id;
       loadActiveWall();
@@ -442,7 +838,8 @@
       const clone = makeWall(`${current.name} copy`, { ...current.wall }, current.items.map(item => ({ ...item, id: uid() })), {
         x: current.placement.x + 600,
         y: current.placement.y + 600,
-        rotation: current.placement.rotation
+        rotation: current.placement.rotation,
+        anchor: "center"
       });
       state.walls.push(clone);
       state.activeWallId = clone.id;
@@ -463,7 +860,7 @@
       const index = Math.max(0, state.walls.findIndex(wall => wall.id === record.id));
       record.name = defaultWallName(index);
       record.wall = { width: 6000, height: 3000, depth: 120, color: "#f5f4ea" };
-      record.placement = { x: 1000 + index * 700, y: 1200, rotation: 0 };
+      record.placement = { x: state.space.width / 2 + index * 700, y: 1200, rotation: 0, anchor: "center" };
       loadActiveWall();
       syncInputsFromWall();
       save();

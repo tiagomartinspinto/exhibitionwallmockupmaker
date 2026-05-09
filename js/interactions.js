@@ -1,13 +1,90 @@
+    const touchPointers = new Map();
+    let touchGesture = null;
+
+    function touchPointFromEvent(event) {
+      return { x: event.clientX, y: event.clientY };
+    }
+
+    function firstTouchPair() {
+      return [...touchPointers.values()].slice(0, 2);
+    }
+
+    function touchPairMetrics(points = firstTouchPair()) {
+      const [a, b] = points;
+      if (!a || !b) return null;
+      return {
+        distance: Math.max(1, Math.hypot(b.x - a.x, b.y - a.y)),
+        center: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
+      };
+    }
+
+    function beginTouchGesture() {
+      const metrics = touchPairMetrics();
+      if (!metrics) return;
+      state.drag = null;
+      state.panDrag = null;
+      state.rotateDrag = null;
+      state.resizeDrag = null;
+      state.guideDrag = null;
+      state.snapLines = [];
+      touchGesture = {
+        view: state.view,
+        startDistance: metrics.distance,
+        startCenter: metrics.center,
+        startZoom2d: number(state.view2d.zoom, 1),
+        startPanX: number(state.view2d.panX, 0),
+        startPanY: number(state.view2d.panY, 0),
+        startZoom3d: number(state.view3d.zoom, 1),
+        startRotY: state.view3d.rotY ?? state.view3d.yaw ?? 24
+      };
+    }
+
+    function updateTouchGesture() {
+      if (!touchGesture) beginTouchGesture();
+      const metrics = touchPairMetrics();
+      if (!metrics || !touchGesture) return false;
+      const zoomFactor = metrics.distance / touchGesture.startDistance;
+      if (touchGesture.view === "perspective" || touchGesture.view === "space3d") {
+        state.view3d.zoom = clamp(Number((touchGesture.startZoom3d * zoomFactor).toFixed(2)), 0.55, 3);
+        state.view3d.rotY = normalizeDegrees(touchGesture.startRotY + (metrics.center.x - touchGesture.startCenter.x) * 0.28);
+      } else {
+        state.view2d.zoom = clamp(Number((touchGesture.startZoom2d * zoomFactor).toFixed(2)), 0.45, 3.5);
+        state.view2d.panX = Math.round(touchGesture.startPanX + metrics.center.x - touchGesture.startCenter.x);
+        state.view2d.panY = Math.round(touchGesture.startPanY + metrics.center.y - touchGesture.startCenter.y);
+      }
+      render({ canvasOnly: true });
+      return true;
+    }
+
     function itemAtPoint(point) {
       const width = els.canvas.width / (window.devicePixelRatio || 1);
       const height = els.canvas.height / (window.devicePixelRatio || 1);
       const geom = elevationGeometry(width, height);
-      for (let i = state.items.length - 1; i >= 0; i -= 1) {
-        if (pointInItem(point, normalizeItem(state.items[i]), geom)) {
-          return { item: state.items[i], geom };
+      const visibleItems = itemsForSide(activeWallSide());
+      for (let i = visibleItems.length - 1; i >= 0; i -= 1) {
+        if (pointInItem(point, normalizeItem(visibleItems[i]), geom)) {
+          return { item: visibleItems[i], geom };
         }
       }
       return { item: null, geom };
+    }
+
+    function roomElementAtSpacePoint(point) {
+      const width = els.canvas.width / (window.devicePixelRatio || 1);
+      const height = els.canvas.height / (window.devicePixelRatio || 1);
+      const geom = spaceGeometry(width, height);
+      const elements = state.roomElements || [];
+      for (let i = elements.length - 1; i >= 0; i -= 1) {
+        const box = roomElementScreenBox(geom, elements[i]);
+        if (box.element.shape === "circle") {
+          const dx = (point.x - (box.x + box.w / 2)) / (box.w / 2);
+          const dy = (point.y - (box.y + box.h / 2)) / (box.h / 2);
+          if (dx * dx + dy * dy <= 1) return { element: elements[i], geom };
+        } else if (pointInBox(point, box, 8)) {
+          return { element: elements[i], geom };
+        }
+      }
+      return { element: null, geom };
     }
 
     function wallAtSpacePoint(point) {
@@ -28,6 +105,14 @@
     }
 
     function startDrag(event) {
+      if (event.pointerType === "touch") {
+        touchPointers.set(event.pointerId, touchPointFromEvent(event));
+        if (touchPointers.size > 1) {
+          event.preventDefault();
+          beginTouchGesture();
+          return;
+        }
+      }
       const middlePan = event.button === 1 && is2dView();
       if (event.button !== undefined && event.button !== 0 && !middlePan) return;
       const point = pointerPosition(event);
@@ -79,10 +164,32 @@
       }
       if (state.view === "space2d") {
         const point = pointerPosition(event);
+        const roomHit = roomElementAtSpacePoint(point);
+        if (roomHit.element) {
+          setRoomElementSelection(roomHit.element.id);
+          const spaceX = (point.x - roomHit.geom.x) / roomHit.geom.scale;
+          const spaceY = (roomHit.geom.y + roomHit.geom.h - point.y) / roomHit.geom.scale;
+          state.drag = {
+            type: "roomElement",
+            id: roomHit.element.id,
+            offsetX: spaceX - roomHit.element.x,
+            offsetY: spaceY - roomHit.element.y
+          };
+          if (typeof els.canvas.setPointerCapture === "function") {
+            els.canvas.setPointerCapture(event.pointerId);
+          }
+          render();
+          return;
+        }
         const { wall, geom } = wallAtSpacePoint(point);
-        if (!wall) return;
+        if (!wall) {
+          setRoomElementSelection(null);
+          render();
+          return;
+        }
         syncActiveWallRecord();
         state.activeWallId = wall.id;
+        state.selectedRoomElementId = null;
         loadActiveWall();
         syncInputsFromWall();
         state.drag = {
@@ -156,6 +263,13 @@
     }
 
     function moveDrag(event) {
+      if (event.pointerType === "touch" && touchPointers.has(event.pointerId)) {
+        touchPointers.set(event.pointerId, touchPointFromEvent(event));
+        if (touchPointers.size > 1 || touchGesture) {
+          event.preventDefault();
+          if (updateTouchGesture()) return;
+        }
+      }
       if (state.guideDrag && state.view === "elevation") {
         const width = els.canvas.width / (window.devicePixelRatio || 1);
         const height = els.canvas.height / (window.devicePixelRatio || 1);
@@ -176,12 +290,7 @@
         return;
       }
       if (state.rotateDrag && (state.view === "perspective" || state.view === "space3d")) {
-        if (event.shiftKey) {
-          state.view3d.rotZ = normalizeDegrees(state.rotateDrag.startRotZ + (event.clientX - state.rotateDrag.startX) * 0.32);
-        } else {
-          state.view3d.rotY = normalizeDegrees(state.rotateDrag.startRotY + (event.clientX - state.rotateDrag.startX) * 0.28);
-          state.view3d.rotX = normalizeDegrees(state.rotateDrag.startRotX - (event.clientY - state.rotateDrag.startY) * 0.22);
-        }
+        state.view3d.rotY = normalizeDegrees(state.rotateDrag.startRotY + (event.clientX - state.rotateDrag.startX) * 0.28);
         render({ canvasOnly: true });
         return;
       }
@@ -228,6 +337,20 @@
         render({ canvasOnly: true });
         return;
       }
+      if (state.drag && state.drag.type === "roomElement") {
+        const element = (state.roomElements || []).find(candidate => candidate.id === state.drag.id);
+        if (!element) return;
+        const width = els.canvas.width / (window.devicePixelRatio || 1);
+        const height = els.canvas.height / (window.devicePixelRatio || 1);
+        const geom = spaceGeometry(width, height);
+        const point = pointerPosition(event);
+        element.x = Math.round((point.x - geom.x) / geom.scale - state.drag.offsetX);
+        element.y = Math.round((geom.y + geom.h - point.y) / geom.scale - state.drag.offsetY);
+        clampRoomElementToSpace(element);
+        syncRoomElementInputs();
+        render({ canvasOnly: true });
+        return;
+      }
       if (!state.drag || state.view !== "elevation") return;
       if (state.view !== "elevation") return;
       const item = state.items.find(candidate => candidate.id === state.drag.id);
@@ -271,6 +394,20 @@
     }
 
     function stopDrag(event) {
+      if (event.pointerType === "touch") {
+        touchPointers.delete(event.pointerId);
+        if (touchGesture) {
+          if (touchPointers.size < 2) {
+            touchGesture = null;
+            save();
+            render();
+          }
+          if (event.pointerId !== undefined && typeof els.canvas.hasPointerCapture === "function" && els.canvas.hasPointerCapture(event.pointerId)) {
+            els.canvas.releasePointerCapture(event.pointerId);
+          }
+          return;
+        }
+      }
       if (state.guideDrag) {
         const guides = currentGuides();
         const axisKey = state.guideDrag.axis === "x" ? "vertical" : "horizontal";
@@ -345,8 +482,11 @@
         id: normalized.id || uid(),
         name: normalized.name || itemTypeLabel(normalized.type),
         type: normalized.type,
+        side: normalizeWallSide(normalized.side),
         shape: normalized.shape || "rect",
         text: normalized.text || "",
+        notes: normalized.notes || "",
+        hanging: Boolean(normalized.hanging),
         image: normalized.image || "",
         illuminated: Boolean(normalized.illuminated),
         x: Math.max(0, number(normalized.x, 0)),
@@ -372,16 +512,33 @@
         placement: {
           x: number(wall.placement?.x, 1000),
           y: number(wall.placement?.y, 1000),
-          rotation: number(wall.placement?.rotation, 0)
+          rotation: number(wall.placement?.rotation, 0),
+          anchor: "center"
         }
+      };
+    }
+
+    function serializedRoomElement(element) {
+      const normalized = normalizeRoomElement(element);
+      return {
+        id: normalized.id || uid(),
+        name: normalized.name || roomElementTypeLabel(normalized.type),
+        type: normalized.type,
+        shape: normalized.shape,
+        x: Math.round(normalized.x),
+        y: Math.round(normalized.y),
+        width: Math.max(50, Math.round(normalized.width)),
+        depth: Math.max(50, Math.round(normalized.depth)),
+        color: normalized.color || roomElementDefaultColor(normalized.type)
       };
     }
 
     function serializedState() {
       return {
-        version: 2,
+        version: 4,
         view: state.view,
         tool: state.tool === "hand" ? "hand" : "select",
+        activeSide: activeWallSide(),
         theme: state.theme === "light" ? "light" : "dark",
         view2d: {
           zoom: number(state.view2d.zoom, 1),
@@ -407,6 +564,7 @@
           surroundColor: state.space.surroundColor || "#070708",
           cinematicLight: state.space.cinematicLight !== false
         },
+        roomElements: (state.roomElements || []).map(serializedRoomElement),
         activeWallId: state.activeWallId,
         walls: state.walls.map(serializedWallRecord)
       };
@@ -441,6 +599,7 @@
       const nextFileName = options.fileName || "";
       state.view = parsed.view || state.view;
       state.tool = parsed.tool === "hand" ? "hand" : "select";
+      state.activeSide = normalizeWallSide(parsed.activeSide || state.activeSide);
       state.handOverride = false;
       state.theme = parsed.theme === "light" ? "light" : "dark";
       state.view2d = { ...state.view2d, ...parsed.view2d };
@@ -457,28 +616,50 @@
       state.space = { ...state.space, ...parsed.space };
       if (state.space.floorColor === "#1d2a23") state.space.floorColor = "#101113";
       if (state.space.surroundColor === "#202821") state.space.surroundColor = "#070708";
+      state.roomElements = Array.isArray(parsed.roomElements)
+        ? parsed.roomElements.map(normalizeRoomElement)
+        : Array.isArray(parsed.space?.elements)
+          ? parsed.space.elements.map(normalizeRoomElement)
+          : (state.roomElements || []).map(normalizeRoomElement);
       state.project = {
         ...state.project,
         ...parsed.project,
         fileName: nextFileName || parsed.project?.fileName || ""
       };
       state.activeWallId = parsed.activeWallId || state.activeWallId;
-      state.walls = Array.isArray(parsed.walls) ? parsed.walls.map((wall, index) => ({
-        id: wall.id || uid(),
-        name: wall.name || `Wall ${index + 1}`,
-        wall: { width: 6000, height: 3000, depth: 120, color: "#f5f4ea", ...wall.wall },
-        items: Array.isArray(wall.items) ? wall.items.map(normalizeItem) : [],
-        guides: normalizeGuides(wall.guides || defaultGuides()),
-        placement: { x: 1000, y: 1000, rotation: 0, ...wall.placement }
-      })) : state.walls;
+      state.walls = Array.isArray(parsed.walls) ? parsed.walls.map((wall, index) => {
+        const wallSpec = { width: 6000, height: 3000, depth: 120, color: "#f5f4ea", ...wall.wall };
+        const placement = { x: 1000, y: 1000, rotation: 0, ...wall.placement };
+        if (placement.anchor !== "center" || number(parsed.version, 1) < 3) {
+          const angle = number(placement.rotation, 0) * Math.PI / 180;
+          placement.x = number(placement.x, 1000) + Math.cos(angle) * wallSpec.width / 2;
+          placement.y = number(placement.y, 1000) + Math.sin(angle) * wallSpec.width / 2;
+        }
+        placement.anchor = "center";
+        return {
+          id: wall.id || uid(),
+          name: wall.name || `Wall ${index + 1}`,
+          wall: wallSpec,
+          items: Array.isArray(wall.items) ? wall.items.map(normalizeItem) : [],
+          guides: normalizeGuides(wall.guides || defaultGuides()),
+          placement
+        };
+      }) : state.walls;
       if (!state.walls.length) {
         state.wall = { ...state.wall, ...parsed.wall };
         state.items = Array.isArray(parsed.items) ? parsed.items.map(normalizeItem) : state.items;
         state.guides = normalizeGuides(parsed.guides || defaultGuides());
+        if (number(parsed.version, 1) < 3 && parsed.placement) {
+          const angle = number(parsed.placement.rotation, 0) * Math.PI / 180;
+          parsed.placement.x = number(parsed.placement.x, 1000) + Math.cos(angle) * number(state.wall.width, 6000) / 2;
+          parsed.placement.y = number(parsed.placement.y, 1000) + Math.sin(angle) * number(state.wall.width, 6000) / 2;
+          parsed.placement.anchor = "center";
+        }
       }
       ensureWalls();
       loadActiveWall();
       setSelection([]);
+      state.selectedRoomElementId = null;
       state.drag = null;
       state.panDrag = null;
       state.rotateDrag = null;
