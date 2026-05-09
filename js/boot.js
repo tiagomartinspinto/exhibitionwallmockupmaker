@@ -251,6 +251,7 @@
     on(els.clearRoomElements, "click", () => {
       state.roomElements = [];
       state.selectedRoomElementId = null;
+      state.selectedSpaceIds = selectedSpaceIds().filter(key => parseSpaceEntityKey(key)?.type !== "room");
       save();
       render();
     });
@@ -263,7 +264,11 @@
       }
       const row = event.target.closest("[data-room-select]");
       if (row) {
-        setRoomElementSelection(row.dataset.roomSelect);
+        if (event.shiftKey) {
+          toggleSpaceSelection("room", row.dataset.roomSelect);
+        } else {
+          setRoomElementSelection(row.dataset.roomSelect);
+        }
         render();
       }
     });
@@ -273,6 +278,7 @@
         state.view = button.dataset.view;
         document.querySelectorAll(".tab[data-view]").forEach(tab => tab.classList.toggle("active", tab === button));
         state.selectedRoomElementId = null;
+        if (state.view !== "space2d") state.selectedSpaceIds = [];
         save();
         render();
       });
@@ -320,7 +326,7 @@
     on(els.canvas, "pointerup", stopDrag);
     on(els.canvas, "pointercancel", stopDrag);
     on(els.canvas, "dblclick", event => {
-      if (state.view !== "elevation") return;
+      if (!is2dView()) return;
       if (removeGuideAtPoint(pointerPosition(event))) {
         event.preventDefault();
       }

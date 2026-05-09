@@ -104,6 +104,78 @@
       return { wall: null, geom };
     }
 
+    function current2dGeometry(width, height) {
+      return state.view === "space2d" ? spaceGeometry(width, height) : elevationGeometry(width, height);
+    }
+
+    function guideValueFromPoint(geom, point, axis) {
+      if (state.view === "space2d") {
+        return axis === "x"
+          ? clamp(Math.round(screenToSpaceX(geom, point.x)), 0, state.space.width)
+          : clamp(Math.round(screenToSpaceY(geom, point.y)), 0, state.space.depth);
+      }
+      return axis === "x"
+        ? clamp(Math.round(screenToWallX(geom, point.x)), 0, state.wall.width)
+        : clamp(Math.round(screenToWallY(geom, point.y)), 0, state.wall.height);
+    }
+
+    function spaceCoordinatesFromPoint(geom, point) {
+      return {
+        x: screenToSpaceX(geom, point.x),
+        y: screenToSpaceY(geom, point.y)
+      };
+    }
+
+    function beginSpaceSelectionDrag(type, target, geom, point, event) {
+      const key = spaceEntityKey(type, target.id);
+      const wasSelected = isSpaceEntitySelected(type, target.id);
+      if (event.shiftKey) {
+        toggleSpaceSelection(type, target.id);
+        if (wasSelected && !isSpaceEntitySelected(type, target.id)) {
+          render();
+          return true;
+        }
+      } else if (!wasSelected) {
+        setSpaceSelection([key]);
+      }
+      if (type === "wall" && target.id !== state.activeWallId) {
+        syncActiveWallRecord();
+        state.activeWallId = target.id;
+        loadActiveWall();
+        syncInputsFromWall();
+      }
+      if (type === "room") {
+        state.selectedRoomElementId = target.id;
+        syncRoomElementInputs();
+      }
+      const anchor = spaceEntityFromKey(key);
+      const entities = selectedSpaceEntities();
+      const spacePoint = spaceCoordinatesFromPoint(geom, point);
+      if (!anchor || !entities.length) return false;
+      state.drag = {
+        type: "spaceSelection",
+        id: key,
+        offsetX: spacePoint.x - anchor.centerX,
+        offsetY: spacePoint.y - anchor.centerY,
+        originX: anchor.centerX,
+        originY: anchor.centerY,
+        starts: entities.map(entity => ({
+          key: entity.key,
+          type: entity.type,
+          id: entity.id,
+          x: entity.centerX,
+          y: entity.centerY,
+          bounds: entity.bounds
+        })),
+        bounds: spaceSelectionBounds(entities)
+      };
+      if (typeof els.canvas.setPointerCapture === "function") {
+        els.canvas.setPointerCapture(event.pointerId);
+      }
+      render();
+      return true;
+    }
+
     function startDrag(event) {
       if (event.pointerType === "touch") {
         touchPointers.set(event.pointerId, touchPointFromEvent(event));
@@ -116,18 +188,20 @@
       const middlePan = event.button === 1 && is2dView();
       if (event.button !== undefined && event.button !== 0 && !middlePan) return;
       const point = pointerPosition(event);
-      if (state.view === "elevation" && activeTool() !== "hand") {
+      if (is2dView() && activeTool() !== "hand") {
         const ruler = rulerHit(point);
         if (ruler) {
           const width = els.canvas.width / (window.devicePixelRatio || 1);
           const height = els.canvas.height / (window.devicePixelRatio || 1);
-          const geom = elevationGeometry(width, height);
-          state.guides.visible = true;
+          const geom = current2dGeometry(width, height);
+          const guides = currentGuides();
+          guides.visible = true;
+          setCurrentGuides(guides);
           state.guideDrag = {
             axis: ruler.axis,
             newGuide: true,
             source: "ruler",
-            value: ruler.axis === "x" ? clamp(Math.round(screenToWallX(geom, point.x)), 0, state.wall.width) : clamp(Math.round(screenToWallY(geom, point.y)), 0, state.wall.height)
+            value: guideValueFromPoint(geom, point, ruler.axis)
           };
           if (typeof els.canvas.setPointerCapture === "function") {
             els.canvas.setPointerCapture(event.pointerId);
@@ -140,6 +214,7 @@
           state.guideDrag = {
             axis: guide.axis,
             source: "guide",
+            originalValue: guide.value,
             value: guide.value
           };
           if (typeof els.canvas.setPointerCapture === "function") {
@@ -166,42 +241,16 @@
         const point = pointerPosition(event);
         const roomHit = roomElementAtSpacePoint(point);
         if (roomHit.element) {
-          setRoomElementSelection(roomHit.element.id);
-          const spaceX = (point.x - roomHit.geom.x) / roomHit.geom.scale;
-          const spaceY = (roomHit.geom.y + roomHit.geom.h - point.y) / roomHit.geom.scale;
-          state.drag = {
-            type: "roomElement",
-            id: roomHit.element.id,
-            offsetX: spaceX - roomHit.element.x,
-            offsetY: spaceY - roomHit.element.y
-          };
-          if (typeof els.canvas.setPointerCapture === "function") {
-            els.canvas.setPointerCapture(event.pointerId);
-          }
-          render();
+          beginSpaceSelectionDrag("room", roomHit.element, roomHit.geom, point, event);
           return;
         }
         const { wall, geom } = wallAtSpacePoint(point);
         if (!wall) {
-          setRoomElementSelection(null);
+          if (!event.shiftKey) setSpaceSelection([]);
           render();
           return;
         }
-        syncActiveWallRecord();
-        state.activeWallId = wall.id;
-        state.selectedRoomElementId = null;
-        loadActiveWall();
-        syncInputsFromWall();
-        state.drag = {
-          type: "spaceWall",
-          id: wall.id,
-          offsetX: (point.x - geom.x) / geom.scale - wall.placement.x,
-          offsetY: (geom.y + geom.h - point.y) / geom.scale - wall.placement.y
-        };
-        if (typeof els.canvas.setPointerCapture === "function") {
-          els.canvas.setPointerCapture(event.pointerId);
-        }
-        render();
+        beginSpaceSelectionDrag("wall", wall, geom, point, event);
         return;
       }
       if (state.view === "perspective" || state.view === "space3d") {
@@ -270,16 +319,12 @@
           if (updateTouchGesture()) return;
         }
       }
-      if (state.guideDrag && state.view === "elevation") {
+      if (state.guideDrag && is2dView()) {
         const width = els.canvas.width / (window.devicePixelRatio || 1);
         const height = els.canvas.height / (window.devicePixelRatio || 1);
-        const geom = elevationGeometry(width, height);
+        const geom = current2dGeometry(width, height);
         const point = pointerPosition(event);
-        if (state.guideDrag.axis === "x") {
-          state.guideDrag.value = clamp(Math.round(screenToWallX(geom, point.x)), 0, state.wall.width);
-        } else {
-          state.guideDrag.value = clamp(Math.round(screenToWallY(geom, point.y)), 0, state.wall.height);
-        }
+        state.guideDrag.value = guideValueFromPoint(geom, point, state.guideDrag.axis);
         render({ canvasOnly: true });
         return;
       }
@@ -319,6 +364,48 @@
         }
         item.width = Math.max(50, Math.min(state.wall.width - item.x, nextW));
         item.height = Math.max(50, Math.min(state.wall.height - item.y, nextH));
+        render({ canvasOnly: true });
+        return;
+      }
+      if (state.drag && state.drag.type === "spaceSelection") {
+        const width = els.canvas.width / (window.devicePixelRatio || 1);
+        const height = els.canvas.height / (window.devicePixelRatio || 1);
+        const geom = spaceGeometry(width, height);
+        const point = pointerPosition(event);
+        const spacePoint = spaceCoordinatesFromPoint(geom, point);
+        let deltaX = Math.round(spacePoint.x - state.drag.offsetX - state.drag.originX);
+        let deltaY = Math.round(spacePoint.y - state.drag.offsetY - state.drag.originY);
+        if (state.drag.bounds) {
+          const bounds = state.drag.bounds;
+          const targets = spaceSnapTargets((state.drag.starts || []).map(start => start.key));
+          const xCandidates = [
+            { ...snapValue(bounds.left + deltaX, targets.vertical), current: bounds.left + deltaX },
+            { ...snapValue((bounds.left + bounds.right) / 2 + deltaX, targets.vertical), current: (bounds.left + bounds.right) / 2 + deltaX },
+            { ...snapValue(bounds.right + deltaX, targets.vertical), current: bounds.right + deltaX }
+          ].filter(candidate => candidate.line);
+          const yCandidates = [
+            { ...snapValue(bounds.bottom + deltaY, targets.horizontal), current: bounds.bottom + deltaY },
+            { ...snapValue((bounds.bottom + bounds.top) / 2 + deltaY, targets.horizontal), current: (bounds.bottom + bounds.top) / 2 + deltaY },
+            { ...snapValue(bounds.top + deltaY, targets.horizontal), current: bounds.top + deltaY }
+          ].filter(candidate => candidate.line);
+          state.snapLines = [];
+          const bestX = xCandidates.sort((a, b) => a.distance - b.distance)[0];
+          const bestY = yCandidates.sort((a, b) => a.distance - b.distance)[0];
+          if (bestX) {
+            deltaX += bestX.value - bestX.current;
+            state.snapLines.push(bestX.line);
+          }
+          if (bestY) {
+            deltaY += bestY.value - bestY.current;
+            state.snapLines.push(bestY.line);
+          }
+        }
+        (state.drag.starts || []).forEach(start => {
+          const entity = spaceEntityFromKey(start.key);
+          if (!entity) return;
+          setSpaceEntityCenter(entity, start.x + deltaX, start.y + deltaY);
+        });
+        syncSpaceSelectionInputs();
         render({ canvasOnly: true });
         return;
       }
@@ -411,15 +498,15 @@
       if (state.guideDrag) {
         const guides = currentGuides();
         const axisKey = state.guideDrag.axis === "x" ? "vertical" : "horizontal";
-        const next = guides[axisKey].filter(value => value !== state.guideDrag.value);
+        const originalValue = state.guideDrag.originalValue ?? state.guideDrag.value;
+        const next = guides[axisKey].filter(value => value !== originalValue && value !== state.guideDrag.value);
         next.push(state.guideDrag.value);
         guides[axisKey] = [...new Set(next)].sort((a, b) => a - b);
-        state.guides = guides;
+        setCurrentGuides(guides);
         state.guideDrag = null;
         if (event.pointerId !== undefined && typeof els.canvas.hasPointerCapture === "function" && els.canvas.hasPointerCapture(event.pointerId)) {
           els.canvas.releasePointerCapture(event.pointerId);
         }
-        syncActiveWallRecord();
         save();
         render();
         return;
@@ -469,8 +556,7 @@
       const guides = currentGuides();
       const axisKey = guide.axis === "x" ? "vertical" : "horizontal";
       guides[axisKey] = guides[axisKey].filter(value => value !== guide.value);
-      state.guides = guides;
-      syncActiveWallRecord();
+      setCurrentGuides(guides);
       save();
       render();
       return true;
@@ -535,7 +621,7 @@
 
     function serializedState() {
       return {
-        version: 4,
+        version: 5,
         view: state.view,
         tool: state.tool === "hand" ? "hand" : "select",
         activeSide: activeWallSide(),
@@ -564,6 +650,7 @@
           surroundColor: state.space.surroundColor || "#070708",
           cinematicLight: state.space.cinematicLight !== false
         },
+        spaceGuides: normalizeGuides(state.spaceGuides || defaultGuides()),
         roomElements: (state.roomElements || []).map(serializedRoomElement),
         activeWallId: state.activeWallId,
         walls: state.walls.map(serializedWallRecord)
@@ -616,6 +703,7 @@
       state.space = { ...state.space, ...parsed.space };
       if (state.space.floorColor === "#1d2a23") state.space.floorColor = "#101113";
       if (state.space.surroundColor === "#202821") state.space.surroundColor = "#070708";
+      state.spaceGuides = normalizeGuides(parsed.spaceGuides || parsed.space?.guides || state.spaceGuides || defaultGuides());
       state.roomElements = Array.isArray(parsed.roomElements)
         ? parsed.roomElements.map(normalizeRoomElement)
         : Array.isArray(parsed.space?.elements)
@@ -660,6 +748,7 @@
       loadActiveWall();
       setSelection([]);
       state.selectedRoomElementId = null;
+      state.selectedSpaceIds = [];
       state.drag = null;
       state.panDrag = null;
       state.rotateDrag = null;

@@ -27,6 +27,7 @@
       handOverride: false,
       activeSide: "front",
       selectedRoomElementId: null,
+      selectedSpaceIds: [],
       theme: "dark",
       view2d: { zoom: 1, panX: 0, panY: 0 },
       view3d: { zoom: 1, rotX: -10, rotY: 24, rotZ: 0 },
@@ -40,6 +41,7 @@
       roomElements: [],
       activeWallId: "wall-a",
       guides: { vertical: [], horizontal: [], visible: true },
+      spaceGuides: { vertical: [], horizontal: [], visible: true },
       walls: [],
       wall: { width: 6000, height: 3000, depth: 120, color: "#f5f4ea" },
       items: [

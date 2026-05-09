@@ -228,7 +228,7 @@
     }
 
     function currentGuides() {
-      return normalizeGuides(state.guides || defaultGuides());
+      return normalizeGuides(state.view === "space2d" ? state.spaceGuides || defaultGuides() : state.guides || defaultGuides());
     }
 
     function drawGuides(geom, width, height) {
@@ -1282,11 +1282,6 @@
         face([{ x: 0, y: state.wall.height, z: frontZ }, { x: state.wall.width, y: state.wall.height, z: frontZ }, { x: state.wall.width, y: state.wall.height, z: backZ }, { x: 0, y: state.wall.height, z: backZ }], activeCanvas === els.canvas ? shade(state.wall.color, -12) : "#dde4da", activeCanvas === els.canvas ? "#4b4d52" : "#7e897f", "top"),
         face([{ x: 0, y: 0, z: frontZ }, { x: state.wall.width, y: 0, z: frontZ }, { x: state.wall.width, y: state.wall.height, z: frontZ }, { x: 0, y: state.wall.height, z: frontZ }], state.wall.color, "#303137", "front")
       ];
-      const frontFace = faces.find(faceDef => faceDef.name === "front");
-      const backFace = faces.find(faceDef => faceDef.name === "back");
-      const frontIsVisible = frontFace ? visibleFace(frontFace.points) : true;
-      const backIsVisible = backFace ? visibleFace(backFace.points) : false;
-
       const renderables = faces.map(faceDef => ({
         z: faceDef.z,
         draw: () => {
@@ -1295,10 +1290,9 @@
         }
       }));
 
-      state.items.forEach(rawItem => {
+      itemsForSide(activeWallSide()).forEach(rawItem => {
         const item = normalizeItem(rawItem);
         const side = itemSide(item);
-        if ((side === "front" && !frontIsVisible) || (side === "back" && !backIsVisible)) return;
         const sideSign = side === "front" ? 1 : -1;
         const gap = 6;
         const relief = itemReliefDepth(item);
@@ -1403,7 +1397,7 @@
       renderables.sort((a, b) => a.z - b.z).forEach(renderable => renderable.draw());
       applyCinematicLight(width, height);
       drawAxisGizmo(width, height, rotY, rotX, rotZ);
-      els.scaleLabel.textContent = `3D wall preview zoom ${Math.round(state.view3d.zoom * 100)}% | Y ${Math.round(state.view3d.rotY ?? state.view3d.yaw ?? 24)} deg`;
+      els.scaleLabel.textContent = `3D ${sideLabel(activeWallSide()).toLowerCase()} wall preview zoom ${Math.round(state.view3d.zoom * 100)}% | Y ${Math.round(state.view3d.rotY ?? state.view3d.yaw ?? 24)} deg`;
     }
 
     function spaceGeometry(width, height) {
@@ -1416,6 +1410,14 @@
 
     function spacePoint(geom, x, y) {
       return { x: geom.x + x * geom.scale, y: geom.y + geom.h - y * geom.scale };
+    }
+
+    function screenToSpaceX(geom, screenX) {
+      return (screenX - geom.x) / geom.scale;
+    }
+
+    function screenToSpaceY(geom, screenY) {
+      return (geom.y + geom.h - screenY) / geom.scale;
     }
 
     function roomElementScreenBox(geom, rawElement) {
@@ -1433,7 +1435,7 @@
 
     function drawRoomElement2D(box, floorMark) {
       const { element, x, y, w, h } = box;
-      const selected = element.id === state.selectedRoomElementId;
+      const selected = isSpaceEntitySelected("room", element.id) || element.id === state.selectedRoomElementId;
       const ink = contrastText(element.color);
       activeCtx.save();
       activeCtx.fillStyle = element.color;
@@ -1485,6 +1487,163 @@
       };
     }
 
+    function wallSpaceFootprint(wall) {
+      const ends = wallSpaceEndpoints(wall);
+      const angle = ((wall.placement && wall.placement.rotation) || 0) * Math.PI / 180;
+      const nx = -Math.sin(angle);
+      const ny = Math.cos(angle);
+      const halfDepth = Math.max(20, number(wall.wall?.depth, 120) / 2);
+      return {
+        ends,
+        frontA: { x: ends.a.x + nx * halfDepth, y: ends.a.y + ny * halfDepth },
+        frontB: { x: ends.b.x + nx * halfDepth, y: ends.b.y + ny * halfDepth },
+        backB: { x: ends.b.x - nx * halfDepth, y: ends.b.y - ny * halfDepth },
+        backA: { x: ends.a.x - nx * halfDepth, y: ends.a.y - ny * halfDepth },
+        normal: { x: nx, y: ny },
+        halfDepth
+      };
+    }
+
+    function fillSpacePolygon(geom, points, fill, stroke, lineWidth = 1.5) {
+      const projected = points.map(point => spacePoint(geom, point.x, point.y));
+      activeCtx.save();
+      activeCtx.beginPath();
+      activeCtx.moveTo(projected[0].x, projected[0].y);
+      projected.slice(1).forEach(point => activeCtx.lineTo(point.x, point.y));
+      activeCtx.closePath();
+      activeCtx.fillStyle = fill;
+      activeCtx.fill();
+      activeCtx.strokeStyle = stroke;
+      activeCtx.lineWidth = lineWidth;
+      activeCtx.stroke();
+      activeCtx.restore();
+      return projected;
+    }
+
+    function drawSpaceGuides(geom, width, height) {
+      if (activeCanvas !== els.canvas) return;
+      const guides = currentGuides();
+      if (guides.visible === false) return;
+      activeCtx.save();
+      activeCtx.strokeStyle = "rgba(146,208,255,0.56)";
+      activeCtx.lineWidth = 1;
+      activeCtx.setLineDash([5, 5]);
+      guides.vertical.forEach(value => {
+        const x = spacePoint(geom, value, 0).x;
+        activeCtx.beginPath();
+        activeCtx.moveTo(x, 0);
+        activeCtx.lineTo(x, height);
+        activeCtx.stroke();
+      });
+      activeCtx.strokeStyle = "rgba(255,206,143,0.56)";
+      guides.horizontal.forEach(value => {
+        const y = spacePoint(geom, 0, value).y;
+        activeCtx.beginPath();
+        activeCtx.moveTo(0, y);
+        activeCtx.lineTo(width, y);
+        activeCtx.stroke();
+      });
+      if (state.guideDrag) {
+        if (state.guideDrag.axis === "x") {
+          activeCtx.strokeStyle = "rgba(146,208,255,0.9)";
+          const x = spacePoint(geom, state.guideDrag.value, 0).x;
+          activeCtx.beginPath();
+          activeCtx.moveTo(x, 0);
+          activeCtx.lineTo(x, height);
+          activeCtx.stroke();
+        } else {
+          activeCtx.strokeStyle = "rgba(255,206,143,0.9)";
+          const y = spacePoint(geom, 0, state.guideDrag.value).y;
+          activeCtx.beginPath();
+          activeCtx.moveTo(0, y);
+          activeCtx.lineTo(width, y);
+          activeCtx.stroke();
+        }
+      }
+      activeCtx.restore();
+    }
+
+    function drawSpaceSnapLines(geom) {
+      if (activeCanvas !== els.canvas) return;
+      (state.snapLines || []).forEach(line => {
+        if (line.axis === "x") {
+          const x = spacePoint(geom, line.value, 0).x;
+          drawLine(x, geom.y, x, geom.y + geom.h, "#a8c7dd", [6, 5]);
+        } else {
+          const y = spacePoint(geom, 0, line.value).y;
+          drawLine(geom.x, y, geom.x + geom.w, y, "#c2b7d8", [6, 5]);
+        }
+      });
+    }
+
+    function drawSpaceRulers(geom, width, height) {
+      if (activeCanvas !== els.canvas) return;
+      const rulerSize = 28;
+      const step = rulerStep(geom.scale);
+      const minor = step / 2;
+      const band = isDark(sceneSurroundColor()) ? "#111215" : "#eff1f4";
+      const border = isDark(sceneSurroundColor()) ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)";
+      const ink = isDark(sceneSurroundColor()) ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.65)";
+      const accentX = "rgba(146,208,255,0.9)";
+      const accentY = "rgba(255,206,143,0.9)";
+      activeCtx.save();
+      activeCtx.fillStyle = band;
+      activeCtx.fillRect(0, 0, width, rulerSize);
+      activeCtx.fillRect(0, 0, rulerSize, height);
+      activeCtx.strokeStyle = border;
+      activeCtx.beginPath();
+      activeCtx.moveTo(rulerSize, 0);
+      activeCtx.lineTo(rulerSize, height);
+      activeCtx.moveTo(0, rulerSize);
+      activeCtx.lineTo(width, rulerSize);
+      activeCtx.stroke();
+
+      const startX = Math.floor(screenToSpaceX(geom, rulerSize) / minor) * minor;
+      const endX = Math.ceil(screenToSpaceX(geom, width) / minor) * minor;
+      for (let value = startX; value <= endX; value += minor) {
+        const x = spacePoint(geom, value, 0).x;
+        const major = value % step === 0;
+        const tick = major ? 12 : 7;
+        activeCtx.strokeStyle = major ? ink : border;
+        activeCtx.beginPath();
+        activeCtx.moveTo(x, rulerSize);
+        activeCtx.lineTo(x, rulerSize - tick);
+        activeCtx.stroke();
+        if (major) {
+          drawText(`${Math.round(value)}`, x, 11, { color: ink, size: 9, weight: 600 });
+        }
+      }
+
+      const startY = Math.floor(screenToSpaceY(geom, height) / minor) * minor;
+      const endY = Math.ceil(screenToSpaceY(geom, rulerSize) / minor) * minor;
+      for (let value = startY; value <= endY; value += minor) {
+        const y = spacePoint(geom, 0, value).y;
+        const major = value % step === 0;
+        const tick = major ? 12 : 7;
+        activeCtx.strokeStyle = major ? ink : border;
+        activeCtx.beginPath();
+        activeCtx.moveTo(rulerSize, y);
+        activeCtx.lineTo(rulerSize - tick, y);
+        activeCtx.stroke();
+        if (major) {
+          drawText(`${Math.round(value)}`, 11, y, { color: ink, size: 9, weight: 600, rotate: -Math.PI / 2 });
+        }
+      }
+
+      const guides = currentGuides();
+      if (guides.visible !== false) {
+        guides.vertical.forEach(value => {
+          const x = spacePoint(geom, value, 0).x;
+          drawLine(x, 0, x, rulerSize, accentX);
+        });
+        guides.horizontal.forEach(value => {
+          const y = spacePoint(geom, 0, value).y;
+          drawLine(0, y, rulerSize, y, accentY);
+        });
+      }
+      activeCtx.restore();
+    }
+
     function drawSpace2D() {
       const { width, height } = clear();
       const geom = spaceGeometry(width, height);
@@ -1500,17 +1659,23 @@
       activeCtx.strokeRect(geom.x, geom.y, geom.w, geom.h);
       drawText(`${state.space.width} mm`, geom.x + geom.w / 2, geom.y + geom.h + 34, { color: surroundMark, halo: contrastHalo(surroundMark), size: 13 });
       drawText(`${state.space.depth} mm`, geom.x - 34, geom.y + geom.h / 2, { rotate: -Math.PI / 2, color: surroundMark, halo: contrastHalo(surroundMark), size: 13 });
+      drawSpaceGuides(geom, width, height);
+      drawSpaceSnapLines(geom);
 
       (state.roomElements || []).map(element => roomElementScreenBox(geom, element)).forEach(box => drawRoomElement2D(box, floorMark));
 
       state.walls.forEach((wall, index) => {
-        const ends = wallSpaceEndpoints(wall);
+        const footprint = wallSpaceFootprint(wall);
+        const ends = footprint.ends;
         const a = spacePoint(geom, ends.a.x, ends.a.y);
         const b = spacePoint(geom, ends.b.x, ends.b.y);
-        const selected = wall.id === state.activeWallId;
-        drawLine(a.x, a.y, b.x, b.y, selected ? "#d7d3cb" : "#b8c1cb");
-        activeCtx.lineWidth = selected ? 8 : 5;
-        activeCtx.strokeStyle = selected ? "#d7d3cb" : "#b8c1cb";
+        const selected = isSpaceEntitySelected("wall", wall.id) || (selectedSpaceIds().length === 0 && wall.id === state.activeWallId);
+        const wallFill = activeCanvas === els.canvas ? wall.wall.color : "#eef2ea";
+        const wallStroke = selected ? "#d7d3cb" : "#8d98a2";
+        const outline = fillSpacePolygon(geom, [footprint.frontA, footprint.frontB, footprint.backB, footprint.backA], wallFill, wallStroke, selected ? 2.6 : 1.8);
+        drawLine(a.x, a.y, b.x, b.y, selected ? "#090a0b" : "#5f6870", [5, 5]);
+        activeCtx.lineWidth = selected ? 2 : 1.2;
+        activeCtx.strokeStyle = selected ? "#090a0b" : "#5f6870";
         activeCtx.beginPath();
         activeCtx.moveTo(a.x, a.y);
         activeCtx.lineTo(b.x, b.y);
@@ -1525,6 +1690,14 @@
         drawLine(mid.x, mid.y, frontMark.x, frontMark.y, selected ? "#d7d3cb" : floorMark, [3, 4]);
         drawText("F", frontMark.x, frontMark.y, { color: selected ? "#d7d3cb" : floorMark, halo: contrastHalo(floorMark), size: 10, weight: 800 });
         drawText("B", backMark.x, backMark.y, { color: floorMark, halo: contrastHalo(floorMark), size: 10, weight: 800 });
+        if (wall.wall.depth) {
+          const depthLabel = `${Math.round(wall.wall.depth)} mm depth`;
+          const labelPoint = {
+            x: (outline[1].x + outline[2].x) / 2,
+            y: (outline[1].y + outline[2].y) / 2
+          };
+          drawText(depthLabel, labelPoint.x, labelPoint.y, { color: floorMark, halo: contrastHalo(floorMark), size: 9, weight: 700, maxWidth: 120 });
+        }
         activeCtx.fillStyle = selected ? "#090a0b" : floorMark;
         activeCtx.strokeStyle = selected ? "#d7d3cb" : "rgba(255,255,255,0.35)";
         activeCtx.lineWidth = 1.5;
@@ -1535,6 +1708,7 @@
         drawText(wall.name || `Wall ${index + 1}`, mid.x, mid.y - 18, { color: selected ? "#d7d3cb" : floorMark, halo: contrastHalo(floorMark), size: 12 });
         drawText(`${wall.wall.width} mm`, mid.x, mid.y + 18, { color: floorMark, halo: contrastHalo(floorMark), size: 10, weight: 600 });
       });
+      drawSpaceRulers(geom, width, height);
       const elementCount = (state.roomElements || []).length;
       els.scaleLabel.textContent = `Floor plan zoom ${Math.round(state.view2d.zoom * 100)}% | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | ${elementCount} placeholder${elementCount === 1 ? "" : "s"} | ${activeTool() === "hand" ? "drag to pan" : "drag walls or placeholders to move"}`;
     }
@@ -1635,12 +1809,12 @@
         faces.push({
           points: projected,
           fill: element.color,
-          stroke: element.id === state.selectedRoomElementId ? "#d7d3cb" : shade(element.color, -34),
+          stroke: isSpaceEntitySelected("room", element.id) || element.id === state.selectedRoomElementId ? "#d7d3cb" : shade(element.color, -34),
           z: averageProjectedZ(projected) - 8,
           always: true,
           custom: element.shape === "circle",
           drawExtra: element.shape === "circle"
-            ? points => drawProjectedEllipse({ ...element, image: "" }, points, element.color, element.id === state.selectedRoomElementId ? "#d7d3cb" : shade(element.color, -34), { drawImage: false })
+            ? points => drawProjectedEllipse({ ...element, image: "" }, points, element.color, isSpaceEntitySelected("room", element.id) || element.id === state.selectedRoomElementId ? "#d7d3cb" : shade(element.color, -34), { drawImage: false })
             : null
         });
       });
@@ -1654,7 +1828,7 @@
         const nx = -Math.sin(angle);
         const ny = Math.cos(angle);
         const halfDepth = Math.max(30, number(wall.wall.depth, 120) / 2);
-        const edgeStroke = wall.id === state.activeWallId ? "#d7d3cb" : "#303137";
+        const edgeStroke = isSpaceEntitySelected("wall", wall.id) || (selectedSpaceIds().length === 0 && wall.id === state.activeWallId) ? "#d7d3cb" : "#303137";
         const frontA = { x: ends.a.x + nx * halfDepth, z: ends.a.y + ny * halfDepth };
         const frontB = { x: ends.b.x + nx * halfDepth, z: ends.b.y + ny * halfDepth };
         const backA = { x: ends.a.x - nx * halfDepth, z: ends.a.y - ny * halfDepth };

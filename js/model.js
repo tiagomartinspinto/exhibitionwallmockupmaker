@@ -135,6 +135,9 @@
       state.space.surroundColor = els.spaceSurroundColor.value || state.space.surroundColor;
       state.space.cinematicLight = Boolean(els.spaceCinematicLight.checked);
       (state.roomElements || []).forEach(clampRoomElementToSpace);
+      state.spaceGuides = normalizeGuides(state.spaceGuides || defaultGuides());
+      state.spaceGuides.vertical = state.spaceGuides.vertical.map(value => clamp(value, 0, state.space.width));
+      state.spaceGuides.horizontal = state.spaceGuides.horizontal.map(value => clamp(value, 0, state.space.depth));
       save();
       render();
     }
@@ -240,6 +243,66 @@
       return normalized;
     }
 
+    function spaceEntityKey(type, id) {
+      return `${type === "wall" ? "wall" : "room"}:${id}`;
+    }
+
+    function parseSpaceEntityKey(key) {
+      const value = String(key || "");
+      const split = value.indexOf(":");
+      if (split <= 0) return null;
+      const type = value.slice(0, split);
+      const id = value.slice(split + 1);
+      if (!id || (type !== "wall" && type !== "room")) return null;
+      return { type, id };
+    }
+
+    function validSpaceEntityKey(key) {
+      const parsed = parseSpaceEntityKey(key);
+      if (!parsed) return false;
+      if (parsed.type === "wall") return (state.walls || []).some(wall => wall.id === parsed.id);
+      return (state.roomElements || []).some(element => element.id === parsed.id);
+    }
+
+    function selectedSpaceIds() {
+      const ids = Array.isArray(state.selectedSpaceIds) ? state.selectedSpaceIds : [];
+      const valid = [...new Set(ids)].filter(validSpaceEntityKey);
+      if (valid.length !== ids.length) state.selectedSpaceIds = valid;
+      return valid;
+    }
+
+    function isSpaceEntitySelected(type, id) {
+      return selectedSpaceIds().includes(spaceEntityKey(type, id));
+    }
+
+    function setSpaceSelection(ids) {
+      const valid = [...new Set(ids || [])].filter(validSpaceEntityKey);
+      const parsed = valid.map(parseSpaceEntityKey).filter(Boolean);
+      const wall = parsed.find(entry => entry.type === "wall");
+      const room = parsed.find(entry => entry.type === "room");
+      state.selectedSpaceIds = valid;
+      if (valid.length) setSelection([]);
+      if (wall && wall.id !== state.activeWallId) {
+        syncActiveWallRecord();
+        state.activeWallId = wall.id;
+        loadActiveWall();
+        syncInputsFromWall();
+      }
+      state.selectedRoomElementId = room ? room.id : null;
+      syncRoomElementInputs();
+    }
+
+    function toggleSpaceSelection(type, id) {
+      const key = spaceEntityKey(type, id);
+      const current = new Set(selectedSpaceIds());
+      if (current.has(key)) {
+        current.delete(key);
+      } else {
+        current.add(key);
+      }
+      setSpaceSelection([...current]);
+    }
+
     function selectedRoomElement() {
       return (state.roomElements || []).find(element => element.id === state.selectedRoomElementId) || null;
     }
@@ -248,6 +311,7 @@
       const exists = (state.roomElements || []).some(element => element.id === id);
       state.selectedRoomElementId = exists ? id : null;
       if (state.selectedRoomElementId) setSelection([]);
+      state.selectedSpaceIds = state.selectedRoomElementId ? [spaceEntityKey("room", state.selectedRoomElementId)] : [];
       syncRoomElementInputs();
     }
 
@@ -343,6 +407,7 @@
       if (!Array.isArray(state.roomElements)) state.roomElements = [];
       state.roomElements.push(element);
       state.selectedRoomElementId = element.id;
+      state.selectedSpaceIds = [spaceEntityKey("room", element.id)];
       save();
       render();
     }
@@ -350,6 +415,7 @@
     function deleteRoomElement(id) {
       state.roomElements = (state.roomElements || []).filter(element => element.id !== id);
       if (state.selectedRoomElementId === id) state.selectedRoomElementId = null;
+      state.selectedSpaceIds = selectedSpaceIds().filter(key => key !== spaceEntityKey("room", id));
       save();
       render();
     }
@@ -490,16 +556,27 @@
       render({ canvasOnly: true });
     }
 
+    function setCurrentGuides(guides) {
+      const normalized = normalizeGuides(guides);
+      if (state.view === "space2d") {
+        state.spaceGuides = normalized;
+      } else {
+        state.guides = normalized;
+        syncActiveWallRecord();
+      }
+      return normalized;
+    }
+
     function toggleGuides() {
-      state.guides.visible = !(state.guides.visible !== false);
-      syncActiveWallRecord();
+      const guides = currentGuides();
+      guides.visible = !(guides.visible !== false);
+      setCurrentGuides(guides);
       save();
       render({ canvasOnly: true });
     }
 
     function clearGuides() {
-      state.guides = defaultGuides();
-      syncActiveWallRecord();
+      setCurrentGuides(defaultGuides());
       save();
       render({ canvasOnly: true });
     }
@@ -777,7 +854,10 @@
       const side = activeWallSide();
       state.selectedIds = [...new Set(ids)].filter(id => state.items.some(item => item.id === id && itemSide(item) === side));
       state.selectedId = state.selectedIds[0] || null;
-      if (state.selectedId) state.selectedRoomElementId = null;
+      if (state.selectedId) {
+        state.selectedRoomElementId = null;
+        state.selectedSpaceIds = [];
+      }
     }
 
     function toggleSelection(id) {
@@ -813,6 +893,7 @@
       state.activeWallId = id;
       loadActiveWall();
       setSelection([]);
+      state.selectedSpaceIds = state.view === "space2d" ? [spaceEntityKey("wall", id)] : [];
       syncInputsFromWall();
       save();
       render();
@@ -826,6 +907,7 @@
       state.activeWallId = wall.id;
       loadActiveWall();
       setSelection([]);
+      state.selectedSpaceIds = state.view === "space2d" ? [spaceEntityKey("wall", wall.id)] : [];
       syncInputsFromWall();
       save();
       render();
@@ -845,6 +927,7 @@
       state.activeWallId = clone.id;
       loadActiveWall();
       setSelection([]);
+      state.selectedSpaceIds = state.view === "space2d" ? [spaceEntityKey("wall", clone.id)] : [];
       syncInputsFromWall();
       save();
       render();
@@ -873,6 +956,7 @@
       state.activeWallId = state.walls[0].id;
       loadActiveWall();
       setSelection([]);
+      state.selectedSpaceIds = selectedSpaceIds().filter(key => validSpaceEntityKey(key));
       syncInputsFromWall();
       save();
       render();
