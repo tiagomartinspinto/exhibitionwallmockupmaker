@@ -89,8 +89,8 @@
       drawArrowHead(x2, y2, angle, color);
     }
 
-    const EXPORT_TEXT_BOOST = 16;
-    const EXPORT_TEXT_MAX_SIZE = 36;
+    const EXPORT_TEXT_BOOST = 6;
+    const EXPORT_TEXT_MAX_SIZE = 30;
 
     function isExportCanvas() {
       return activeCanvas !== els.canvas;
@@ -538,6 +538,7 @@
       const wallLeftX = geom.x;
       const itemRects = itemBoxes.map(box => ({ x: box.x, y: box.y, w: box.w, h: box.h }));
       const placedLabels = [];
+      const guideLabelSize = 11;
 
       const fitsLabel = (candidate, text, config = {}, bounds = null) => {
         const box = estimatedLabelBox(candidate, text, config);
@@ -591,7 +592,7 @@
 
       xEntries.slice().sort((a, b) => b.length - a.length).forEach(entry => {
         const label = entry.label;
-        const labelWidth = textWidth(label, 14, 700);
+        const labelWidth = textWidth(label, guideLabelSize, 700);
         const halo = "rgba(255,255,255,0.96)";
         let placed = false;
         if (entry.length > labelWidth + 28) {
@@ -607,15 +608,15 @@
                 top: entry.guideY - 34,
                 bottom: entry.guideY + 34
               };
-              if (!fitsLabel(candidate, label, { size: 14, weight: 700, maxWidth: Math.max(120, entry.length - 24) }, bounds)) return;
+              if (!fitsLabel(candidate, label, { size: guideLabelSize, weight: 700, maxWidth: Math.max(120, entry.length - 24) }, bounds)) return;
               commitLabel(candidate, label, {
                 color: entry.color,
-                size: 14,
+                size: guideLabelSize,
                 weight: 700,
                 halo,
                 maxWidth: Math.max(120, entry.length - 24)
               }, {
-                size: 14,
+                size: guideLabelSize,
                 weight: 700,
                 maxWidth: Math.max(120, entry.length - 24)
               });
@@ -630,16 +631,16 @@
           offsets.forEach(offset => {
             if (placed) return;
             const candidate = { x: column, y: clamp(entry.guideY + offset, geom.y + 24, floorY - 24) };
-            if (!fitsLabel(candidate, label, { size: 14, weight: 700, maxWidth: 220 })) return;
+            if (!fitsLabel(candidate, label, { size: guideLabelSize, weight: 700, maxWidth: 220 })) return;
             drawLine(candidate.x + labelWidth / 2 + 12, candidate.y, wallLeftX - 10, entry.guideY, entry.color, [4, 4]);
             commitLabel(candidate, label, {
               color: entry.color,
-              size: 14,
+              size: guideLabelSize,
               weight: 700,
               halo,
               maxWidth: 220
             }, {
-              size: 14,
+              size: guideLabelSize,
               weight: 700,
               maxWidth: 220
             });
@@ -650,7 +651,7 @@
 
       yEntries.slice().sort((a, b) => b.length - a.length).forEach(entry => {
         const label = entry.label;
-        const labelExtent = textWidth(label, 14, 700) + 12;
+        const labelExtent = textWidth(label, guideLabelSize, 700) + 12;
         const halo = "rgba(255,255,255,0.96)";
         let placed = false;
         if (entry.length > labelExtent + 24) {
@@ -666,16 +667,16 @@
                 top: entry.guideY + 12,
                 bottom: floorY - 12
               };
-              if (!fitsLabel(candidate, label, { size: 14, weight: 700, vertical: true, maxHeight: Math.max(120, entry.length - 24) }, bounds)) return;
+              if (!fitsLabel(candidate, label, { size: guideLabelSize, weight: 700, vertical: true, maxHeight: Math.max(120, entry.length - 24) }, bounds)) return;
               commitLabel(candidate, label, {
                 rotate: -Math.PI / 2,
                 color: entry.color,
-                size: 14,
+                size: guideLabelSize,
                 weight: 700,
                 halo,
                 maxWidth: Math.max(120, entry.length - 24)
               }, {
-                size: 14,
+                size: guideLabelSize,
                 weight: 700,
                 vertical: true,
                 maxHeight: Math.max(120, entry.length - 24)
@@ -691,16 +692,16 @@
           xOffsets.forEach(offset => {
             if (placed) return;
             const candidate = { x: clamp(entry.guideX + offset, geom.x + 90, geom.x + geom.w - 90), y: rowY };
-            if (!fitsLabel(candidate, label, { size: 14, weight: 700, maxWidth: 220 })) return;
+            if (!fitsLabel(candidate, label, { size: guideLabelSize, weight: 700, maxWidth: 220 })) return;
             drawLine(entry.guideX, floorY + 8, candidate.x, candidate.y - 10, entry.color, [4, 4]);
             commitLabel(candidate, label, {
               color: entry.color,
-              size: 14,
+              size: guideLabelSize,
               weight: 700,
               halo,
               maxWidth: 220
             }, {
-              size: 14,
+              size: guideLabelSize,
               weight: 700,
               maxWidth: 220
             });

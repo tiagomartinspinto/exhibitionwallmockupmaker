@@ -178,17 +178,17 @@
 
     function drawObjectListSidebar(x, y, width, height) {
       const items = itemsForSide(activeWallSide()).map(normalizeItem);
-      drawText(`${sideLabel(activeWallSide())} objects (${items.length})`, x, y - 28, { align: "left", color: "#161616", size: 28, halo: null, noExportBoost: true });
+      drawText(`${sideLabel(activeWallSide())} objects (${items.length})`, x, y - 38, { align: "left", color: "#161616", size: 42, halo: null, noExportBoost: true });
       if (!items.length) return;
-      const headerH = 34;
-      const rowH = clamp(Math.floor((height - headerH) / items.length), 42, 94);
+      const headerH = 54;
+      const rowH = clamp(Math.floor((height - headerH) / items.length), 82, 126);
       activeCtx.fillStyle = "#edf2ec";
       activeCtx.fillRect(x, y, width, headerH);
       activeCtx.strokeStyle = "#d6ddd4";
       activeCtx.strokeRect(x, y, width, headerH);
-      drawText("ID", x + 12, y + headerH / 2, { align: "left", color: "#161616", size: 14, weight: 800, halo: null, noExportBoost: true });
-      drawText("Object", x + 84, y + headerH / 2, { align: "left", color: "#161616", size: 14, weight: 800, halo: null, noExportBoost: true });
-      drawText("Size / position", x + width - 12, y + headerH / 2, { align: "right", color: "#161616", size: 14, weight: 800, halo: null, noExportBoost: true });
+      drawText("ID", x + 16, y + headerH / 2, { align: "left", color: "#161616", size: 22, weight: 800, halo: null, noExportBoost: true });
+      drawText("Object", x + 116, y + headerH / 2, { align: "left", color: "#161616", size: 22, weight: 800, halo: null, noExportBoost: true });
+      drawText("Size / position", x + width - 16, y + headerH / 2, { align: "right", color: "#161616", size: 22, weight: 800, halo: null, noExportBoost: true });
       let cardY = y + headerH;
       items.forEach((item, index) => {
         const detailText = exportTextLabel(item);
@@ -198,13 +198,15 @@
         activeCtx.fillRect(x, cardY, width, rowH);
         activeCtx.strokeStyle = "#d6ddd4";
         activeCtx.strokeRect(x, cardY, width, rowH);
-        const codeX = x + 12;
-        const contentX = x + 84;
-        const rightX = x + width - 12;
-        const nameWidth = Math.max(120, width - 230);
-        drawText(itemCode(item), codeX, cardY + Math.min(24, rowH * 0.42), { align: "left", color: "#26312b", size: 13, weight: 800, halo: null, noExportBoost: true });
-        drawText(item.name, contentX, cardY + Math.min(24, rowH * 0.42), { align: "left", color: "#161616", size: rowH < 54 ? 12 : 14, weight: 800, halo: null, maxWidth: nameWidth, noExportBoost: true });
-        drawText(itemSizeLabel(item), rightX, cardY + Math.min(24, rowH * 0.42), { align: "right", color: "#26312b", size: 12, weight: 700, halo: null, maxWidth: 150, noExportBoost: true });
+        const codeX = x + 16;
+        const contentX = x + 116;
+        const rightX = x + width - 16;
+        const nameWidth = Math.max(170, width - 360);
+        const titleY = cardY + Math.min(42, rowH * 0.36);
+        const detailY = cardY + Math.min(rowH - 24, titleY + 42);
+        drawText(itemCode(item), codeX, titleY, { align: "left", color: "#26312b", size: 20, weight: 800, halo: null, noExportBoost: true });
+        drawText(item.name, contentX, titleY, { align: "left", color: "#161616", size: 24, weight: 800, halo: null, maxWidth: nameWidth, noExportBoost: true });
+        drawText(itemSizeLabel(item), rightX, titleY, { align: "right", color: "#26312b", size: 20, weight: 700, halo: null, maxWidth: 240, noExportBoost: true });
         const details = [
           itemTypePrintLabel(item.type),
           itemPositionLabel(item),
@@ -212,10 +214,10 @@
           detailText,
           notesText
         ].filter(Boolean).join(" | ");
-        if (rowH >= 62) {
-          drawText(details, contentX, cardY + rowH - 18, { align: "left", color: "#4b5750", size: 11, weight: 600, halo: null, maxWidth: width - 102, noExportBoost: true });
+        if (rowH >= 96) {
+          drawText(details, contentX, detailY, { align: "left", color: "#4b5750", size: 18, weight: 600, halo: null, maxWidth: width - 132, noExportBoost: true });
         } else {
-          drawText(`${itemTypePrintLabel(item.type)} | ${itemPositionLabel(item)}`, contentX, cardY + rowH - 12, { align: "left", color: "#4b5750", size: 10, weight: 600, halo: null, maxWidth: width - 102, noExportBoost: true });
+          drawText(`${itemTypePrintLabel(item.type)} | ${itemPositionLabel(item)}`, contentX, detailY, { align: "left", color: "#4b5750", size: 16, weight: 600, halo: null, maxWidth: width - 132, noExportBoost: true });
         }
         cardY += rowH;
       });
