@@ -109,6 +109,7 @@
       scaleLabel: document.querySelector("#scaleLabel"),
       projectName: document.querySelector("#projectName"),
       snapshotView: document.querySelector("#snapshotView"),
+      printAllWallsPdf: document.querySelector("#printAllWallsPdf"),
       toolSelect: document.querySelector("#toolSelect"),
       toolHand: document.querySelector("#toolHand"),
       guideToggle: document.querySelector("#guideToggle"),

@@ -337,8 +337,11 @@
       return bytes;
     }
 
-    function makePdfFromCanvas(canvas) {
-      const imageBytes = base64Bytes(canvas.toDataURL("image/jpeg", 0.94).split(",")[1]);
+    function makePdfFromCanvases(canvases) {
+      const pages = canvases.map(canvas => ({
+        canvas,
+        imageBytes: base64Bytes(canvas.toDataURL("image/jpeg", 0.94).split(",")[1])
+      }));
       const pageW = 1190.55;
       const pageH = 841.89;
       const chunks = [];
@@ -356,23 +359,32 @@
         append(`${id} 0 obj\n${body}\nendobj\n`);
       }
 
+      const pageIds = pages.map((_, index) => 3 + index * 3);
+      const totalObjects = 2 + pages.length * 3;
+
       append("%PDF-1.4\n");
       object(1, "<< /Type /Catalog /Pages 2 0 R >>");
-      object(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
-      object(3, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`);
-      offsets[4] = length;
-      append(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imageBytes.length} >>\nstream\n`);
-      append(imageBytes);
-      append("\nendstream\nendobj\n");
-      const content = `q\n${pageW} 0 0 ${pageH} 0 0 cm\n/Im0 Do\nQ\n`;
-      object(5, `<< /Length ${content.length} >>\nstream\n${content}endstream`);
+      object(2, `<< /Type /Pages /Kids [${pageIds.map(id => `${id} 0 R`).join(" ")}] /Count ${pages.length} >>`);
+      pages.forEach((page, index) => {
+        const pageId = 3 + index * 3;
+        const imageId = pageId + 1;
+        const contentId = pageId + 2;
+        const imageName = `Im${index}`;
+        object(pageId, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /${imageName} ${imageId} 0 R >> >> /Contents ${contentId} 0 R >>`);
+        offsets[imageId] = length;
+        append(`${imageId} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${page.canvas.width} /Height ${page.canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${page.imageBytes.length} >>\nstream\n`);
+        append(page.imageBytes);
+        append("\nendstream\nendobj\n");
+        const content = `q\n${pageW} 0 0 ${pageH} 0 0 cm\n/${imageName} Do\nQ\n`;
+        object(contentId, `<< /Length ${content.length} >>\nstream\n${content}endstream`);
+      });
 
       const xrefAt = length;
-      append(`xref\n0 6\n0000000000 65535 f \n`);
-      for (let id = 1; id <= 5; id += 1) {
+      append(`xref\n0 ${totalObjects + 1}\n0000000000 65535 f \n`);
+      for (let id = 1; id <= totalObjects; id += 1) {
         append(`${String(offsets[id]).padStart(10, "0")} 00000 n \n`);
       }
-      append(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefAt}\n%%EOF`);
+      append(`trailer\n<< /Size ${totalObjects + 1} /Root 1 0 R >>\nstartxref\n${xrefAt}\n%%EOF`);
 
       const output = new Uint8Array(length);
       let offset = 0;
@@ -381,6 +393,10 @@
         offset += chunk.length;
       });
       return output;
+    }
+
+    function makePdfFromCanvas(canvas) {
+      return makePdfFromCanvases([canvas]);
     }
 
     function slug(text) {
@@ -406,6 +422,59 @@
         ? `${slug(state.project.title)}-room-floor-plan.pdf`
         : `${slug(state.project.title)}-${slug(activeWallRecord().name)}-2d-wall.pdf`;
       download(filename, makePdfFromCanvas(canvas), "application/pdf");
+    }
+
+    function printableWallSides(wall) {
+      const sidesWithObjects = ["front", "back"].filter(side => (wall.items || []).some(item => itemSide(item) === side));
+      return sidesWithObjects.length ? sidesWithObjects : ["front"];
+    }
+
+    function restoreWallExportState(previous) {
+      state.view = previous.view;
+      state.activeWallId = previous.activeWallId;
+      state.activeSide = previous.activeSide;
+      state.selectedId = previous.selectedId;
+      state.selectedIds = [...previous.selectedIds];
+      state.selectedSpaceIds = [...previous.selectedSpaceIds];
+      state.selectedRoomElementId = previous.selectedRoomElementId;
+      state.view2d = { ...previous.view2d };
+      state.view3d = { ...previous.view3d };
+      loadActiveWall();
+      if (els.wallSide) els.wallSide.value = state.activeSide;
+      syncInputsFromWall();
+      syncItemInputs();
+      render();
+    }
+
+    function exportAllWallsPdf() {
+      syncActiveWallRecord();
+      const previous = {
+        view: state.view,
+        activeWallId: state.activeWallId,
+        activeSide: activeWallSide(),
+        selectedId: state.selectedId,
+        selectedIds: [...selectedIds()],
+        selectedSpaceIds: [...selectedSpaceIds()],
+        selectedRoomElementId: state.selectedRoomElementId,
+        view2d: { ...state.view2d },
+        view3d: { ...state.view3d }
+      };
+      const jobs = (state.walls || []).flatMap(wall => printableWallSides(wall).map(side => ({ wall, side })));
+      const canvases = [];
+      try {
+        jobs.forEach(({ wall, side }) => {
+          state.activeWallId = wall.id;
+          loadActiveWall();
+          state.activeSide = normalizeWallSide(side);
+          if (els.wallSide) els.wallSide.value = state.activeSide;
+          syncInputsFromWall();
+          canvases.push(createA3Canvas("elevation"));
+        });
+      } finally {
+        restoreWallExportState(previous);
+      }
+      if (!canvases.length) return;
+      download(`${slug(state.project.title)}-all-walls.pdf`, makePdfFromCanvases(canvases), "application/pdf");
     }
 
     function createSnapshotPdfCanvas() {

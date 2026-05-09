@@ -311,6 +311,8 @@
       exportA3Pdf("elevation");
     });
 
+    on(els.printAllWallsPdf, "click", exportAllWallsPdf);
+
     const exportRoomPdfButton = document.querySelector("#exportRoomPdf");
     on(exportRoomPdfButton, "click", () => {
       exportA3Pdf("space2d");
