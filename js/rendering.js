@@ -1522,7 +1522,6 @@
     }
 
     function drawSpaceGuides(geom, width, height) {
-      if (activeCanvas !== els.canvas) return;
       const guides = currentGuides();
       if (guides.visible === false) return;
       activeCtx.save();
@@ -1648,13 +1647,13 @@
     function drawSpace2D() {
       const { width, height } = clear();
       const geom = spaceGeometry(width, height);
-      const floorFill = activeCanvas === els.canvas ? shade(sceneFloorColor(), -18) : "#ffffff";
-      const surroundMark = activeCanvas === els.canvas ? contrastText(sceneSurroundColor()) : "#26362f";
-      const floorMark = activeCanvas === els.canvas ? contrastText(floorFill) : "#26362f";
-      activeCtx.fillStyle = activeCanvas === els.canvas ? sceneSurroundColor() : "#f9fbf7";
+      const floorFill = shade(sceneFloorColor(), -18);
+      const surroundMark = contrastText(sceneSurroundColor());
+      const floorMark = contrastText(floorFill);
+      activeCtx.fillStyle = sceneSurroundColor();
       activeCtx.fillRect(0, 0, width, height);
       activeCtx.fillStyle = floorFill;
-      activeCtx.strokeStyle = activeCanvas === els.canvas ? shade(sceneFloorColor(), 52) : "#7e897f";
+      activeCtx.strokeStyle = shade(sceneFloorColor(), 52);
       activeCtx.lineWidth = 2;
       activeCtx.fillRect(geom.x, geom.y, geom.w, geom.h);
       activeCtx.strokeRect(geom.x, geom.y, geom.w, geom.h);
@@ -1671,7 +1670,7 @@
         const a = spacePoint(geom, ends.a.x, ends.a.y);
         const b = spacePoint(geom, ends.b.x, ends.b.y);
         const selected = isSpaceEntitySelected("wall", wall.id) || (selectedSpaceIds().length === 0 && wall.id === state.activeWallId);
-        const wallFill = activeCanvas === els.canvas ? wall.wall.color : "#eef2ea";
+        const wallFill = wall.wall.color;
         const wallStroke = selected ? "#d7d3cb" : "#8d98a2";
         const outline = fillSpacePolygon(geom, [footprint.frontA, footprint.frontB, footprint.backB, footprint.backA], wallFill, wallStroke, selected ? 2.6 : 1.8);
         drawLine(a.x, a.y, b.x, b.y, selected ? "#090a0b" : "#5f6870", [5, 5]);
@@ -1721,8 +1720,10 @@
       activeCtx.fillStyle = surround;
       activeCtx.fillRect(0, 0, width, height);
 
-      const rotX = (state.view3d.rotX ?? state.view3d.pitch ?? -10) * Math.PI / 180;
-      const rotY = (state.view3d.rotY ?? state.view3d.yaw ?? 24) * Math.PI / 180;
+      const roomRotX = state.view3d.roomRotX ?? -28;
+      const rotX = roomRotX * Math.PI / 180;
+      const roomRotY = state.view3d.roomRotY ?? 0;
+      const rotY = roomRotY * Math.PI / 180;
       const rotZ = (state.view3d.rotZ ?? state.view3d.roll ?? 0) * Math.PI / 180;
       const maxWallHeight = Math.max(...state.walls.map(wall => wall.wall.height), state.wall.height, 2800);
       const roomScale = Math.min((width * 0.62) / state.space.width, (height * 0.58) / Math.max(state.space.depth, maxWallHeight)) * state.view3d.zoom;
@@ -1828,12 +1829,13 @@
         const uy = Math.sin(angle);
         const nx = -Math.sin(angle);
         const ny = Math.cos(angle);
-        const halfDepth = Math.max(30, number(wall.wall.depth, 120) / 2);
+        const footprint = wallSpaceFootprint(wall);
+        const halfDepth = footprint.halfDepth;
         const edgeStroke = isSpaceEntitySelected("wall", wall.id) || (selectedSpaceIds().length === 0 && wall.id === state.activeWallId) ? "#d7d3cb" : "#303137";
-        const frontA = { x: ends.a.x + nx * halfDepth, z: ends.a.y + ny * halfDepth };
-        const frontB = { x: ends.b.x + nx * halfDepth, z: ends.b.y + ny * halfDepth };
-        const backA = { x: ends.a.x - nx * halfDepth, z: ends.a.y - ny * halfDepth };
-        const backB = { x: ends.b.x - nx * halfDepth, z: ends.b.y - ny * halfDepth };
+        const frontA = { x: footprint.frontA.x, z: footprint.frontA.y };
+        const frontB = { x: footprint.frontB.x, z: footprint.frontB.y };
+        const backA = { x: footprint.backA.x, z: footprint.backA.y };
+        const backB = { x: footprint.backB.x, z: footprint.backB.y };
         const wallFace = [
           { x: frontA.x, y: 0, z: frontA.z },
           { x: frontB.x, y: 0, z: frontB.z },
@@ -1989,7 +1991,7 @@
 
       applyCinematicLight(width, height);
       drawAxisGizmo(width, height, rotY, rotX, rotZ);
-      els.scaleLabel.textContent = `3D room preview | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | ${(state.roomElements || []).length} placeholder${(state.roomElements || []).length === 1 ? "" : "s"} | Y ${Math.round(state.view3d.rotY ?? 24)} deg`;
+      els.scaleLabel.textContent = `3D room preview | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | ${(state.roomElements || []).length} placeholder${(state.roomElements || []).length === 1 ? "" : "s"} | Y ${Math.round(roomRotY)} deg`;
     }
 
     function drawAxisGizmo(width, height, yaw, pitch, roll) {

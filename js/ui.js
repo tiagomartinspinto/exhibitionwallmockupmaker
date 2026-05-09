@@ -246,6 +246,8 @@
         state.view3d.zoom = 1;
         state.view3d.rotX = -10;
         state.view3d.rotY = 24;
+        state.view3d.roomRotX = -28;
+        state.view3d.roomRotY = 0;
         state.view3d.rotZ = 0;
         delete state.view3d.yaw;
         delete state.view3d.pitch;
@@ -260,7 +262,11 @@
       state.view3d.rotY = state.view3d.rotY ?? state.view3d.yaw ?? 24;
       state.view3d.rotZ = state.view3d.rotZ ?? state.view3d.roll ?? 0;
       if (axis === "x") state.view3d.rotX = normalizeDegrees(state.view3d.rotX + amount);
-      if (axis === "y") state.view3d.rotY = normalizeDegrees(state.view3d.rotY + amount);
+      if (axis === "y" && state.view === "space3d") {
+        state.view3d.roomRotY = normalizeDegrees((state.view3d.roomRotY ?? 0) + amount);
+      } else if (axis === "y") {
+        state.view3d.rotY = normalizeDegrees(state.view3d.rotY + amount);
+      }
       if (axis === "z") state.view3d.rotZ = normalizeDegrees(state.view3d.rotZ + amount);
       save();
       render({ canvasOnly: true });

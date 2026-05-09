@@ -35,7 +35,7 @@
         startPanX: number(state.view2d.panX, 0),
         startPanY: number(state.view2d.panY, 0),
         startZoom3d: number(state.view3d.zoom, 1),
-        startRotY: state.view3d.rotY ?? state.view3d.yaw ?? 24
+        startRotY: state.view === "space3d" ? state.view3d.roomRotY ?? 0 : state.view3d.rotY ?? state.view3d.yaw ?? 24
       };
     }
 
@@ -46,7 +46,11 @@
       const zoomFactor = metrics.distance / touchGesture.startDistance;
       if (touchGesture.view === "perspective" || touchGesture.view === "space3d") {
         state.view3d.zoom = clamp(Number((touchGesture.startZoom3d * zoomFactor).toFixed(2)), 0.55, 3);
-        state.view3d.rotY = normalizeDegrees(touchGesture.startRotY + (metrics.center.x - touchGesture.startCenter.x) * 0.28);
+        if (touchGesture.view === "space3d") {
+          state.view3d.roomRotY = normalizeDegrees(touchGesture.startRotY + (metrics.center.x - touchGesture.startCenter.x) * 0.28);
+        } else {
+          state.view3d.rotY = normalizeDegrees(touchGesture.startRotY + (metrics.center.x - touchGesture.startCenter.x) * 0.28);
+        }
       } else {
         state.view2d.zoom = clamp(Number((touchGesture.startZoom2d * zoomFactor).toFixed(2)), 0.45, 3.5);
         state.view2d.panX = Math.round(touchGesture.startPanX + metrics.center.x - touchGesture.startCenter.x);
@@ -257,7 +261,7 @@
         state.rotateDrag = {
           startX: event.clientX,
           startY: event.clientY,
-          startRotY: state.view3d.rotY ?? state.view3d.yaw ?? 24,
+          startRotY: state.view === "space3d" ? state.view3d.roomRotY ?? 0 : state.view3d.rotY ?? state.view3d.yaw ?? 24,
           startRotX: state.view3d.rotX ?? state.view3d.pitch ?? -10,
           startRotZ: state.view3d.rotZ ?? state.view3d.roll ?? 0
         };
@@ -335,7 +339,11 @@
         return;
       }
       if (state.rotateDrag && (state.view === "perspective" || state.view === "space3d")) {
-        state.view3d.rotY = normalizeDegrees(state.rotateDrag.startRotY + (event.clientX - state.rotateDrag.startX) * 0.28);
+        if (state.view === "space3d") {
+          state.view3d.roomRotY = normalizeDegrees(state.rotateDrag.startRotY + (event.clientX - state.rotateDrag.startX) * 0.28);
+        } else {
+          state.view3d.rotY = normalizeDegrees(state.rotateDrag.startRotY + (event.clientX - state.rotateDrag.startX) * 0.28);
+        }
         render({ canvasOnly: true });
         return;
       }
@@ -635,6 +643,8 @@
           zoom: number(state.view3d.zoom, 1),
           rotX: number(state.view3d.rotX ?? state.view3d.pitch, -10),
           rotY: number(state.view3d.rotY ?? state.view3d.yaw, 24),
+          roomRotX: number(state.view3d.roomRotX, -28),
+          roomRotY: number(state.view3d.roomRotY, 0),
           rotZ: number(state.view3d.rotZ ?? state.view3d.roll, 0)
         },
         project: {
@@ -696,6 +706,8 @@
       state.view3d = { ...state.view3d, ...parsed.view3d };
       state.view3d.rotX = state.view3d.rotX ?? state.view3d.pitch ?? -10;
       state.view3d.rotY = state.view3d.rotY ?? state.view3d.yaw ?? 24;
+      state.view3d.roomRotX = number(state.view3d.roomRotX, -28);
+      state.view3d.roomRotY = number(state.view3d.roomRotY, 0);
       state.view3d.rotZ = state.view3d.rotZ ?? state.view3d.roll ?? 0;
       delete state.view3d.yaw;
       delete state.view3d.pitch;

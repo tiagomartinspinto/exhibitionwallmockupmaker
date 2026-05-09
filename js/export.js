@@ -93,7 +93,7 @@
         drawText(column.label, colX + 10, y + rowH / 2, { align: "left", color: "#161616", size: 16, halo: null });
         colX += column.width;
       });
-      const rows = state.walls.slice(0, 7);
+      const rows = state.walls;
       rows.forEach((wallRecord, index) => {
         const wall = wallRecord.wall;
         const placement = wallRecord.placement || {};
@@ -130,7 +130,7 @@
 
     function drawRoomElementSchedule(x, y, width) {
       const rowH = 34;
-      const elements = (state.roomElements || []).map(normalizeRoomElement).slice(0, 7);
+      const elements = (state.roomElements || []).map(normalizeRoomElement);
       if (!elements.length) return 0;
       const columns = [
         { label: "Name", width: 500 },
