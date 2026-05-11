@@ -172,8 +172,8 @@
 
     function updatePreviewControls() {
       const is3d = state.view === "perspective" || state.view === "space3d";
-      setHidden(els.rotateXDown, true);
-      setHidden(els.rotateXUp, true);
+      setHidden(els.rotateXDown, !is3d);
+      setHidden(els.rotateXUp, !is3d);
       setHidden(els.rotateZLeft, true);
       setHidden(els.rotateZRight, true);
       setHidden(els.rotateYLeft, !is3d);
@@ -246,7 +246,7 @@
         state.view3d.zoom = 1;
         state.view3d.rotX = -10;
         state.view3d.rotY = 24;
-        state.view3d.roomRotX = -28;
+        state.view3d.roomRotX = -68;
         state.view3d.roomRotY = 0;
         state.view3d.roomRotZ = 0;
         state.view3d.rotZ = 0;
@@ -262,7 +262,11 @@
       state.view3d.rotX = state.view3d.rotX ?? state.view3d.pitch ?? -10;
       state.view3d.rotY = state.view3d.rotY ?? state.view3d.yaw ?? 24;
       state.view3d.rotZ = state.view3d.rotZ ?? state.view3d.roll ?? 0;
-      if (axis === "x") state.view3d.rotX = normalizeDegrees(state.view3d.rotX + amount);
+      if (axis === "x" && state.view === "space3d") {
+        state.view3d.roomRotX = clamp((state.view3d.roomRotX ?? -68) + amount, -85, -15);
+      } else if (axis === "x") {
+        state.view3d.rotX = clamp(state.view3d.rotX + amount, -85, 85);
+      }
       if (axis === "y" && state.view === "space3d") {
         state.view3d.roomRotY = normalizeDegrees((state.view3d.roomRotY ?? 0) + amount);
       } else if (axis === "y") {

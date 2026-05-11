@@ -341,8 +341,10 @@
       if (state.rotateDrag && (state.view === "perspective" || state.view === "space3d")) {
         if (state.view === "space3d") {
           state.view3d.roomRotY = normalizeDegrees(state.rotateDrag.startRotY + (event.clientX - state.rotateDrag.startX) * 0.28);
+          state.view3d.roomRotX = clamp(state.rotateDrag.startRotX - (event.clientY - state.rotateDrag.startY) * 0.18, -85, -15);
         } else {
           state.view3d.rotY = normalizeDegrees(state.rotateDrag.startRotY + (event.clientX - state.rotateDrag.startX) * 0.28);
+          state.view3d.rotX = clamp(state.rotateDrag.startRotX - (event.clientY - state.rotateDrag.startY) * 0.18, -85, 85);
         }
         render({ canvasOnly: true });
         return;
@@ -644,7 +646,7 @@
           zoom: number(state.view3d.zoom, 1),
           rotX: number(state.view3d.rotX ?? state.view3d.pitch, -10),
           rotY: number(state.view3d.rotY ?? state.view3d.yaw, 24),
-          roomRotX: number(state.view3d.roomRotX, -28),
+          roomRotX: number(state.view3d.roomRotX, -68),
           roomRotY: number(state.view3d.roomRotY, 0),
           roomRotZ: number(state.view3d.roomRotZ, 0),
           rotZ: number(state.view3d.rotZ ?? state.view3d.roll, 0)
@@ -708,7 +710,10 @@
       state.view3d = { ...state.view3d, ...parsed.view3d };
       state.view3d.rotX = state.view3d.rotX ?? state.view3d.pitch ?? -10;
       state.view3d.rotY = state.view3d.rotY ?? state.view3d.yaw ?? 24;
-      state.view3d.roomRotX = number(state.view3d.roomRotX, -28);
+      state.view3d.roomRotX = number(state.view3d.roomRotX, -68);
+      if (Math.abs(state.view3d.roomRotX + 28) < 0.5 || Math.abs(state.view3d.roomRotX + 58) < 0.5) {
+        state.view3d.roomRotX = -68;
+      }
       state.view3d.roomRotY = number(state.view3d.roomRotY, 0);
       state.view3d.roomRotZ = number(state.view3d.roomRotZ, 0);
       state.view3d.rotZ = state.view3d.rotZ ?? state.view3d.roll ?? 0;
