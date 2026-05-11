@@ -1724,8 +1724,10 @@
       const rotX = roomRotX * Math.PI / 180;
       const roomRotY = state.view3d.roomRotY ?? 0;
       const rotY = roomRotY * Math.PI / 180;
-      const rotZ = (state.view3d.rotZ ?? state.view3d.roll ?? 0) * Math.PI / 180;
-      const maxWallHeight = Math.max(...state.walls.map(wall => wall.wall.height), state.wall.height, 2800);
+      const roomRotZ = state.view3d.roomRotZ ?? 0;
+      const rotZ = roomRotZ * Math.PI / 180;
+      const maxElementHeight = Math.max(0, ...(state.roomElements || []).map(element => normalizeRoomElement(element).height));
+      const maxWallHeight = Math.max(...state.walls.map(wall => wall.wall.height), state.wall.height, maxElementHeight, 2800);
       const roomScale = Math.min((width * 0.62) / state.space.width, (height * 0.58) / Math.max(state.space.depth, maxWallHeight)) * state.view3d.zoom;
       const cx = width / 2;
       const cy = height / 2 + 88;
@@ -1796,29 +1798,64 @@
 
       (state.roomElements || []).forEach(rawElement => {
         const element = normalizeRoomElement(rawElement);
+        const selected = isSpaceEntitySelected("room", element.id) || element.id === state.selectedRoomElementId;
         const left = element.x - element.width / 2;
         const right = element.x + element.width / 2;
         const near = element.y - element.depth / 2;
         const far = element.y + element.depth / 2;
-        const floorLift = 12;
-        const points3d = [
-          { x: left, y: floorLift, z: near },
-          { x: right, y: floorLift, z: near },
-          { x: right, y: floorLift, z: far },
-          { x: left, y: floorLift, z: far }
+        const baseY = 0;
+        const topY = Math.max(50, element.height);
+        const bottomPoints3d = [
+          { x: left, y: baseY, z: near },
+          { x: right, y: baseY, z: near },
+          { x: right, y: baseY, z: far },
+          { x: left, y: baseY, z: far }
         ];
-        const projected = points3d.map(projectRoom);
-        faces.push({
-          points: projected,
-          fill: element.color,
-          stroke: isSpaceEntitySelected("room", element.id) || element.id === state.selectedRoomElementId ? "#d7d3cb" : shade(element.color, -34),
-          z: averageProjectedZ(projected) - 8,
-          always: true,
-          custom: element.shape === "circle",
-          drawExtra: element.shape === "circle"
-            ? points => drawProjectedEllipse({ ...element, image: "" }, points, element.color, isSpaceEntitySelected("room", element.id) || element.id === state.selectedRoomElementId ? "#d7d3cb" : shade(element.color, -34), { drawImage: false })
-            : null
-        });
+        const topPoints3d = [
+          { x: left, y: topY, z: near },
+          { x: right, y: topY, z: near },
+          { x: right, y: topY, z: far },
+          { x: left, y: topY, z: far }
+        ];
+        const bottomProjected = bottomPoints3d.map(projectRoom);
+        const topProjected = topPoints3d.map(projectRoom);
+        const stroke = selected ? "#d7d3cb" : shade(element.color, -34);
+        const sideFill = shade(element.color, -24);
+        const sideFillAlt = shade(element.color, -18);
+        const topFill = shade(element.color, -8);
+
+        if (element.shape === "circle") {
+          const topCenter = projectedCenter(topProjected);
+          const rotation = Math.atan2(topProjected[1].y - topProjected[0].y, topProjected[1].x - topProjected[0].x);
+          [
+            { points: [bottomPoints3d[0], bottomPoints3d[3], topPoints3d[3], topPoints3d[0]], fill: sideFill },
+            { points: [bottomPoints3d[1], bottomPoints3d[2], topPoints3d[2], topPoints3d[1]], fill: sideFillAlt }
+          ].forEach(faceDef => faces.push(face3d(faceDef.points, faceDef.fill, stroke)));
+          faces.push({
+            points: topProjected,
+            fill: topFill,
+            stroke,
+            z: averageProjectedZ(topProjected),
+            custom: true,
+            drawExtra: projected => {
+              [0, 1, 2, 3].forEach(index => drawLine(bottomProjected[index].x, bottomProjected[index].y, projected[index].x, projected[index].y, stroke));
+              drawProjectedEllipse({ ...element, image: "" }, projected, topFill, stroke, {
+                center: topCenter,
+                rotation,
+                drawImage: false
+              });
+            }
+          });
+          return;
+        }
+
+        [
+          { points: [bottomPoints3d[0], bottomPoints3d[1], topPoints3d[1], topPoints3d[0]], fill: sideFill },
+          { points: [bottomPoints3d[1], bottomPoints3d[2], topPoints3d[2], topPoints3d[1]], fill: sideFillAlt },
+          { points: [bottomPoints3d[2], bottomPoints3d[3], topPoints3d[3], topPoints3d[2]], fill: sideFill },
+          { points: [bottomPoints3d[3], bottomPoints3d[0], topPoints3d[0], topPoints3d[3]], fill: shade(element.color, -28) },
+          { points: topPoints3d, fill: topFill }
+        ].forEach(faceDef => faces.push(face3d(faceDef.points, faceDef.fill, stroke)));
       });
 
       state.walls.forEach((wall, index) => {

@@ -158,7 +158,7 @@
           roomElementTypeLabel(element.type),
           element.shape === "circle" ? "circular" : "rectangular",
           `x ${Math.round(element.x)}, y ${Math.round(element.y)}`,
-          `${Math.round(element.width)} x ${Math.round(element.depth)} mm`
+          `${Math.round(element.width)} x ${Math.round(element.depth)} x ${Math.round(element.height)} mm`
         ];
         colX = x;
         columns.forEach((column, columnIndex) => {

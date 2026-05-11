@@ -158,6 +158,7 @@
           shapes: ["rect", "circle"],
           defaultWidth: 520,
           defaultDepth: 520,
+          defaultHeight: 900,
           color: "#60748a"
         },
         projection: {
@@ -166,6 +167,7 @@
           shapes: ["rect"],
           defaultWidth: 2500,
           defaultDepth: 180,
+          defaultHeight: 1500,
           color: "#27364f"
         },
         table: {
@@ -174,6 +176,7 @@
           shapes: ["rect", "circle"],
           defaultWidth: 1800,
           defaultDepth: 900,
+          defaultHeight: 760,
           color: "#8a7a54"
         },
         other: {
@@ -182,6 +185,7 @@
           shapes: ["rect", "circle"],
           defaultWidth: 900,
           defaultDepth: 900,
+          defaultHeight: 1200,
           color: "#777e6b"
         }
       };
@@ -237,6 +241,7 @@
         y: number(element.y, state.space.depth / 2),
         width: Math.max(50, number(element.width, config.defaultWidth)),
         depth: Math.max(50, number(element.depth, config.defaultDepth)),
+        height: Math.max(50, number(element.height, config.defaultHeight)),
         color: element.color || config.color
       };
       clampRoomElementToSpace(normalized);
@@ -326,7 +331,8 @@
         x: state.space.width / 2,
         y: state.space.depth / 2,
         width: config.defaultWidth,
-        depth: config.defaultDepth
+        depth: config.defaultDepth,
+        height: config.defaultHeight
       };
     }
 
@@ -361,6 +367,9 @@
       if (!els.roomElementD.value || (previousConfig && Number(els.roomElementD.value) === previousConfig.defaultDepth)) {
         els.roomElementD.value = config.defaultDepth;
       }
+      if (!els.roomElementH.value || (previousConfig && Number(els.roomElementH.value) === previousConfig.defaultHeight)) {
+        els.roomElementH.value = config.defaultHeight;
+      }
     }
 
     function syncRoomElementInputs() {
@@ -376,6 +385,7 @@
       els.roomElementY.value = Math.round(source.y ?? 0);
       els.roomElementW.value = Math.round(source.width ?? 50);
       els.roomElementD.value = Math.round(source.depth ?? 50);
+      els.roomElementH.value = Math.round(source.height ?? roomElementTypeConfig(source.type).defaultHeight);
     }
 
     function syncSelectedRoomElementFromInputs() {
@@ -389,6 +399,7 @@
       element.y = number(els.roomElementY.value, element.y);
       element.width = Math.max(50, number(els.roomElementW.value, element.width));
       element.depth = Math.max(50, number(els.roomElementD.value, element.depth));
+      element.height = Math.max(50, number(els.roomElementH.value, element.height));
       clampRoomElementToSpace(element);
       return true;
     }
@@ -402,7 +413,8 @@
         x: rawElement.x,
         y: rawElement.y,
         width: rawElement.width,
-        depth: rawElement.depth
+        depth: rawElement.depth,
+        height: rawElement.height
       });
       if (!Array.isArray(state.roomElements)) state.roomElements = [];
       state.roomElements.push(element);

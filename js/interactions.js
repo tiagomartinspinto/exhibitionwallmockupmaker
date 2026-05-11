@@ -623,6 +623,7 @@
         y: Math.round(normalized.y),
         width: Math.max(50, Math.round(normalized.width)),
         depth: Math.max(50, Math.round(normalized.depth)),
+        height: Math.max(50, Math.round(normalized.height)),
         color: normalized.color || roomElementDefaultColor(normalized.type)
       };
     }
@@ -645,6 +646,7 @@
           rotY: number(state.view3d.rotY ?? state.view3d.yaw, 24),
           roomRotX: number(state.view3d.roomRotX, -28),
           roomRotY: number(state.view3d.roomRotY, 0),
+          roomRotZ: number(state.view3d.roomRotZ, 0),
           rotZ: number(state.view3d.rotZ ?? state.view3d.roll, 0)
         },
         project: {
@@ -708,6 +710,7 @@
       state.view3d.rotY = state.view3d.rotY ?? state.view3d.yaw ?? 24;
       state.view3d.roomRotX = number(state.view3d.roomRotX, -28);
       state.view3d.roomRotY = number(state.view3d.roomRotY, 0);
+      state.view3d.roomRotZ = number(state.view3d.roomRotZ, 0);
       state.view3d.rotZ = state.view3d.rotZ ?? state.view3d.roll ?? 0;
       delete state.view3d.yaw;
       delete state.view3d.pitch;

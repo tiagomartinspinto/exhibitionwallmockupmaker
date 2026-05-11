@@ -49,7 +49,7 @@
             <strong><span class="swatch" style="background:${element.color}"></span>${escapeHtml(element.name)}</strong>
             <button class="danger" type="button" data-room-remove="${element.id}">Remove</button>
           </header>
-          <div class="small">${roomElementTypeLabel(element.type)}, ${element.shape === "circle" ? "circular" : "rectangular"} | center ${Math.round(element.x)}, ${Math.round(element.y)} mm | ${Math.round(element.width)} x ${Math.round(element.depth)} mm</div>
+          <div class="small">${roomElementTypeLabel(element.type)}, ${element.shape === "circle" ? "circular" : "rectangular"} | center ${Math.round(element.x)}, ${Math.round(element.y)} mm | ${Math.round(element.width)} x ${Math.round(element.depth)} x ${Math.round(element.height)} mm</div>
         `;
         els.roomElementList.append(row);
       });
@@ -217,8 +217,8 @@
     function rulerHit(point) {
       if (!is2dView()) return null;
       const rulerSize = 28;
-      if (point.y <= rulerSize && point.x > rulerSize) return { axis: "x" };
-      if (point.x <= rulerSize && point.y > rulerSize) return { axis: "y" };
+      if (point.y <= rulerSize && point.x > rulerSize) return { axis: "y" };
+      if (point.x <= rulerSize && point.y > rulerSize) return { axis: "x" };
       return null;
     }
 
@@ -248,6 +248,7 @@
         state.view3d.rotY = 24;
         state.view3d.roomRotX = -28;
         state.view3d.roomRotY = 0;
+        state.view3d.roomRotZ = 0;
         state.view3d.rotZ = 0;
         delete state.view3d.yaw;
         delete state.view3d.pitch;

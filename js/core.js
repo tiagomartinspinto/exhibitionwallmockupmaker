@@ -30,7 +30,7 @@
       selectedSpaceIds: [],
       theme: "dark",
       view2d: { zoom: 1, panX: 0, panY: 0 },
-      view3d: { zoom: 1, rotX: -10, rotY: 24, roomRotX: -28, roomRotY: 0, rotZ: 0 },
+      view3d: { zoom: 1, rotX: -10, rotY: 24, roomRotX: -28, roomRotY: 0, roomRotZ: 0, rotZ: 0 },
       project: {
         title: "Untitled exhibition",
         fileName: "",
@@ -73,6 +73,7 @@
       roomElementY: document.querySelector("#roomElementY"),
       roomElementW: document.querySelector("#roomElementW"),
       roomElementD: document.querySelector("#roomElementD"),
+      roomElementH: document.querySelector("#roomElementH"),
       addRoomElement: document.querySelector("#addRoomElement"),
       roomElementList: document.querySelector("#roomElementList"),
       clearRoomElements: document.querySelector("#clearRoomElements"),

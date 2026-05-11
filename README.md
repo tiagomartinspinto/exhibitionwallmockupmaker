@@ -15,6 +15,7 @@ It brings together:
 - measured 2D wall layouts
 - room floor plans
 - 3D wall and room previews
+- room placeholders with width, depth, and height
 - drag-and-drop editing
 - image placement on wall objects
 - local project save and reopen
@@ -29,6 +30,7 @@ It brings together:
 - zoom and pan in 2D views with a hand tool
 - use rulers and drag-out guides in the 2D wall view
 - inspect the wall in 3D and preview the full exhibition room
+- define room placeholders as simple volumes so the floor plan and room 3D stay in sync
 - upload images and preview them in both 2D and 3D
 - save a project file locally on your machine and reopen it later
 - keep working with browser autosave in the background

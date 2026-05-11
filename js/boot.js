@@ -219,7 +219,7 @@
       }
     }
 
-    [els.roomElementName, els.roomElementShape, els.roomElementColor, els.roomElementX, els.roomElementY, els.roomElementW, els.roomElementD].forEach(input => {
+    [els.roomElementName, els.roomElementShape, els.roomElementColor, els.roomElementX, els.roomElementY, els.roomElementW, els.roomElementD, els.roomElementH].forEach(input => {
       input.addEventListener("input", handleRoomElementEditorChange);
       input.addEventListener("change", handleRoomElementEditorChange);
     });
@@ -244,7 +244,8 @@
         x: els.roomElementX.value,
         y: els.roomElementY.value,
         width: els.roomElementW.value,
-        depth: els.roomElementD.value
+        depth: els.roomElementD.value,
+        height: els.roomElementH.value
       });
     });
 
