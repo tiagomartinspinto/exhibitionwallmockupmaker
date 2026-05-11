@@ -1728,15 +1728,52 @@
       const rotZ = roomRotZ * Math.PI / 180;
       const maxElementHeight = Math.max(0, ...(state.roomElements || []).map(element => normalizeRoomElement(element).height));
       const maxWallHeight = Math.max(...state.walls.map(wall => wall.wall.height), state.wall.height, maxElementHeight, 2800);
-      const roomScale = Math.min((width * 0.62) / state.space.width, (height * 0.58) / Math.max(state.space.depth, maxWallHeight)) * state.view3d.zoom;
+      const contentBounds = (() => {
+        const points = [];
+        state.walls.forEach(wall => {
+          const footprint = wallSpaceFootprint(wall);
+          points.push(footprint.frontA, footprint.frontB, footprint.backA, footprint.backB);
+        });
+        (state.roomElements || []).forEach(rawElement => {
+          const element = normalizeRoomElement(rawElement);
+          points.push(
+            { x: element.x - element.width / 2, y: element.y - element.depth / 2 },
+            { x: element.x + element.width / 2, y: element.y - element.depth / 2 },
+            { x: element.x + element.width / 2, y: element.y + element.depth / 2 },
+            { x: element.x - element.width / 2, y: element.y + element.depth / 2 }
+          );
+        });
+        if (!points.length) {
+          points.push({ x: state.space.width / 2, y: state.space.depth / 2 });
+        }
+        const bounds = points.reduce((box, point) => ({
+          left: Math.min(box.left, point.x),
+          right: Math.max(box.right, point.x),
+          near: Math.min(box.near, point.y),
+          far: Math.max(box.far, point.y)
+        }), { left: Infinity, right: -Infinity, near: Infinity, far: -Infinity });
+        const spanX = Math.max(2200, bounds.right - bounds.left);
+        const spanZ = Math.max(2200, bounds.far - bounds.near);
+        const padX = Math.max(900, spanX * 0.38);
+        const padZ = Math.max(900, spanZ * 0.38);
+        const focusWidth = Math.min(state.space.width, spanX + padX * 2);
+        const focusDepth = Math.min(state.space.depth, spanZ + padZ * 2);
+        return {
+          centerX: clamp((bounds.left + bounds.right) / 2, 0, state.space.width),
+          centerZ: clamp((bounds.near + bounds.far) / 2, 0, state.space.depth),
+          width: focusWidth,
+          depth: focusDepth
+        };
+      })();
+      const roomScale = Math.min((width * 0.72) / contentBounds.width, (height * 0.62) / Math.max(contentBounds.depth, maxWallHeight * 1.1)) * state.view3d.zoom;
       const cx = width / 2;
       const cy = height / 2 + 88;
       const camera = 16000;
 
       function rotateRoomPoint(point) {
-        let x = point.x - state.space.width / 2;
+        let x = point.x - contentBounds.centerX;
         let y = point.y - maxWallHeight / 2;
-        let z = point.z - state.space.depth / 2;
+        let z = point.z - contentBounds.centerZ;
 
         const cosY = Math.cos(rotY);
         const sinY = Math.sin(rotY);
@@ -1787,11 +1824,15 @@
         activeCtx.restore();
       }
 
+      const floorLeft = clamp(contentBounds.centerX - contentBounds.width / 2, 0, state.space.width);
+      const floorRight = clamp(contentBounds.centerX + contentBounds.width / 2, 0, state.space.width);
+      const floorNear = clamp(contentBounds.centerZ - contentBounds.depth / 2, 0, state.space.depth);
+      const floorFar = clamp(contentBounds.centerZ + contentBounds.depth / 2, 0, state.space.depth);
       const floorOutline = [
-        { x: 0, y: 0, z: 0 },
-        { x: state.space.width, y: 0, z: 0 },
-        { x: state.space.width, y: 0, z: state.space.depth },
-        { x: 0, y: 0, z: state.space.depth }
+        { x: floorLeft, y: 0, z: floorNear },
+        { x: floorRight, y: 0, z: floorNear },
+        { x: floorRight, y: 0, z: floorFar },
+        { x: floorLeft, y: 0, z: floorFar }
       ].map(projectRoom);
       fillProjectedFace(floorOutline, activeCanvas === els.canvas ? shade(floorColor, -10) : "#edf2e9", activeCanvas === els.canvas ? shade(floorColor, 10) : "#d9e0d7", 1);
       const faces = [];
