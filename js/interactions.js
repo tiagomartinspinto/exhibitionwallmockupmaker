@@ -646,7 +646,7 @@
           zoom: number(state.view3d.zoom, 1),
           rotX: number(state.view3d.rotX ?? state.view3d.pitch, -10),
           rotY: number(state.view3d.rotY ?? state.view3d.yaw, 24),
-          roomRotX: number(state.view3d.roomRotX, -68),
+          roomRotX: number(state.view3d.roomRotX, -60),
           roomRotY: number(state.view3d.roomRotY, 0),
           roomRotZ: number(state.view3d.roomRotZ, 0),
           rotZ: number(state.view3d.rotZ ?? state.view3d.roll, 0)
@@ -710,9 +710,9 @@
       state.view3d = { ...state.view3d, ...parsed.view3d };
       state.view3d.rotX = state.view3d.rotX ?? state.view3d.pitch ?? -10;
       state.view3d.rotY = state.view3d.rotY ?? state.view3d.yaw ?? 24;
-      state.view3d.roomRotX = number(state.view3d.roomRotX, -68);
-      if (Math.abs(state.view3d.roomRotX + 28) < 0.5 || Math.abs(state.view3d.roomRotX + 58) < 0.5) {
-        state.view3d.roomRotX = -68;
+      state.view3d.roomRotX = number(state.view3d.roomRotX, -60);
+      if (Math.abs(state.view3d.roomRotX + 28) < 0.5 || Math.abs(state.view3d.roomRotX + 58) < 0.5 || Math.abs(state.view3d.roomRotX + 68) < 0.5) {
+        state.view3d.roomRotX = -60;
       }
       state.view3d.roomRotY = number(state.view3d.roomRotY, 0);
       state.view3d.roomRotZ = number(state.view3d.roomRotZ, 0);

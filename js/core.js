@@ -30,7 +30,7 @@
       selectedSpaceIds: [],
       theme: "dark",
       view2d: { zoom: 1, panX: 0, panY: 0 },
-      view3d: { zoom: 1, rotX: -10, rotY: 24, roomRotX: -68, roomRotY: 0, roomRotZ: 0, rotZ: 0 },
+      view3d: { zoom: 1, rotX: -10, rotY: 24, roomRotX: -60, roomRotY: 0, roomRotZ: 0, rotZ: 0 },
       project: {
         title: "Untitled exhibition",
         fileName: "",
