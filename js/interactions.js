@@ -262,7 +262,9 @@
           startX: event.clientX,
           startY: event.clientY,
           startRotY: state.view === "space3d" ? state.view3d.roomRotY ?? 0 : state.view3d.rotY ?? state.view3d.yaw ?? 24,
-          startRotX: state.view3d.rotX ?? state.view3d.pitch ?? -10,
+          startRotX: state.view === "space3d"
+            ? state.view3d.roomRotX ?? -60
+            : state.view3d.rotX ?? state.view3d.pitch ?? -10,
           startRotZ: state.view3d.rotZ ?? state.view3d.roll ?? 0
         };
         if (typeof els.canvas.setPointerCapture === "function") {
@@ -341,7 +343,7 @@
       if (state.rotateDrag && (state.view === "perspective" || state.view === "space3d")) {
         if (state.view === "space3d") {
           state.view3d.roomRotY = normalizeDegrees(state.rotateDrag.startRotY + (event.clientX - state.rotateDrag.startX) * 0.28);
-          state.view3d.roomRotX = clamp(state.rotateDrag.startRotX - (event.clientY - state.rotateDrag.startY) * 0.18, -85, -15);
+          state.view3d.roomRotX = clamp(state.rotateDrag.startRotX - (event.clientY - state.rotateDrag.startY) * 0.18, -85, 25);
         } else {
           state.view3d.rotY = normalizeDegrees(state.rotateDrag.startRotY + (event.clientX - state.rotateDrag.startX) * 0.28);
           state.view3d.rotX = clamp(state.rotateDrag.startRotX - (event.clientY - state.rotateDrag.startY) * 0.18, -85, 85);
