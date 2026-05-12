@@ -246,8 +246,8 @@
         state.view3d.zoom = 1;
         state.view3d.rotX = -10;
         state.view3d.rotY = 24;
-        state.view3d.roomRotX = -60;
-        state.view3d.roomRotY = 0;
+        state.view3d.roomRotX = -52;
+        state.view3d.roomRotY = 26;
         state.view3d.roomRotZ = 0;
         state.view3d.rotZ = 0;
         delete state.view3d.yaw;
@@ -263,12 +263,12 @@
       state.view3d.rotY = state.view3d.rotY ?? state.view3d.yaw ?? 24;
       state.view3d.rotZ = state.view3d.rotZ ?? state.view3d.roll ?? 0;
       if (axis === "x" && state.view === "space3d") {
-        state.view3d.roomRotX = clamp((state.view3d.roomRotX ?? -60) + amount, -85, 25);
+        state.view3d.roomRotX = clamp((state.view3d.roomRotX ?? -52) + amount, -85, 25);
       } else if (axis === "x") {
         state.view3d.rotX = clamp(state.view3d.rotX + amount, -85, 85);
       }
       if (axis === "y" && state.view === "space3d") {
-        state.view3d.roomRotY = normalizeDegrees((state.view3d.roomRotY ?? 0) + amount);
+        state.view3d.roomRotY = normalizeDegrees((state.view3d.roomRotY ?? 26) + amount);
       } else if (axis === "y") {
         state.view3d.rotY = normalizeDegrees(state.view3d.rotY + amount);
       }

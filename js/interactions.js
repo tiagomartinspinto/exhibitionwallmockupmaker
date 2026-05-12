@@ -35,7 +35,7 @@
         startPanX: number(state.view2d.panX, 0),
         startPanY: number(state.view2d.panY, 0),
         startZoom3d: number(state.view3d.zoom, 1),
-        startRotY: state.view === "space3d" ? state.view3d.roomRotY ?? 0 : state.view3d.rotY ?? state.view3d.yaw ?? 24
+          startRotY: state.view === "space3d" ? state.view3d.roomRotY ?? 26 : state.view3d.rotY ?? state.view3d.yaw ?? 24
       };
     }
 
@@ -263,7 +263,7 @@
           startY: event.clientY,
           startRotY: state.view === "space3d" ? state.view3d.roomRotY ?? 0 : state.view3d.rotY ?? state.view3d.yaw ?? 24,
           startRotX: state.view === "space3d"
-            ? state.view3d.roomRotX ?? -60
+            ? state.view3d.roomRotX ?? -52
             : state.view3d.rotX ?? state.view3d.pitch ?? -10,
           startRotZ: state.view3d.rotZ ?? state.view3d.roll ?? 0
         };
@@ -648,8 +648,8 @@
           zoom: number(state.view3d.zoom, 1),
           rotX: number(state.view3d.rotX ?? state.view3d.pitch, -10),
           rotY: number(state.view3d.rotY ?? state.view3d.yaw, 24),
-          roomRotX: number(state.view3d.roomRotX, -60),
-          roomRotY: number(state.view3d.roomRotY, 0),
+          roomRotX: number(state.view3d.roomRotX, -52),
+          roomRotY: number(state.view3d.roomRotY, 26),
           roomRotZ: number(state.view3d.roomRotZ, 0),
           rotZ: number(state.view3d.rotZ ?? state.view3d.roll, 0)
         },
@@ -712,11 +712,22 @@
       state.view3d = { ...state.view3d, ...parsed.view3d };
       state.view3d.rotX = state.view3d.rotX ?? state.view3d.pitch ?? -10;
       state.view3d.rotY = state.view3d.rotY ?? state.view3d.yaw ?? 24;
-      state.view3d.roomRotX = number(state.view3d.roomRotX, -60);
-      if (Math.abs(state.view3d.roomRotX + 28) < 0.5 || Math.abs(state.view3d.roomRotX + 58) < 0.5 || Math.abs(state.view3d.roomRotX + 68) < 0.5) {
-        state.view3d.roomRotX = -60;
+      state.view3d.roomRotX = number(state.view3d.roomRotX, -52);
+      if (
+        Math.abs(state.view3d.roomRotX + 28) < 0.5 ||
+        Math.abs(state.view3d.roomRotX + 58) < 0.5 ||
+        Math.abs(state.view3d.roomRotX + 60) < 0.5 ||
+        Math.abs(state.view3d.roomRotX + 68) < 0.5
+      ) {
+        state.view3d.roomRotX = -52;
       }
-      state.view3d.roomRotY = number(state.view3d.roomRotY, 0);
+      state.view3d.roomRotY = number(state.view3d.roomRotY, 26);
+      if (
+        Math.abs(state.view3d.roomRotY) < 0.5 &&
+        Math.abs(state.view3d.roomRotX + 52) < 0.5
+      ) {
+        state.view3d.roomRotY = 26;
+      }
       state.view3d.roomRotZ = number(state.view3d.roomRotZ, 0);
       state.view3d.rotZ = state.view3d.rotZ ?? state.view3d.roll ?? 0;
       delete state.view3d.yaw;

@@ -1720,9 +1720,9 @@
       activeCtx.fillStyle = surround;
       activeCtx.fillRect(0, 0, width, height);
 
-      const roomRotX = state.view3d.roomRotX ?? -60;
+      const roomRotX = state.view3d.roomRotX ?? -52;
       const rotX = roomRotX * Math.PI / 180;
-      const roomRotY = state.view3d.roomRotY ?? 0;
+      const roomRotY = state.view3d.roomRotY ?? 26;
       const rotY = roomRotY * Math.PI / 180;
       const roomRotZ = state.view3d.roomRotZ ?? 0;
       const rotZ = roomRotZ * Math.PI / 180;
