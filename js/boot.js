@@ -75,8 +75,15 @@
         await openProjectFile();
       } catch (error) {
         if (error?.name === "AbortError") return;
+        window.alert(error?.message || "The project file could not be opened.");
         console.error(error);
       }
+    });
+
+    on(els.clearLocalAutosave, "click", () => {
+      const confirmed = window.confirm("Clear the browser autosave for this app? This will not delete the currently open project or any file you already saved, but it will remove the local recovery copy stored in this browser.");
+      if (!confirmed) return;
+      clearLocalAutosave();
     });
 
     on(els.projectFileInput, "change", async event => {
@@ -86,6 +93,7 @@
         loadProjectFileFromText(await file.text(), file.name || "");
         projectFileHandle = null;
       } catch (error) {
+        window.alert(error?.message || "The project file could not be opened.");
         console.error(error);
       } finally {
         els.projectFileInput.value = "";
@@ -113,7 +121,7 @@
     });
 
     on(els.addItem, "click", () => {
-      addItem({
+      const created = addItem({
         name: els.itemName.value,
         type: els.itemType.value,
         side: els.itemSide.value,
@@ -130,6 +138,12 @@
       });
       els.itemImage.value = "";
       els.itemImage.dataset.image = "";
+      if (created && els.itemName) {
+        requestAnimationFrame(() => {
+          els.itemName.focus();
+          els.itemName.select();
+        });
+      }
     });
 
     const clearItemsButton = document.querySelector("#clearItems");
@@ -144,12 +158,7 @@
     const sampleButton = document.querySelector("#sample");
     on(sampleButton, "click", () => {
       state.wall = { width: 6000, height: 3000, depth: 120, color: "#f5f4ea" };
-      state.items = [
-        { id: uid(), name: "Printed graphic", type: "graphic", side: "front", shape: "rect", text: "", notes: "", hanging: false, illuminated: false, x: 900, y: 900, width: 1200, height: 800, color: "#2f6f9f" },
-        { id: uid(), name: "Text", type: "text", side: "front", shape: "rect", text: "Intro text", notes: "", hanging: false, illuminated: false, x: 2400, y: 1700, width: 900, height: 220, color: "#f4f1e8" },
-        { id: uid(), name: "Object / prototype", type: "object", side: "front", shape: "circle", text: "", notes: "Needs power nearby", hanging: true, illuminated: true, x: 3300, y: 2050, width: 420, height: 420, color: "#6e63b6" },
-        { id: uid(), name: "Screen", type: "screen", side: "back", shape: "rect", text: "", notes: "Back-side media test", hanging: false, illuminated: false, x: 3600, y: 650, width: 1800, height: 900, color: "#151515" }
-      ];
+      state.items = window.EWMM_DATA.makeDefaultWallItems(uid);
       setSelection([]);
       syncInputsFromWall();
       save();

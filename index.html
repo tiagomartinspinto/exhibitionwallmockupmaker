@@ -3,9 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; frame-ancestors 'self'">
   <title>Exhibition Wall Mockup Maker by @tiagomartinspinto</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="css/styles.css?v=2026-05-09-3">
+  <link rel="stylesheet" href="css/styles.css?v=2026-05-13-1">
 </head>
 <body>
   <div class="app">
@@ -18,7 +19,7 @@
             <span class="switch-label">Dark mode</span>
           </button>
         </div>
-        <p>by <a href="https://github.com/tiagomartinspinto" target="_blank" rel="noreferrer">@tiagomartinspinto</a></p>
+        <p>by <a href="https://github.com/tiagomartinspinto" target="_blank" rel="noopener noreferrer">@tiagomartinspinto</a></p>
       </div>
 
       <section class="section">
@@ -29,8 +30,11 @@
           <button id="saveProject" class="secondary" type="button">Save</button>
           <button id="saveProjectAs" class="secondary" type="button">Save as</button>
           <button id="openProject" class="secondary" type="button">Open</button>
+          <button id="clearLocalAutosave" class="secondary" type="button">Clear local autosave</button>
         </div>
         <p id="projectSaveHint" class="small">Project files are saved as JSON on your machine.</p>
+        <p class="small note">This app does not upload project data. Files stay in your browser/local JSON unless you manually export or share them.</p>
+        <p class="small warning-note">Exported .ewmm / JSON / PDF files may contain sensitive project information such as room layouts, object names, dimensions, images, and unpublished exhibition details. Share them carefully.</p>
         <input id="projectFileInput" type="file" accept=".json,.ewmm" hidden>
       </section>
 
@@ -291,6 +295,7 @@
             <button id="distributeV" class="mini-button" type="button" title="Distribute vertically" aria-label="Distribute vertically"><span class="align-icon distribute-v"></span></button>
           </div>
         </div>
+        <p class="toolbar-note">Exported .ewmm / JSON / PDF files may contain sensitive project information such as room layouts, object names, dimensions, images, and unpublished exhibition details. Share them carefully.</p>
       </div>
       <div class="stage-wrap">
         <div class="stage">
@@ -312,12 +317,13 @@
     </main>
   </div>
 
-  <script src="js/core.js?v=2026-05-12-2"></script>
-  <script src="js/model.js?v=2026-05-12-2"></script>
-  <script src="js/rendering.js?v=2026-05-12-2"></script>
-  <script src="js/ui.js?v=2026-05-12-2"></script>
-  <script src="js/interactions.js?v=2026-05-12-2"></script>
-  <script src="js/export.js?v=2026-05-12-2"></script>
-  <script src="js/boot.js?v=2026-05-12-2"></script>
+  <script src="js/course-data.js?v=2026-05-13-1"></script>
+  <script src="js/core.js?v=2026-05-13-1"></script>
+  <script src="js/model.js?v=2026-05-13-1"></script>
+  <script src="js/rendering.js?v=2026-05-13-1"></script>
+  <script src="js/ui.js?v=2026-05-13-1"></script>
+  <script src="js/interactions.js?v=2026-05-13-1"></script>
+  <script src="js/export.js?v=2026-05-13-1"></script>
+  <script src="js/boot.js?v=2026-05-13-1"></script>
 </body>
 </html>

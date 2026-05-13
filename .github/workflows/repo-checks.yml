@@ -1,0 +1,51 @@
+name: Repo checks
+
+on:
+  push:
+    branches:
+      - main
+      - "codex/**"
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check browser scripts
+        run: |
+          node --check js/course-data.js
+          node --check js/core.js
+          node --check js/model.js
+          node --check js/rendering.js
+          node --check js/ui.js
+          node --check js/interactions.js
+          node --check js/export.js
+          node --check js/boot.js
+
+      - name: Verify CSP and safe outbound links
+        run: |
+          grep -q "Content-Security-Policy" index.html
+          grep -q 'rel="noopener noreferrer"' index.html
+
+      - name: Review iframe usage
+        run: |
+          if grep -Rni "<iframe" index.html js css README.md; then
+            echo "Unexpected iframe usage found. Review and add sandboxing before merging."
+            exit 1
+          fi
+
+      - name: Prevent private project artifacts from being tracked
+        run: |
+          tracked="$(git ls-files '*.ewmm' '*.ewmm.json' '*.pdf' 'exports/*' 'private/*' 'local-projects/*')"
+          if [ -n "$tracked" ]; then
+            echo "Sensitive or local-only files are tracked:"
+            echo "$tracked"
+            exit 1
+          fi

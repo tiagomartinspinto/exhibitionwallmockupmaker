@@ -798,6 +798,14 @@
       updateProjectSaveHint();
     }
 
+    function clearLocalAutosave() {
+      if (persistTimer) clearTimeout(persistTimer);
+      persistTimer = null;
+      localStorage.removeItem(STORAGE_KEY);
+      state.project.lastLocalSaveAt = "";
+      updateProjectSaveHint();
+    }
+
     function scheduleProjectAutosave() {
       if (!projectFileHandle) return;
       if (projectPersistTimer) clearTimeout(projectPersistTimer);
@@ -873,7 +881,19 @@
     }
 
     function loadProjectFileFromText(text, fileName = "") {
-      const parsed = JSON.parse(text);
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        throw new Error("This file could not be read as JSON. Please choose a valid .ewmm or JSON project file.");
+      }
+      const data = parsed && typeof parsed === "object" && parsed.data ? parsed.data : parsed;
+      if (!data || typeof data !== "object") {
+        throw new Error("This file is not a valid Exhibition Wall Mockup Maker project.");
+      }
+      if (!(Array.isArray(data.walls) || data.wall)) {
+        throw new Error("This project file is missing wall data.");
+      }
       applySerializedState(parsed, { fileName });
       syncInputsFromProject();
       syncInputsFromSpace();

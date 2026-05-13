@@ -1,3 +1,6 @@
+    const itemTypeCatalog = window.EWMM_DATA?.itemTypes || {};
+    const roomElementTypeCatalog = window.EWMM_DATA?.roomElementTypes || {};
+
     function defaultGuides() {
       return { vertical: [], horizontal: [], visible: true };
     }
@@ -151,62 +154,19 @@
     }
 
     function roomElementTypeConfig(type) {
-      const configs = {
-        chair: {
-          defaultName: "Chair",
-          defaultShape: "rect",
-          shapes: ["rect", "circle"],
-          defaultWidth: 520,
-          defaultDepth: 520,
-          defaultHeight: 900,
-          color: "#60748a"
-        },
-        projection: {
-          defaultName: "Projection screen",
-          defaultShape: "rect",
-          shapes: ["rect"],
-          defaultWidth: 2500,
-          defaultDepth: 180,
-          defaultHeight: 1500,
-          color: "#27364f"
-        },
-        table: {
-          defaultName: "Table",
-          defaultShape: "rect",
-          shapes: ["rect", "circle"],
-          defaultWidth: 1800,
-          defaultDepth: 900,
-          defaultHeight: 760,
-          color: "#8a7a54"
-        },
-        other: {
-          defaultName: "Other placeholder",
-          defaultShape: "rect",
-          shapes: ["rect", "circle"],
-          defaultWidth: 900,
-          defaultDepth: 900,
-          defaultHeight: 1200,
-          color: "#777e6b"
-        }
-      };
-      return configs[canonicalRoomElementType(type)] || configs.other;
+      return roomElementTypeCatalog[canonicalRoomElementType(type)] || roomElementTypeCatalog.other;
     }
 
     function canonicalRoomElementType(type) {
       const value = String(type || "other").toLowerCase();
-      if (value === "chair" || value === "seat" || value === "seating") return "chair";
-      if (value === "projection" || value === "projection screen" || value === "projector screen" || value === "screen") return "projection";
-      if (value === "table" || value === "desk") return "table";
+      for (const [key, config] of Object.entries(roomElementTypeCatalog)) {
+        if ((config.aliases || []).includes(value)) return key;
+      }
       return "other";
     }
 
     function roomElementTypeLabel(type) {
-      return {
-        chair: "Chair",
-        projection: "Projection screen",
-        table: "Table",
-        other: "Other placeholder"
-      }[canonicalRoomElementType(type)] || "Other placeholder";
+      return roomElementTypeConfig(type).label || "Other placeholder";
     }
 
     function roomElementDefaultColor(type) {
@@ -219,7 +179,7 @@
     }
 
     function defaultRoomElementNames() {
-      return ["chair", "projection", "table", "other"].map(type => roomElementTypeConfig(type).defaultName);
+      return Object.values(roomElementTypeCatalog).map(config => config.defaultName);
     }
 
     function clampRoomElementToSpace(element) {
@@ -596,7 +556,7 @@
     function addItem(item) {
       const type = canonicalItemType(item.type);
       const side = normalizeWallSide(item.side || activeWallSide());
-      state.items.push({
+      const created = {
         id: uid(),
         name: item.name || itemTypeLabel(type),
         type,
@@ -612,11 +572,16 @@
         width: Math.max(10, number(item.width, 100)),
         height: Math.max(10, number(item.height, 100)),
         color: item.color || colorForType(type)
-      });
+      };
+      state.items.push(created);
       state.activeSide = side;
+      if (els.wallSide) els.wallSide.value = state.activeSide;
+      if (els.itemSide) els.itemSide.value = state.activeSide;
+      setSelection([created.id]);
       syncActiveWallRecord();
       save();
       render();
+      return created;
     }
 
     function titleCase(text) {
@@ -624,67 +589,11 @@
     }
 
     function itemTypeConfig(type) {
-      const configs = {
-        graphic: {
-          defaultName: "Printed graphic",
-          defaultShape: "rect",
-          shapes: ["rect", "circle"],
-          defaultWidth: 1200,
-          defaultHeight: 800,
-          textPlaceholder: "Optional caption or words printed on the graphic",
-          notesPlaceholder: "Print file, material, finish, or mounting notes"
-        },
-        mdf: {
-          defaultName: "MDF cutout / sticker",
-          defaultShape: "rect",
-          shapes: ["rect", "circle"],
-          defaultWidth: 700,
-          defaultHeight: 700,
-          textPlaceholder: "Optional words on the cutout or sticker",
-          notesPlaceholder: "Cut path, material thickness, adhesive, or install notes"
-        },
-        object: {
-          defaultName: "Object / prototype",
-          defaultShape: "rect",
-          shapes: ["rect", "circle"],
-          defaultWidth: 600,
-          defaultHeight: 600,
-          textPlaceholder: "Optional visible label on the object",
-          notesPlaceholder: "Prototype, plinth, fixture, power, or handling notes"
-        },
-        screen: {
-          defaultName: "Screen",
-          defaultShape: "rect",
-          shapes: ["rect"],
-          defaultWidth: 1800,
-          defaultHeight: 900,
-          textPlaceholder: "Optional on-screen title or visible label",
-          notesPlaceholder: "Media file, player, power, cabling, or looping notes"
-        },
-        support: {
-          defaultName: "Supporting structure / shelf",
-          defaultShape: "rect",
-          shapes: ["rect"],
-          defaultWidth: 1200,
-          defaultHeight: 300,
-          textPlaceholder: "Optional visible marking",
-          notesPlaceholder: "Load, bracket, shelf height, finish, or fabrication notes"
-        },
-        text: {
-          defaultName: "Text",
-          defaultShape: "rect",
-          shapes: ["rect"],
-          defaultWidth: 900,
-          defaultHeight: 220,
-          textPlaceholder: "Words shown on the wall",
-          notesPlaceholder: "Typography, language, vinyl, paint, or approval notes"
-        }
-      };
-      return configs[canonicalItemType(type)] || configs.object;
+      return itemTypeCatalog[canonicalItemType(type)] || itemTypeCatalog.object;
     }
 
     function defaultTypeNames() {
-      return ["graphic", "mdf", "object", "screen", "support", "text"].map(type => itemTypeConfig(type).defaultName);
+      return Object.values(itemTypeCatalog).map(config => config.defaultName);
     }
 
     function validShapeForType(type, shape) {
@@ -738,37 +647,19 @@
     }
 
     function colorForType(type) {
-      const colors = {
-        graphic: "#2f6f9f",
-        mdf: "#e58b4a",
-        object: "#6e63b6",
-        screen: "#151515",
-        support: "#7b5d46",
-        text: "#f4f1e8"
-      };
-      return colors[canonicalItemType(type)] || "#2f6f9f";
+      return itemTypeConfig(type).color || "#2f6f9f";
     }
 
     function canonicalItemType(type) {
       const value = String(type || "object").toLowerCase();
-      if (value === "artwork" || value === "printed graphic" || value === "graphic") return "graphic";
-      if (value === "cutout" || value === "mdf" || value === "mdf cutout" || value === "sticker" || value === "mdf cutout/sticker" || value === "mdf cutout / sticker") return "mdf";
-      if (value === "label" || value === "explanatory text" || value === "title" || value === "title text" || value === "text") return "text";
-      if (value === "illumination" || value === "prototype" || value === "physical object" || value === "object/prototype" || value === "object / prototype" || value === "object") return "object";
-      if (value === "shelf" || value === "opening" || value === "mount" || value === "support" || value === "supporting structure" || value === "supporting structure/shelf" || value === "supporting structure / shelf") return "support";
-      if (value === "screen") return "screen";
+      for (const [key, config] of Object.entries(itemTypeCatalog)) {
+        if ((config.aliases || []).includes(value)) return key;
+      }
       return "object";
     }
 
     function itemTypeLabel(type) {
-      return {
-        graphic: "Printed graphic",
-        mdf: "MDF cutout / sticker",
-        object: "Object / prototype",
-        screen: "Screen",
-        support: "Supporting structure / shelf",
-        text: "Text"
-      }[canonicalItemType(type)] || "Object / prototype";
+      return itemTypeConfig(type).label || "Object / prototype";
     }
 
     function normalizeItem(item) {
@@ -816,14 +707,7 @@
     }
 
     function itemTypePrintLabel(type) {
-      return {
-        graphic: "Graphic",
-        mdf: "MDF/sticker",
-        object: "Object",
-        screen: "Screen",
-        support: "Support/shelf",
-        text: "Text"
-      }[canonicalItemType(type)] || "Object";
+      return itemTypeConfig(type).printLabel || "Object";
     }
 
     function exportTextLabel(item) {

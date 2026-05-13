@@ -44,12 +44,7 @@
       spaceGuides: { vertical: [], horizontal: [], visible: true },
       walls: [],
       wall: { width: 6000, height: 3000, depth: 120, color: "#f5f4ea" },
-      items: [
-        { id: uid(), name: "Artwork", type: "graphic", side: "front", shape: "rect", text: "", notes: "", hanging: false, illuminated: false, x: 900, y: 900, width: 1200, height: 800, color: "#2f6f9f" },
-        { id: uid(), name: "Wall text", type: "text", side: "front", shape: "rect", text: "Intro text", notes: "", hanging: false, illuminated: false, x: 2400, y: 1700, width: 900, height: 220, color: "#f4f1e8" },
-        { id: uid(), name: "Prototype", type: "object", side: "front", shape: "circle", text: "", notes: "", hanging: true, illuminated: true, x: 3200, y: 2050, width: 420, height: 420, color: "#6e63b6" },
-        { id: uid(), name: "Screen", type: "screen", side: "front", shape: "rect", text: "", notes: "", hanging: false, illuminated: false, x: 3600, y: 650, width: 1800, height: 900, color: "#151515" }
-      ]
+      items: window.EWMM_DATA.makeDefaultWallItems(uid)
     };
 
     const els = {
@@ -89,6 +84,7 @@
       saveProject: document.querySelector("#saveProject"),
       saveProjectAs: document.querySelector("#saveProjectAs"),
       openProject: document.querySelector("#openProject"),
+      clearLocalAutosave: document.querySelector("#clearLocalAutosave"),
       projectSaveHint: document.querySelector("#projectSaveHint"),
       projectFileInput: document.querySelector("#projectFileInput"),
       itemName: document.querySelector("#itemName"),

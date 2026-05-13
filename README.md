@@ -69,6 +69,7 @@ The app supports explicit project files in addition to browser autosave.
 - `Save` saves the current project
 - `Save as` lets you choose a new local file
 - `Open` loads a previously saved project
+- `Clear local autosave` removes only this browser's recovery copy after confirmation
 - browser autosave keeps a local working copy in the background
 - when a real project file handle is available, the app also autosaves back to that file on a calmer timer
 - the interface shows the timestamp of the last save
@@ -78,17 +79,33 @@ Project files are stored as JSON on the user's machine.
 
 On Chromium-based browsers, the app can use the browser's native file picker for a smoother save/open flow. On browsers without that support, it falls back to download/upload behavior.
 
-## GitHub Pages
+## Privacy and data safety
 
-The site is currently published directly from the repository root.
+This app does not upload project data. Files stay in your browser/local JSON unless you manually export or share them.
 
-Recommended GitHub Pages settings:
+Exported `.ewmm` / JSON / PDF files may contain sensitive project information such as room layouts, object names, dimensions, images, and unpublished exhibition details. Share them carefully.
 
-1. Open `Settings`
-2. Open `Pages`
-3. Set `Source` to `Deploy from a branch`
-4. Choose `main`
-5. Choose `/ (root)`
+Browser autosave is local to the current browser profile. Clearing browser storage or using the in-app `Clear local autosave` action removes that recovery copy, but does not delete the project currently open in memory and does not delete any JSON file you already saved to disk.
+
+## Deployment and repo safety
+
+The live app is published with GitHub Pages from `main`.
+
+This repository also includes a GitHub Action that runs on push and pull request to check:
+
+- browser script syntax
+- presence of the app CSP
+- safe external link attributes (`rel="noopener noreferrer"`)
+- absence of unsandboxed iframe usage
+- absence of local/private project artifacts in tracked files
+
+Recommended local-only directories and project artifacts are excluded in `.gitignore`, including:
+
+- `*.ewmm`
+- `*.ewmm.json`
+- `exports/`
+- `private/`
+- `local-projects/`
 
 ## Project structure
 
@@ -96,6 +113,7 @@ Recommended GitHub Pages settings:
 index.html         App shell and markup
 css/styles.css     Interface styling
 js/core.js         Shared globals and DOM references
+js/course-data.js  Shared object/placeholder config and sample data
 js/model.js        State model and wall/item helpers
 js/rendering.js    2D and 3D canvas rendering
 js/ui.js           UI rendering helpers
@@ -120,6 +138,7 @@ No framework, no build step, no backend.
 - The live editing view is intentionally cleaner than the export PDF.
 - Working data is stored in browser local storage for autosave.
 - Projects can also be explicitly saved as local JSON files and reopened later.
+- The app does not currently use iframes. If embeds are added later, they should be sandboxed deliberately.
 
 ## Repository
 
