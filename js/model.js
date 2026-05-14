@@ -103,6 +103,7 @@
 
     function syncWallFromInputs() {
       const record = activeWallRecord();
+      captureObjectHistory({ coalesceKey: `wall-edit:${record?.id || state.activeWallId}` });
       if (record) record.name = els.wallName.value || record.name;
       state.wall.width = Math.max(100, number(els.wallWidth.value, state.wall.width));
       state.wall.height = Math.max(100, number(els.wallHeight.value, state.wall.height));
@@ -351,6 +352,7 @@
     function syncSelectedRoomElementFromInputs() {
       const element = selectedRoomElement();
       if (!element) return false;
+      captureObjectHistory({ coalesceKey: `room-edit:${element.id}` });
       element.name = els.roomElementName.value || roomElementTypeLabel(els.roomElementType.value);
       element.type = canonicalRoomElementType(els.roomElementType.value);
       element.shape = validRoomElementShape(element.type, els.roomElementShape.value || element.shape);
@@ -365,6 +367,7 @@
     }
 
     function addRoomElement(rawElement = {}) {
+      captureObjectHistory({ coalesceKey: "room-add" });
       const element = normalizeRoomElement({
         name: rawElement.name,
         type: rawElement.type,
@@ -385,6 +388,7 @@
     }
 
     function deleteRoomElement(id) {
+      captureObjectHistory({ coalesceKey: "room-delete" });
       state.roomElements = (state.roomElements || []).filter(element => element.id !== id);
       if (state.selectedRoomElementId === id) state.selectedRoomElementId = null;
       state.selectedSpaceIds = selectedSpaceIds().filter(key => key !== spaceEntityKey("room", id));
@@ -494,6 +498,7 @@
     function syncSelectedItemFromInputs() {
       const item = selectedSingleItem();
       if (!item) return false;
+      captureObjectHistory({ coalesceKey: `item-edit:${item.id}` });
       item.name = els.itemName.value || item.name;
       item.type = canonicalItemType(els.itemType.value);
       item.side = normalizeWallSide(els.itemSide.value);
@@ -556,6 +561,7 @@
     function addItem(item) {
       const type = canonicalItemType(item.type);
       const side = normalizeWallSide(item.side || activeWallSide());
+      captureObjectHistory({ coalesceKey: "item-add" });
       const created = {
         id: uid(),
         name: item.name || itemTypeLabel(type),
@@ -662,20 +668,27 @@
       return itemTypeConfig(type).label || "Object / prototype";
     }
 
-    function normalizeItem(item) {
+    function normalizeItem(item = {}) {
       const legacyType = item.type;
       const type = canonicalItemType(legacyType);
+      const config = itemTypeConfig(type);
+      const shape = validShapeForType(type, item.shape || config.defaultShape);
       return {
-        shape: "rect",
-        side: "front",
-        text: "",
-        notes: "",
-        hanging: false,
-        image: "",
-        ...item,
+        id: item.id || uid(),
+        name: item.name || config.defaultName,
         type,
         side: normalizeWallSide(item.side),
-        illuminated: Boolean(item.illuminated || legacyType === "illumination")
+        shape,
+        text: item.text || "",
+        notes: item.notes || "",
+        hanging: Boolean(item.hanging),
+        image: item.image || "",
+        illuminated: Boolean(item.illuminated || legacyType === "illumination"),
+        x: Math.max(0, number(item.x, 0)),
+        y: Math.max(0, number(item.y, 0)),
+        width: Math.max(10, number(item.width, config.defaultWidth)),
+        height: Math.max(10, number(item.height, config.defaultHeight)),
+        color: item.color || config.color
       };
     }
 
@@ -742,6 +755,148 @@
       return state.selectedId ? [state.selectedId] : [];
     }
 
+    function objectHistoryState() {
+      if (!state.objectHistory) {
+        state.objectHistory = { undo: [], redo: [], coalesceKey: null, coalesceAt: 0 };
+      }
+      return state.objectHistory;
+    }
+
+    function cloneHistoryItem(item) {
+      return { ...normalizeItem(item) };
+    }
+
+    function cloneHistoryRoomElement(element) {
+      return { ...normalizeRoomElement(element) };
+    }
+
+    function objectHistorySnapshot() {
+      syncActiveWallRecord();
+      return {
+        activeWallId: state.activeWallId,
+        activeSide: activeWallSide(),
+        selectedIds: [...selectedIds()],
+        selectedRoomElementId: state.selectedRoomElementId || null,
+        selectedSpaceIds: [...selectedSpaceIds()],
+        roomElements: (state.roomElements || []).map(cloneHistoryRoomElement),
+        walls: state.walls.map(wall => ({
+          id: wall.id,
+          name: wall.name,
+          wall: { ...wall.wall },
+          placement: { ...wall.placement },
+          guides: normalizeGuides(wall.guides),
+          items: (wall.items || []).map(cloneHistoryItem)
+        }))
+      };
+    }
+
+    function objectHistorySnapshotKey(snapshot) {
+      return JSON.stringify(snapshot);
+    }
+
+    function resetObjectHistoryCoalesce() {
+      const history = objectHistoryState();
+      history.coalesceKey = null;
+      history.coalesceAt = 0;
+    }
+
+    function clearObjectHistory() {
+      const history = objectHistoryState();
+      history.undo = [];
+      history.redo = [];
+      resetObjectHistoryCoalesce();
+      updateObjectHistoryButtons();
+    }
+
+    function updateObjectHistoryButtons() {
+      if (!els.undoAction || !els.redoAction) return;
+      const history = objectHistoryState();
+      els.undoAction.disabled = !history.undo.length;
+      els.redoAction.disabled = !history.redo.length;
+    }
+
+    function captureObjectHistory(options = {}) {
+      const history = objectHistoryState();
+      const snapshot = objectHistorySnapshot();
+      const snapshotKey = objectHistorySnapshotKey(snapshot);
+      const lastEntry = history.undo[history.undo.length - 1];
+      const now = Date.now();
+      if (options.coalesceKey && history.coalesceKey === options.coalesceKey && now - history.coalesceAt < 900) {
+        history.coalesceAt = now;
+        return false;
+      }
+      if (lastEntry && lastEntry.key === snapshotKey) {
+        history.coalesceKey = options.coalesceKey || null;
+        history.coalesceAt = now;
+        return false;
+      }
+      history.undo.push({ key: snapshotKey, snapshot });
+      if (history.undo.length > 160) history.undo.shift();
+      history.redo = [];
+      history.coalesceKey = options.coalesceKey || null;
+      history.coalesceAt = now;
+      updateObjectHistoryButtons();
+      return true;
+    }
+
+    function applyObjectHistorySnapshot(snapshot) {
+      state.walls = Array.isArray(snapshot.walls) ? snapshot.walls.map((entry, index) => {
+        const wallSpec = { width: 6000, height: 3000, depth: 120, color: "#f5f4ea", ...entry.wall };
+        const placement = { x: 1000, y: 1000, rotation: 0, anchor: "center", ...entry.placement };
+        placement.anchor = "center";
+        return {
+          id: entry.id || uid(),
+          name: entry.name || `Wall ${index + 1}`,
+          wall: wallSpec,
+          placement,
+          guides: normalizeGuides(entry.guides || defaultGuides()),
+          items: (entry.items || []).map(item => normalizeItem({ ...item }))
+        };
+      }) : [];
+      if (!state.walls.length) {
+        ensureWalls();
+      }
+      if (snapshot.activeWallId && state.walls.some(wall => wall.id === snapshot.activeWallId)) {
+        state.activeWallId = snapshot.activeWallId;
+      }
+      state.activeSide = normalizeWallSide(snapshot.activeSide || state.activeSide);
+      state.roomElements = (snapshot.roomElements || []).map(element => normalizeRoomElement({ ...element }));
+      state.selectedRoomElementId = snapshot.selectedRoomElementId || null;
+      state.selectedSpaceIds = [...new Set(snapshot.selectedSpaceIds || [])].filter(validSpaceEntityKey);
+      loadActiveWall();
+      setSelection(snapshot.selectedIds || []);
+      syncInputsFromWall();
+      syncRoomElementInputs();
+      syncItemInputs();
+      updateObjectHistoryButtons();
+    }
+
+    function undoObjectChanges() {
+      const history = objectHistoryState();
+      if (!history.undo.length) return false;
+      const current = objectHistorySnapshot();
+      history.redo.push({ key: objectHistorySnapshotKey(current), snapshot: current });
+      const entry = history.undo.pop();
+      applyObjectHistorySnapshot(entry.snapshot);
+      resetObjectHistoryCoalesce();
+      save();
+      render();
+      return true;
+    }
+
+    function redoObjectChanges() {
+      const history = objectHistoryState();
+      if (!history.redo.length) return false;
+      const current = objectHistorySnapshot();
+      history.undo.push({ key: objectHistorySnapshotKey(current), snapshot: current });
+      const entry = history.redo.pop();
+      applyObjectHistorySnapshot(entry.snapshot);
+      resetObjectHistoryCoalesce();
+      save();
+      render();
+      return true;
+    }
+
     function isSelected(id) {
       return selectedIds().includes(id);
     }
@@ -772,6 +927,54 @@
       return state.items.filter(item => ids.has(item.id) && itemSide(item) === side);
     }
 
+    function deleteSelectedItems() {
+      const ids = selectedIds();
+      if (!ids.length) return false;
+      captureObjectHistory({ coalesceKey: "item-delete" });
+      const remove = new Set(ids);
+      state.items = state.items.filter(item => !remove.has(item.id));
+      setSelection([]);
+      resetObjectHistoryCoalesce();
+      save();
+      render();
+      return true;
+    }
+
+    function duplicateSelectedItems() {
+      const items = selectedItems();
+      if (!items.length) return false;
+      captureObjectHistory({ coalesceKey: "item-duplicate" });
+      const clones = items.map(item => {
+        const normalized = normalizeItem(item);
+        const clone = {
+          ...normalized,
+          id: uid(),
+          x: Math.min(Math.max(0, normalized.x + 40), Math.max(0, state.wall.width - normalized.width)),
+          y: Math.min(Math.max(0, normalized.y + 40), Math.max(0, state.wall.height - normalized.height))
+        };
+        state.items.push(clone);
+        return clone.id;
+      });
+      setSelection(clones);
+      resetObjectHistoryCoalesce();
+      save();
+      render();
+      return true;
+    }
+
+    function nudgeSelectedItems(dx, dy, options = {}) {
+      const items = selectedItems();
+      if (!items.length) return false;
+      captureObjectHistory({ coalesceKey: options.coalesceKey || `item-nudge:${dx}:${dy}` });
+      items.forEach(item => {
+        item.x = Math.max(0, Math.min(state.wall.width - item.width, Math.round(item.x + dx)));
+        item.y = Math.max(0, Math.min(state.wall.height - item.height, Math.round(item.y + dy)));
+      });
+      save();
+      render({ canvasOnly: true });
+      return true;
+    }
+
     function renderWallTabs() {
       els.wallTabs.innerHTML = "";
       state.walls.forEach((wall, index) => {
@@ -786,6 +989,7 @@
 
     function switchWall(id) {
       syncActiveWallRecord();
+      captureObjectHistory({ coalesceKey: "wall-switch" });
       state.activeWallId = id;
       loadActiveWall();
       setSelection([]);
@@ -797,6 +1001,7 @@
 
     function addWall() {
       syncActiveWallRecord();
+      captureObjectHistory({ coalesceKey: "wall-add" });
       const label = `Wall ${String.fromCharCode(65 + state.walls.length)}`;
       const wall = makeWall(label, { width: 4000, height: state.wall.height, depth: state.wall.depth, color: state.wall.color }, [], { x: state.space.width / 2 + state.walls.length * 700, y: 2200, rotation: 0 });
       state.walls.push(wall);
@@ -813,6 +1018,7 @@
       const current = activeWallRecord();
       if (!current) return;
       syncActiveWallRecord();
+      captureObjectHistory({ coalesceKey: "wall-duplicate" });
       const clone = makeWall(`${current.name} copy`, { ...current.wall }, current.items.map(item => ({ ...item, id: uid() })), {
         x: current.placement.x + 600,
         y: current.placement.y + 600,
@@ -836,6 +1042,7 @@
     function resetWallSpecs() {
       const record = activeWallRecord();
       if (!record) return;
+      captureObjectHistory({ coalesceKey: `wall-reset:${record.id}` });
       const index = Math.max(0, state.walls.findIndex(wall => wall.id === record.id));
       record.name = defaultWallName(index);
       record.wall = { width: 6000, height: 3000, depth: 120, color: "#f5f4ea" };
@@ -848,6 +1055,7 @@
 
     function deleteWall() {
       if (state.walls.length <= 1) return;
+      captureObjectHistory({ coalesceKey: `wall-delete:${state.activeWallId}` });
       state.walls = state.walls.filter(wall => wall.id !== state.activeWallId);
       state.activeWallId = state.walls[0].id;
       loadActiveWall();

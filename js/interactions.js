@@ -156,6 +156,9 @@
       const entities = selectedSpaceEntities();
       const spacePoint = spaceCoordinatesFromPoint(geom, point);
       if (!anchor || !entities.length) return false;
+      captureObjectHistory({
+        coalesceKey: `space-move:${entities.map(entity => entity.key).sort().join("|")}`
+      });
       state.drag = {
         type: "spaceSelection",
         id: key,
@@ -278,6 +281,7 @@
       const handleGeom = elevationGeometry(canvasWidth, canvasHeight);
       const resizeItem = resizeHandleAt(point, handleGeom);
       if (resizeItem) {
+        captureObjectHistory({ coalesceKey: `item-resize:${resizeItem.id}` });
         state.resizeDrag = {
           id: resizeItem.id,
           startX: point.x,
@@ -302,6 +306,9 @@
         setSelection([item.id]);
       }
       const draggedItems = selectedItems();
+      captureObjectHistory({
+        coalesceKey: `item-move:${draggedItems.map(candidate => candidate.id).sort().join("|")}`
+      });
       state.drag = {
         id: item.id,
         offsetX: (point.x - mmX(geom, item.x)) / geom.scale,
@@ -545,6 +552,7 @@
       if (state.resizeDrag) {
         state.resizeDrag = null;
         state.snapLines = [];
+        resetObjectHistoryCoalesce();
         if (event.pointerId !== undefined && typeof els.canvas.hasPointerCapture === "function" && els.canvas.hasPointerCapture(event.pointerId)) {
           els.canvas.releasePointerCapture(event.pointerId);
         }
@@ -555,6 +563,7 @@
       if (!state.drag) return;
       state.drag = null;
       state.snapLines = [];
+      resetObjectHistoryCoalesce();
       if (event.pointerId !== undefined && typeof els.canvas.hasPointerCapture === "function" && els.canvas.hasPointerCapture(event.pointerId)) {
         els.canvas.releasePointerCapture(event.pointerId);
       }
@@ -796,6 +805,7 @@
       state.project.lastLocalSaveAt = new Date().toISOString();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(serializedState()));
       updateProjectSaveHint();
+      if (typeof updateUnsavedIndicator === "function") updateUnsavedIndicator();
     }
 
     function clearLocalAutosave() {
@@ -804,6 +814,7 @@
       localStorage.removeItem(STORAGE_KEY);
       state.project.lastLocalSaveAt = "";
       updateProjectSaveHint();
+      if (typeof updateUnsavedIndicator === "function") updateUnsavedIndicator();
     }
 
     function scheduleProjectAutosave() {
@@ -824,6 +835,8 @@
         flushSave();
         return;
       }
+      state.unsavedChanges = true;
+      if (typeof updateUnsavedIndicator === "function") updateUnsavedIndicator();
       if (persistTimer) clearTimeout(persistTimer);
       persistTimer = setTimeout(() => {
         flushSave();
@@ -838,17 +851,53 @@
       if (!saved) return;
       try {
         applySerializedState(JSON.parse(saved));
+        clearObjectHistory();
+        state.unsavedChanges = false;
+        if (typeof updateUnsavedIndicator === "function") updateUnsavedIndicator();
       } catch {
         localStorage.removeItem(STORAGE_KEY);
       }
     }
 
+    function byteSizeForText(text) {
+      return new TextEncoder().encode(String(text || "")).length;
+    }
+
+    function formatFileSize(bytes) {
+      if (!Number.isFinite(bytes) || bytes <= 0) return "0 KB";
+      if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+      return `${Math.round(bytes / 1024)} KB`;
+    }
+
+    function parseProjectFileText(text) {
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        throw new Error("This file could not be read as JSON. Please choose a valid .ewmm or JSON project file.");
+      }
+      const data = parsed && typeof parsed === "object" && parsed.data ? parsed.data : parsed;
+      if (!data || typeof data !== "object") {
+        throw new Error("This file is not a valid Exhibition Wall Mockup Maker project.");
+      }
+      if (!(Array.isArray(data.walls) || data.wall)) {
+        throw new Error("This project file is missing wall data.");
+      }
+      return parsed;
+    }
+
     async function saveProjectFile(options = {}) {
       const useSaveAs = Boolean(options.saveAs);
       const autosave = Boolean(options.autosave);
+      const explicitSave = !autosave;
       const snapshot = projectSnapshot();
       const fileName = suggestedProjectFileName();
       const content = `${JSON.stringify(snapshot, null, 2)}\n`;
+      const exportSize = byteSizeForText(content);
+      if (!autosave && exportSize >= LARGE_PROJECT_WARNING_BYTES) {
+        const confirmed = window.confirm(`This project file is large (${formatFileSize(exportSize)}). Saved .ewmm / JSON files may contain sensitive project information and can become heavy when images are embedded. Continue saving?`);
+        if (!confirmed) return false;
+      }
       if (typeof window.showSaveFilePicker === "function") {
         let handle = projectFileHandle;
         if (autosave && !handle) return false;
@@ -874,32 +923,28 @@
       if (projectPersistTimer) clearTimeout(projectPersistTimer);
       projectPersistTimer = null;
       state.project.lastFileSaveAt = new Date().toISOString();
+      if (explicitSave) {
+        state.unsavedChanges = false;
+      }
       syncInputsFromProject();
       save({ immediate: true, skipProjectAutosave: true });
+      if (typeof updateUnsavedIndicator === "function") updateUnsavedIndicator();
       render();
       return true;
     }
 
     function loadProjectFileFromText(text, fileName = "") {
       let parsed;
-      try {
-        parsed = JSON.parse(text);
-      } catch {
-        throw new Error("This file could not be read as JSON. Please choose a valid .ewmm or JSON project file.");
-      }
-      const data = parsed && typeof parsed === "object" && parsed.data ? parsed.data : parsed;
-      if (!data || typeof data !== "object") {
-        throw new Error("This file is not a valid Exhibition Wall Mockup Maker project.");
-      }
-      if (!(Array.isArray(data.walls) || data.wall)) {
-        throw new Error("This project file is missing wall data.");
-      }
+      parsed = parseProjectFileText(text);
       applySerializedState(parsed, { fileName });
+      clearObjectHistory();
+      state.unsavedChanges = false;
       syncInputsFromProject();
       syncInputsFromSpace();
       syncInputsFromWall();
       syncItemInputs();
       save({ immediate: true, skipProjectAutosave: true });
+      if (typeof updateUnsavedIndicator === "function") updateUnsavedIndicator();
       render();
     }
 
@@ -915,6 +960,10 @@
         });
         if (!handle) return;
         const file = await handle.getFile();
+        if (file.size >= LARGE_PROJECT_WARNING_BYTES) {
+          const confirmed = window.confirm(`This project file is large (${formatFileSize(file.size)}). Large imports often contain embedded images and sensitive project data. Continue opening it?`);
+          if (!confirmed) return;
+        }
         loadProjectFileFromText(await file.text(), file.name || "");
         projectFileHandle = handle;
         return;

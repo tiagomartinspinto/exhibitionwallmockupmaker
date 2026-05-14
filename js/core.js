@@ -2,7 +2,7 @@
       document.body.innerHTML = `<main style="padding:24px;font-family:system-ui,sans-serif;line-height:1.45">
         <h1 style="font-size:22px;margin:0 0 12px">Exhibition Wall Mockup Maker could not start</h1>
         <p>${String(event.message || "Unknown error")}</p>
-        <p style="color:#5d655f">Try refreshing once. If this stays here, send this message to Codex.</p>
+        <p style="color:#5d655f">Try refreshing once. If this stays here, share this message with the maintainer.</p>
       </main>`;
     });
 
@@ -37,6 +37,8 @@
         lastLocalSaveAt: "",
         lastFileSaveAt: ""
       },
+      unsavedChanges: false,
+      objectHistory: { undo: [], redo: [], coalesceKey: null, coalesceAt: 0 },
       space: { width: 12000, depth: 8000, floorColor: "#101113", surroundColor: "#070708", cinematicLight: true },
       roomElements: [],
       activeWallId: "wall-a",
@@ -105,12 +107,15 @@
       overlapSummary: document.querySelector("#overlapSummary"),
       scaleLabel: document.querySelector("#scaleLabel"),
       projectName: document.querySelector("#projectName"),
+      unsavedIndicator: document.querySelector("#unsavedIndicator"),
       snapshotView: document.querySelector("#snapshotView"),
       printAllWallsPdf: document.querySelector("#printAllWallsPdf"),
       toolSelect: document.querySelector("#toolSelect"),
       toolHand: document.querySelector("#toolHand"),
       guideToggle: document.querySelector("#guideToggle"),
       clearGuides: document.querySelector("#clearGuides"),
+      undoAction: document.querySelector("#undoAction"),
+      redoAction: document.querySelector("#redoAction"),
       zoomOut: document.querySelector("#zoomOut"),
       zoomIn: document.querySelector("#zoomIn"),
       resetView: document.querySelector("#resetView"),
@@ -145,6 +150,8 @@
     const STORAGE_KEY = "wall-mockup-maker";
     const PERSIST_DELAY = 180;
     const PROJECT_AUTOSAVE_DELAY = 15000;
+    const LARGE_PROJECT_WARNING_BYTES = 2_000_000;
+    const LARGE_IMAGE_WARNING_BYTES = 4_000_000;
     let persistTimer = null;
     let projectPersistTimer = null;
     let projectFileHandle = null;

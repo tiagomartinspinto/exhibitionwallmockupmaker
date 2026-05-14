@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; frame-ancestors 'self'">
   <title>Exhibition Wall Mockup Maker by @tiagomartinspinto</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="css/styles.css?v=2026-05-13-1">
+  <link rel="stylesheet" href="css/styles.css?v=2026-05-14-2">
 </head>
 <body>
   <div class="app">
@@ -14,7 +14,7 @@
       <div class="brand">
         <div class="brand-top">
           <h1>Exhibition Wall Mockup Maker</h1>
-          <button id="themeToggle" class="theme-switch" type="button" role="switch" aria-checked="true" title="Toggle dark mode">
+          <button id="themeToggle" class="theme-switch" type="button" role="switch" aria-checked="true" aria-label="Toggle dark mode" title="Toggle dark mode">
             <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
             <span class="switch-label">Dark mode</span>
           </button>
@@ -245,7 +245,10 @@
     <main class="main">
       <button id="sidebarToggle" class="stage-panel-toggle panel-toggle secondary" type="button" aria-pressed="false" aria-label="Hide left panel" title="Hide left panel"></button>
       <div class="toolbar">
-        <strong id="projectName">Exhibition Wall Mockup Maker</strong>
+        <div class="project-heading">
+          <strong id="projectName">Exhibition Wall Mockup Maker</strong>
+          <span id="unsavedIndicator" class="unsaved-indicator" aria-live="polite" hidden>Unsaved changes</span>
+        </div>
         <div class="tabs" role="tablist" aria-label="View mode">
           <button class="tab active" data-view="elevation" title="2D measured wall">2D</button>
           <button class="tab" data-view="perspective" title="Wall 3D preview">3D</button>
@@ -271,17 +274,19 @@
                 <path d="M18 9a1 1 0 1 1 2 0v6.5A6.5 6.5 0 0 1 13.5 22h-1.2a5.8 5.8 0 0 1-4.3-1.9l-3-3.4A1.2 1.2 0 0 1 6.8 15l1.2 1.2"></path>
               </svg>
             </button>
-            <button id="guideToggle" class="mini-button" type="button" title="Show or hide guides">Guides</button>
-            <button id="clearGuides" class="mini-button" type="button" title="Clear guides">Clear</button>
-            <button id="zoomOut" class="mini-button" type="button" title="Zoom out">-</button>
-            <button id="zoomIn" class="mini-button" type="button" title="Zoom in">+</button>
-            <button id="resetView" class="mini-button" type="button" title="Reset view">Reset</button>
-            <button id="rotateXDown" class="mini-button" type="button" title="Rotate X backward" hidden>X-</button>
-            <button id="rotateXUp" class="mini-button" type="button" title="Rotate X forward" hidden>X+</button>
-            <button id="rotateYLeft" class="mini-button" type="button" title="Rotate preview left" hidden>Y-</button>
-            <button id="rotateYRight" class="mini-button" type="button" title="Rotate preview right" hidden>Y+</button>
-            <button id="rotateZLeft" class="mini-button" type="button" title="Rotate Z left" hidden>Z-</button>
-            <button id="rotateZRight" class="mini-button" type="button" title="Rotate Z right" hidden>Z+</button>
+            <button id="guideToggle" class="mini-button" type="button" title="Show or hide guides" aria-label="Show or hide guides">Guides</button>
+            <button id="clearGuides" class="mini-button" type="button" title="Clear guides" aria-label="Clear guides">Clear</button>
+            <button id="undoAction" class="mini-button" type="button" title="Undo object change" aria-label="Undo object change">Undo</button>
+            <button id="redoAction" class="mini-button" type="button" title="Redo object change" aria-label="Redo object change">Redo</button>
+            <button id="zoomOut" class="mini-button" type="button" title="Zoom out" aria-label="Zoom out">-</button>
+            <button id="zoomIn" class="mini-button" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+            <button id="resetView" class="mini-button" type="button" title="Reset view" aria-label="Reset view">Reset</button>
+            <button id="rotateXDown" class="mini-button" type="button" title="Rotate X backward" aria-label="Rotate X backward" hidden>X-</button>
+            <button id="rotateXUp" class="mini-button" type="button" title="Rotate X forward" aria-label="Rotate X forward" hidden>X+</button>
+            <button id="rotateYLeft" class="mini-button" type="button" title="Rotate preview left" aria-label="Rotate preview left" hidden>Y-</button>
+            <button id="rotateYRight" class="mini-button" type="button" title="Rotate preview right" aria-label="Rotate preview right" hidden>Y+</button>
+            <button id="rotateZLeft" class="mini-button" type="button" title="Rotate Z left" aria-label="Rotate Z left" hidden>Z-</button>
+            <button id="rotateZRight" class="mini-button" type="button" title="Rotate Z right" aria-label="Rotate Z right" hidden>Z+</button>
           </div>
           <div class="view-controls" aria-label="Alignment controls">
             <span class="control-label">Align</span>
@@ -317,13 +322,13 @@
     </main>
   </div>
 
-  <script src="js/course-data.js?v=2026-05-13-1"></script>
-  <script src="js/core.js?v=2026-05-13-1"></script>
-  <script src="js/model.js?v=2026-05-13-1"></script>
-  <script src="js/rendering.js?v=2026-05-13-1"></script>
-  <script src="js/ui.js?v=2026-05-13-1"></script>
-  <script src="js/interactions.js?v=2026-05-13-1"></script>
-  <script src="js/export.js?v=2026-05-13-1"></script>
-  <script src="js/boot.js?v=2026-05-13-1"></script>
+  <script src="js/course-data.js?v=2026-05-14-2"></script>
+  <script src="js/core.js?v=2026-05-14-2"></script>
+  <script src="js/model.js?v=2026-05-14-2"></script>
+  <script src="js/rendering.js?v=2026-05-14-2"></script>
+  <script src="js/ui.js?v=2026-05-14-2"></script>
+  <script src="js/interactions.js?v=2026-05-14-2"></script>
+  <script src="js/export.js?v=2026-05-14-2"></script>
+  <script src="js/boot.js?v=2026-05-14-2"></script>
 </body>
 </html>

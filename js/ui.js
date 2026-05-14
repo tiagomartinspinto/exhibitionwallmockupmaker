@@ -75,6 +75,8 @@
         syncRoomElementInputs();
         updateContextPanels();
         updateToolButtons();
+        updateObjectHistoryButtons();
+        updateUnsavedIndicator();
       }
       if (state.view === "elevation") {
         drawElevation();
@@ -156,6 +158,12 @@
       } else {
         els.canvas.style.cursor = isHand && is2dView() ? "grab" : "";
       }
+    }
+
+    function updateUnsavedIndicator() {
+      if (!els.unsavedIndicator) return;
+      els.unsavedIndicator.hidden = !state.unsavedChanges;
+      els.unsavedIndicator.textContent = state.unsavedChanges ? "Unsaved changes" : "";
     }
 
     function updateContextPanels() {

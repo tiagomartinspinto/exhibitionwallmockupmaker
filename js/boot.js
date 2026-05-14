@@ -45,8 +45,17 @@
 
     on(els.addWall, "click", addWall);
     on(els.duplicateWall, "click", duplicateWall);
-    on(els.deleteWall, "click", deleteWall);
-    on(els.resetWall, "click", resetWallSpecs);
+    on(els.deleteWall, "click", () => {
+      if (state.walls.length <= 1) return;
+      const confirmed = window.confirm(`Delete ${activeWallRecord()?.name || "this wall"}? Its objects and guides will be removed from the project.`);
+      if (!confirmed) return;
+      deleteWall();
+    });
+    on(els.resetWall, "click", () => {
+      const confirmed = window.confirm(`Reset ${activeWallRecord()?.name || "this wall"} to the default size, color, and placement? Existing objects on that wall will stay, but the wall settings will be reset.`);
+      if (!confirmed) return;
+      resetWallSpecs();
+    });
 
     document.querySelectorAll("#projectTitle").forEach(input => {
       input.addEventListener("input", syncProjectFromInputs);
@@ -90,6 +99,10 @@
       const file = event.target.files && event.target.files[0];
       if (!file) return;
       try {
+        if (file.size >= LARGE_PROJECT_WARNING_BYTES) {
+          const confirmed = window.confirm(`This project file is large (${formatFileSize(file.size)}). Large imports often include embedded images and sensitive project data. Consider resizing or compressing images before embedding them in future saves. Continue opening it?`);
+          if (!confirmed) return;
+        }
         loadProjectFileFromText(await file.text(), file.name || "");
         projectFileHandle = null;
       } catch (error) {
@@ -105,6 +118,14 @@
       if (!file) {
         els.itemImage.dataset.image = "";
         return;
+      }
+      if (file.size >= LARGE_IMAGE_WARNING_BYTES) {
+        const confirmed = window.confirm(`This image is large (${formatFileSize(file.size)}). Embedding it will make saved project files heavier. Consider resizing or compressing it before embedding. Continue anyway?`);
+        if (!confirmed) {
+          els.itemImage.value = "";
+          els.itemImage.dataset.image = "";
+          return;
+        }
       }
       const reader = new FileReader();
       reader.onload = () => {
@@ -149,17 +170,26 @@
     const clearItemsButton = document.querySelector("#clearItems");
     on(clearItemsButton, "click", () => {
       const side = activeWallSide();
+      if (!itemsForSide(side).length) return;
+      const confirmed = window.confirm(`Clear all ${sideLabel(side).toLowerCase()} objects from ${activeWallRecord()?.name || "this wall"}?`);
+      if (!confirmed) return;
+      captureObjectHistory({ coalesceKey: `clear-items:${state.activeWallId}:${side}` });
       state.items = state.items.filter(item => itemSide(item) !== side);
       setSelection([]);
+      resetObjectHistoryCoalesce();
       save();
       render();
     });
 
     const sampleButton = document.querySelector("#sample");
     on(sampleButton, "click", () => {
+      const confirmed = window.confirm("Replace the current wall objects with sample/demo data for this wall?");
+      if (!confirmed) return;
+      captureObjectHistory({ coalesceKey: "sample-data" });
       state.wall = { width: 6000, height: 3000, depth: 120, color: "#f5f4ea" };
       state.items = window.EWMM_DATA.makeDefaultWallItems(uid);
       setSelection([]);
+      resetObjectHistoryCoalesce();
       syncInputsFromWall();
       save();
       render();
@@ -168,8 +198,10 @@
     on(els.itemList, "click", event => {
       const button = event.target.closest("[data-remove]");
       if (button) {
+        captureObjectHistory({ coalesceKey: `item-delete:${button.dataset.remove}` });
         state.items = state.items.filter(item => item.id !== button.dataset.remove);
         setSelection(selectedIds().filter(id => id !== button.dataset.remove));
+        resetObjectHistoryCoalesce();
         save();
         render();
         return;
@@ -259,9 +291,14 @@
     });
 
     on(els.clearRoomElements, "click", () => {
+      if (!(state.roomElements || []).length) return;
+      const confirmed = window.confirm("Clear all room placeholders from the floor plan and 3D room preview?");
+      if (!confirmed) return;
+      captureObjectHistory({ coalesceKey: "clear-room-placeholders" });
       state.roomElements = [];
       state.selectedRoomElementId = null;
       state.selectedSpaceIds = selectedSpaceIds().filter(key => parseSpaceEntityKey(key)?.type !== "room");
+      resetObjectHistoryCoalesce();
       save();
       render();
     });
@@ -297,6 +334,8 @@
     on(els.zoomOut, "click", () => zoomView(-0.15));
     on(els.zoomIn, "click", () => zoomView(0.15));
     on(els.resetView, "click", resetView);
+    on(els.undoAction, "click", undoObjectChanges);
+    on(els.redoAction, "click", redoObjectChanges);
     on(els.toolSelect, "click", () => setTool("select"));
     on(els.toolHand, "click", () => setTool("hand"));
     on(els.guideToggle, "click", toggleGuides);
@@ -348,6 +387,52 @@
       zoomView(event.deltaY < 0 ? 0.12 : -0.12);
     }, { passive: false });
     window.addEventListener("keydown", event => {
+      const metaKey = event.metaKey || event.ctrlKey;
+      if (!isEditableTarget(event.target)) {
+        if (metaKey && !event.altKey && event.key.toLowerCase() === "z") {
+          event.preventDefault();
+          if (event.shiftKey) {
+            redoObjectChanges();
+          } else {
+            undoObjectChanges();
+          }
+          return;
+        }
+        if ((event.ctrlKey && !event.metaKey && !event.shiftKey && event.key.toLowerCase() === "y")) {
+          event.preventDefault();
+          redoObjectChanges();
+          return;
+        }
+        if ((event.key === "Delete" || event.key === "Backspace") && selectedIds().length) {
+          event.preventDefault();
+          deleteSelectedItems();
+          return;
+        }
+        if (metaKey && !event.shiftKey && event.key.toLowerCase() === "d" && selectedIds().length) {
+          event.preventDefault();
+          duplicateSelectedItems();
+          return;
+        }
+        if (event.key === "Escape") {
+          if (selectedIds().length || state.selectedRoomElementId || selectedSpaceIds().length) {
+            event.preventDefault();
+            setSelection([]);
+            state.selectedRoomElementId = null;
+            state.selectedSpaceIds = [];
+            render();
+          }
+          return;
+        }
+        if (selectedIds().length && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
+          event.preventDefault();
+          const step = event.shiftKey ? 50 : 10;
+          if (event.key === "ArrowLeft") nudgeSelectedItems(-step, 0, { coalesceKey: `nudge-x-${step}` });
+          if (event.key === "ArrowRight") nudgeSelectedItems(step, 0, { coalesceKey: `nudge-x-${step}` });
+          if (event.key === "ArrowUp") nudgeSelectedItems(0, step, { coalesceKey: `nudge-y-${step}` });
+          if (event.key === "ArrowDown") nudgeSelectedItems(0, -step, { coalesceKey: `nudge-y-${step}` });
+          return;
+        }
+      }
       if (event.code !== "Space" || event.repeat || isEditableTarget(event.target) || !is2dView()) return;
       event.preventDefault();
       if (!state.handOverride) {

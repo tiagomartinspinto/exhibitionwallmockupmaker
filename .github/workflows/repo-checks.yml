@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - "codex/**"
   pull_request:
   workflow_dispatch:
 
@@ -28,6 +27,10 @@ jobs:
           node --check js/interactions.js
           node --check js/export.js
           node --check js/boot.js
+          node --check tests/import-validation.test.js
+
+      - name: Run import validation tests
+        run: node tests/import-validation.test.js
 
       - name: Verify CSP and safe outbound links
         run: |

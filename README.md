@@ -72,12 +72,14 @@ The app supports explicit project files in addition to browser autosave.
 - `Clear local autosave` removes only this browser's recovery copy after confirmation
 - browser autosave keeps a local working copy in the background
 - when a real project file handle is available, the app also autosaves back to that file on a calmer timer
-- the interface shows the timestamp of the last save
+- the interface shows the timestamp of the last save and whether the current project still has unsaved file changes
 - guides are saved per wall and can be reused when reopening a project
 
 Project files are stored as JSON on the user's machine.
 
 On Chromium-based browsers, the app can use the browser's native file picker for a smoother save/open flow. On browsers without that support, it falls back to download/upload behavior.
+
+Very large images can make project files heavy because embedded images are saved inside the project JSON. The app warns before embedding very large uploads and before opening or saving unusually large project files. Resizing or compressing images before embedding them usually keeps saves and exports easier to share.
 
 ## Privacy and data safety
 
@@ -139,6 +141,18 @@ No framework, no build step, no backend.
 - Working data is stored in browser local storage for autosave.
 - Projects can also be explicitly saved as local JSON files and reopened later.
 - The app does not currently use iframes. If embeds are added later, they should be sandboxed deliberately.
+
+## Manual QA checklist
+
+- Add an object and rename it.
+- Move and resize the object.
+- Switch wall side and confirm the object/editor state stays stable.
+- Save a project, reopen it, and confirm walls, objects, guides, and room placeholders still match.
+- Export a wall PDF and room PDF.
+- Clear local autosave and confirm the current in-memory project stays open.
+- Import an invalid JSON or malformed `.ewmm` file and confirm the app shows a friendly error.
+- Test keyboard shortcuts for delete, duplicate, nudge, and escape.
+- Test undo and redo for object edits, wall changes, and room placeholder changes.
 
 ## Repository
 
