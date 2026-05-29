@@ -90,7 +90,7 @@
     });
 
     on(els.clearLocalAutosave, "click", () => {
-      const confirmed = window.confirm("Clear the browser autosave for this app? This will not delete the currently open project or any file you already saved, but it will remove the local recovery copy stored in this browser.");
+      const confirmed = window.confirm("Clear the local recovery copy for this project? This will not delete the open project or any file you already saved.");
       if (!confirmed) return;
       clearLocalAutosave();
     });
@@ -100,7 +100,7 @@
       if (!file) return;
       try {
         if (file.size >= LARGE_PROJECT_WARNING_BYTES) {
-          const confirmed = window.confirm(`This project file is large (${formatFileSize(file.size)}). Large imports often include embedded images and sensitive project data. Consider resizing or compressing images before embedding them in future saves. Continue opening it?`);
+          const confirmed = window.confirm(`This project file is large (${formatFileSize(file.size)}). It may contain embedded images and unpublished exhibition details. Continue opening it?`);
           if (!confirmed) return;
         }
         loadProjectFileFromText(await file.text(), file.name || "");
@@ -292,7 +292,7 @@
 
     on(els.clearRoomElements, "click", () => {
       if (!(state.roomElements || []).length) return;
-      const confirmed = window.confirm("Clear all room placeholders from the floor plan and 3D room preview?");
+      const confirmed = window.confirm("Clear all room items from the floor plan and 3D room view?");
       if (!confirmed) return;
       captureObjectHistory({ coalesceKey: "clear-room-placeholders" });
       state.roomElements = [];

@@ -11,7 +11,7 @@ Live site:
 ## Shipping status
 
 - GitHub Pages deployment is in place.
-- Local autosave and explicit project save/open are in place.
+- Local recovery and explicit project save/open are in place.
 - Measured wall and room PDF export are in place.
 - 2D wall guides and rulers are in place.
 - 3D wall and room previews are in place.
@@ -24,23 +24,33 @@ Live site:
 
 ## Latest polish delivered
 
+- Final product-design refinement pass focused on clarity, restraint, first-use calm, and canvas dominance
+- Primary flow now reads more clearly as Project, Wall, Object, Export, with rare file, wall, view, layout, and export actions behind disclosures
+- App wording now uses room items, cutouts, shelves/supports, wall sheets, recovery, and install notes instead of placeholder/admin terminology
+- Toolbar and sidebar chrome are lighter, with softer borders, reduced button weight, tighter visible controls, and more space between major sections
+- Export PDFs now use a cleaner installation-document title block, stronger project/title hierarchy, calmer metadata placement, and simpler object/room labels
 - Calm design refinement pass for sidebar hierarchy, toolbar grouping, starter/empty states, wording, and PDF styling
 - Advanced wall placement, media/install notes, guide tools, arrange tools, and export notes now use progressive disclosure
 - Keyboard nudge UI refresh fix so selected object X/Y fields and object list update immediately after arrow-key moves
 - Regression coverage for keyboard nudge editor sync
-- Undo/redo for wall objects, room placeholders, and wall-level changes
+- Undo/redo for wall objects, room items, and wall-level changes
 - Undo/Redo UI buttons in the view toolbar
 - Keyboard shortcuts for delete, duplicate, nudge, escape, and undo/redo
-- Confirmation dialogs for clear objects, clear room placeholders, delete wall, reset wall, and sample/demo reset
+- Confirmation dialogs for clear objects, clear room items, delete wall, reset wall, and sample/demo reset
 - Large image and large project file warnings
 - Import validation coverage for malformed, partial, and older project files
 - Unsaved changes indicator aligned with explicit file saves
-- Clear local autosave flow with confirmation
+- Clear recovery flow with confirmation
 - Accessibility label/title pass for icon-only controls
 - README manual QA checklist and public-repo safety notes
 
 ## Latest verification
 
+- Local browser QA verified 1000px wide layout with two-column app, no horizontal overflow, disclosure-based export/layout controls, and no old placeholder/admin labels visible
+- Local browser QA verified 390px mobile layout with no horizontal overflow and preserved toolbar disclosure hierarchy
+- Local browser QA verified Export and Layout disclosures reveal the expected controls, and Room 3D hides 2D layout tools while showing rotate controls
+- Local browser screenshot capture saved wide and mobile references to `/private/tmp/ewmm-final-product-design-desktop-full.jpg` and `/private/tmp/ewmm-final-product-design-mobile.jpg`
+- PDF download event verification was not available in the browser surface; PDF changes were verified through code review and script syntax checks
 - Local import/normalization regression tests pass
 - Browser script syntax checks pass for all app scripts
 - Local browser QA verified duplicate, delete, escape, nudge, undo, and redo keyboard flows

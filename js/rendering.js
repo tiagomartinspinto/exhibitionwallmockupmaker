@@ -1051,7 +1051,7 @@
       });
 
       drawRulers(geom, width, height);
-      els.scaleLabel.textContent = `2D ${sideLabel(activeWallSide()).toLowerCase()} zoom ${Math.round(state.view2d.zoom * 100)}% | scale 1 px = ${Math.round(1 / geom.scale)} mm`;
+      els.scaleLabel.textContent = `2D ${sideLabel(activeWallSide()).toLowerCase()} ${Math.round(state.view2d.zoom * 100)}% / scale 1 px = ${Math.round(1 / geom.scale)} mm`;
     }
 
     function validHexColor(value, fallback) {
@@ -1398,7 +1398,7 @@
       renderables.sort((a, b) => a.z - b.z).forEach(renderable => renderable.draw());
       applyCinematicLight(width, height);
       drawAxisGizmo(width, height, rotY, rotX, rotZ);
-      els.scaleLabel.textContent = `3D ${sideLabel(activeWallSide()).toLowerCase()} wall preview zoom ${Math.round(state.view3d.zoom * 100)}% | Y ${Math.round(state.view3d.rotY ?? state.view3d.yaw ?? 24)} deg`;
+      els.scaleLabel.textContent = `3D ${sideLabel(activeWallSide()).toLowerCase()} wall ${Math.round(state.view3d.zoom * 100)}% / Y ${Math.round(state.view3d.rotY ?? state.view3d.yaw ?? 24)} deg`;
     }
 
     function spaceGeometry(width, height) {
@@ -1710,7 +1710,7 @@
       });
       drawSpaceRulers(geom, width, height);
       const elementCount = (state.roomElements || []).length;
-      els.scaleLabel.textContent = `Floor plan zoom ${Math.round(state.view2d.zoom * 100)}% | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | ${elementCount} placeholder${elementCount === 1 ? "" : "s"} | ${activeTool() === "hand" ? "drag to pan" : "drag walls or placeholders to move"}`;
+      els.scaleLabel.textContent = `Floor plan ${Math.round(state.view2d.zoom * 100)}% / ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} / ${elementCount} room item${elementCount === 1 ? "" : "s"} / ${activeTool() === "hand" ? "drag to pan" : "drag walls or room items to move"}`;
     }
 
     function drawSpace3D() {
@@ -2069,7 +2069,7 @@
 
       applyCinematicLight(width, height);
       drawAxisGizmo(width, height, rotY, rotX, rotZ);
-      els.scaleLabel.textContent = `3D room preview | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} | ${(state.roomElements || []).length} placeholder${(state.roomElements || []).length === 1 ? "" : "s"} | Y ${Math.round(roomRotY)} deg`;
+      els.scaleLabel.textContent = `3D room preview / ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"} / ${(state.roomElements || []).length} room item${(state.roomElements || []).length === 1 ? "" : "s"} / Y ${Math.round(roomRotY)} deg`;
     }
 
     function drawAxisGizmo(width, height, yaw, pitch, roll) {

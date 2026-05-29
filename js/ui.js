@@ -8,7 +8,7 @@
       if (!visibleItems.length) {
         const empty = document.createElement("p");
         empty.className = "small empty-state";
-        empty.textContent = `No ${sideLabel(activeWallSide()).toLowerCase()} objects on this side yet.`;
+        empty.textContent = `No ${sideLabel(activeWallSide()).toLowerCase()} objects yet. Add the first piece above.`;
         els.itemList.append(empty);
         return;
       }
@@ -23,7 +23,7 @@
             <strong><span class="swatch" style="background:${item.color}"></span>${itemCode(item)} ${escapeHtml(item.name)}</strong>
             <button class="danger" type="button" data-remove="${item.id}">Remove</button>
           </header>
-          <div class="small">${itemSideLabel(item)} | ${itemTypeLabel(item.type)}, ${item.shape === "circle" ? "circular" : "rectangular"}${item.illuminated ? ", illuminated" : ""}${item.hanging ? ", hanging" : ""} | ${itemPositionLabel(item)} | ${itemSizeLabel(item)}${item.notes ? ` | ${escapeHtml(item.notes)}` : ""}${overlaps.has(item.id) ? " | OVERLAP" : ""}</div>
+          <div class="small">${itemSideLabel(item)} / ${itemTypeLabel(item.type)}, ${item.shape === "circle" ? "circular" : "rectangular"}${item.illuminated ? ", illuminated" : ""}${item.hanging ? ", hanging" : ""} / ${itemPositionLabel(item)} / ${itemSizeLabel(item)}${item.notes ? ` / ${escapeHtml(item.notes)}` : ""}${overlaps.has(item.id) ? " / Overlap" : ""}</div>
         `;
         els.itemList.append(row);
       });
@@ -36,7 +36,7 @@
       if (!elements.length) {
         const empty = document.createElement("p");
         empty.className = "small empty-state";
-        empty.textContent = "No room placeholders yet.";
+        empty.textContent = "No room items yet. Add furniture, projection, or reference volumes when needed.";
         els.roomElementList.append(empty);
         return;
       }
@@ -49,7 +49,7 @@
             <strong><span class="swatch" style="background:${element.color}"></span>${escapeHtml(element.name)}</strong>
             <button class="danger" type="button" data-room-remove="${element.id}">Remove</button>
           </header>
-          <div class="small">${roomElementTypeLabel(element.type)}, ${element.shape === "circle" ? "circular" : "rectangular"} | center ${Math.round(element.x)}, ${Math.round(element.y)} mm | ${Math.round(element.width)} x ${Math.round(element.depth)} x ${Math.round(element.height)} mm</div>
+          <div class="small">${roomElementTypeLabel(element.type)}, ${element.shape === "circle" ? "circular" : "rectangular"} / center ${Math.round(element.x)}, ${Math.round(element.y)} mm / ${Math.round(element.width)} x ${Math.round(element.depth)} x ${Math.round(element.height)} mm</div>
         `;
         els.roomElementList.append(row);
       });

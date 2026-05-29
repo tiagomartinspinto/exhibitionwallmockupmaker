@@ -14,9 +14,9 @@
           aliases: Object.freeze(["artwork", "printed graphic", "graphic"])
         }),
         mdf: Object.freeze({
-          label: "MDF cutout / sticker",
-          printLabel: "MDF/sticker",
-          defaultName: "MDF cutout / sticker",
+          label: "Cutout / sticker",
+          printLabel: "Cutout/sticker",
+          defaultName: "Cutout / sticker",
           defaultShape: "rect",
           shapes: Object.freeze(["rect", "circle"]),
           defaultWidth: 700,
@@ -27,9 +27,9 @@
           aliases: Object.freeze(["cutout", "mdf", "mdf cutout", "sticker", "mdf cutout/sticker", "mdf cutout / sticker"])
         }),
         object: Object.freeze({
-          label: "Object / prototype",
+          label: "Object",
           printLabel: "Object",
-          defaultName: "Object / prototype",
+          defaultName: "Object",
           defaultShape: "rect",
           shapes: Object.freeze(["rect", "circle"]),
           defaultWidth: 600,
@@ -53,9 +53,9 @@
           aliases: Object.freeze(["screen"])
         }),
         support: Object.freeze({
-          label: "Supporting structure / shelf",
-          printLabel: "Support/shelf",
-          defaultName: "Supporting structure / shelf",
+          label: "Shelf / support",
+          printLabel: "Shelf/support",
+          defaultName: "Shelf / support",
           defaultShape: "rect",
           shapes: Object.freeze(["rect"]),
           defaultWidth: 1200,
@@ -93,8 +93,8 @@
           aliases: Object.freeze(["chair", "seat", "seating"])
         }),
         projection: Object.freeze({
-          label: "Projection screen",
-          defaultName: "Projection screen",
+          label: "Projection",
+          defaultName: "Projection",
           defaultShape: "rect",
           shapes: Object.freeze(["rect"]),
           defaultWidth: 2500,
@@ -115,8 +115,8 @@
           aliases: Object.freeze(["table", "desk"])
         }),
         other: Object.freeze({
-          label: "Other placeholder",
-          defaultName: "Other placeholder",
+          label: "Other",
+          defaultName: "Other",
           defaultShape: "rect",
           shapes: Object.freeze(["rect", "circle"]),
           defaultWidth: 900,
@@ -130,7 +130,7 @@
       const defaultWallItems = Object.freeze([
         Object.freeze({ name: "Printed graphic", type: "graphic", side: "front", shape: "rect", text: "", notes: "", hanging: false, illuminated: false, x: 900, y: 900, width: 1200, height: 800, color: "#2f6f9f" }),
         Object.freeze({ name: "Text", type: "text", side: "front", shape: "rect", text: "Intro text", notes: "", hanging: false, illuminated: false, x: 2400, y: 1700, width: 900, height: 220, color: "#f4f1e8" }),
-        Object.freeze({ name: "Object / prototype", type: "object", side: "front", shape: "circle", text: "", notes: "Needs power nearby", hanging: true, illuminated: true, x: 3300, y: 2050, width: 420, height: 420, color: "#6e63b6" }),
+        Object.freeze({ name: "Object", type: "object", side: "front", shape: "circle", text: "", notes: "Needs power nearby", hanging: true, illuminated: true, x: 3300, y: 2050, width: 420, height: 420, color: "#6e63b6" }),
         Object.freeze({ name: "Screen", type: "screen", side: "back", shape: "rect", text: "", notes: "Back-side media test", hanging: false, illuminated: false, x: 3600, y: 650, width: 1800, height: 900, color: "#151515" })
       ]);
 

@@ -90,14 +90,14 @@
     }
 
     button {
-      border: 1px solid var(--line);
+      border: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
       border-radius: 6px;
       background: var(--panel-soft);
       color: var(--ink);
       cursor: pointer;
-      min-height: 40px;
-      padding: 9px 13px;
-      font-weight: 600;
+      min-height: 38px;
+      padding: 8px 12px;
+      font-weight: 650;
       transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
     }
 
@@ -107,15 +107,15 @@
     }
 
     button.secondary {
-      background: var(--button-secondary);
+      background: transparent;
       color: var(--ink);
-      border-color: var(--line);
+      border-color: color-mix(in srgb, var(--line-soft) 86%, transparent);
     }
 
     button.danger {
-      background: var(--panel-soft);
+      background: transparent;
       color: var(--accent-2);
-      border-color: var(--danger-border);
+      border-color: color-mix(in srgb, var(--danger-border) 70%, transparent);
     }
 
     input,
@@ -153,7 +153,7 @@
       display: grid;
       gap: 6px;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
     }
 
@@ -175,7 +175,7 @@
     .app {
       position: relative;
       display: grid;
-      grid-template-columns: minmax(330px, 400px) 1fr;
+      grid-template-columns: minmax(320px, 380px) 1fr;
       min-height: 100vh;
     }
 
@@ -190,7 +190,7 @@
     .sidebar {
       overflow: auto;
       max-height: 100vh;
-      padding: 24px 24px 28px;
+      padding: 26px 24px 32px;
       background: var(--panel);
       border-right: 1px solid var(--line);
     }
@@ -232,14 +232,15 @@
 
     .section {
       display: grid;
-      gap: 12px;
-      padding: 19px 0;
-      border-top: 1px solid var(--line-soft);
+      gap: 14px;
+      padding: 22px 0;
+      border-top: 1px solid color-mix(in srgb, var(--line-soft) 68%, transparent);
     }
 
     .section h2 {
       margin: 0;
-      font-size: 14px;
+      font-size: 13px;
+      font-weight: 750;
       letter-spacing: 0;
       color: var(--toolbar-title);
     }
@@ -290,9 +291,9 @@
 
     .status-note {
       padding: 8px 10px;
-      border: 1px solid var(--line-soft);
+      border: 0;
       border-radius: 6px;
-      background: color-mix(in srgb, var(--panel-soft) 54%, transparent);
+      background: color-mix(in srgb, var(--panel-soft) 42%, transparent);
     }
 
     .calm-details,
@@ -350,12 +351,12 @@
 
     .toolbar {
       display: grid;
-      grid-template-columns: minmax(220px, 1fr) auto auto;
+      grid-template-columns: minmax(220px, 1fr) auto;
       align-items: start;
       gap: 10px;
       padding: 12px 16px;
       background: var(--toolbar-bg);
-      border-bottom: 1px solid var(--line);
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
     }
 
     .toolbar strong {
@@ -394,32 +395,17 @@
       flex-wrap: wrap;
       align-items: center;
       padding: 4px;
-      border: 1px solid var(--line-soft);
+      border: 1px solid color-mix(in srgb, var(--line-soft) 68%, transparent);
       border-radius: 8px;
       background: var(--chrome-bg);
       width: fit-content;
       max-width: 100%;
     }
 
-    .export-controls {
-      display: flex;
-      gap: 5px;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: flex-end;
-      max-width: 100%;
-    }
-
-    .export-controls button {
-      min-height: 32px;
-      padding: 6px 10px;
-      font-size: 12px;
-    }
-
     .toolbar-tools {
       grid-column: 1 / -1;
       display: flex;
-      gap: 8px;
+      gap: 7px;
       flex-wrap: wrap;
       align-items: center;
     }
@@ -458,7 +444,7 @@
       gap: 4px;
       flex-wrap: wrap;
       padding: 4px;
-      border: 1px solid var(--line-soft);
+      border: 1px solid color-mix(in srgb, var(--line-soft) 72%, transparent);
       border-radius: 8px;
       background: var(--chrome-bg);
       width: fit-content;
@@ -480,11 +466,25 @@
     .toolbar-disclosure {
       min-height: 40px;
       padding: 9px 11px;
-      border: 1px solid var(--line-soft);
+      border: 1px solid color-mix(in srgb, var(--line-soft) 68%, transparent);
       border-radius: 8px;
       background: var(--chrome-bg);
       width: fit-content;
       max-width: 100%;
+    }
+
+    .export-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .export-actions button {
+      min-height: 32px;
+      padding: 6px 10px;
+      font-size: 12px;
     }
 
     .tab {
@@ -715,15 +715,15 @@
 
     .stage-wrap {
       min-height: 0;
-      padding: 16px;
+      padding: 12px;
       display: grid;
     }
 
     .stage {
       position: relative;
       min-height: 520px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
+      border: 1px solid color-mix(in srgb, var(--line) 54%, transparent);
+      border-radius: 6px;
       background:
         linear-gradient(var(--stage-bg), var(--stage-bg)) padding-box,
         repeating-linear-gradient(0deg, transparent 0 23px, var(--stage-grid) 24px),
@@ -748,56 +748,6 @@
       border-radius: 8px;
       backdrop-filter: blur(10px);
       box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
-    }
-
-    .stage-actions {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      z-index: 8;
-      display: inline-flex;
-      align-items: center;
-      padding: 0;
-      opacity: 0.82;
-      transition: opacity 140ms ease;
-    }
-
-    .stage:hover .stage-actions,
-    .stage-actions:focus-within {
-      opacity: 1;
-    }
-
-    .stage-snapshot {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 34px;
-      min-width: 34px;
-      height: 34px;
-      min-height: 34px;
-      padding: 0;
-      line-height: 0;
-      color: color-mix(in srgb, var(--ink) 78%, var(--muted));
-      background: color-mix(in srgb, var(--chrome-bg) 76%, transparent);
-      border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
-      border-radius: 999px;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-    }
-
-    .stage-snapshot:hover {
-      color: var(--accent);
-      background: var(--accent-soft);
-      border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
-    }
-
-    .stage-snapshot .tool-icon {
-      width: 16px;
-      height: 16px;
-    }
-
-    .stage-snapshot .tool-icon-stroke {
-      stroke-width: 1.65;
     }
 
     body.sidebar-collapsed .stage-panel-toggle {
@@ -840,9 +790,9 @@
       display: grid;
       gap: 8px;
       padding: 11px;
-      border: 1px solid var(--line-soft);
+      border: 1px solid transparent;
       border-radius: 6px;
-      background: color-mix(in srgb, var(--panel-soft) 82%, transparent);
+      background: color-mix(in srgb, var(--panel-soft) 72%, transparent);
     }
 
     .item-row.selected {
@@ -875,9 +825,9 @@
 
     .empty-state {
       padding: 11px;
-      border: 1px dashed var(--line);
+      border: 0;
       border-radius: 6px;
-      background: color-mix(in srgb, var(--panel-soft) 44%, transparent);
+      background: color-mix(in srgb, var(--panel-soft) 36%, transparent);
     }
 
     .swatch {
@@ -912,14 +862,9 @@
 
       .toolbar strong,
       .tabs,
-      .export-controls,
       .toolbar-tools,
       .view-controls {
         width: 100%;
-      }
-
-      .export-controls {
-        justify-content: flex-start;
       }
 
       .toolbar-disclosure {

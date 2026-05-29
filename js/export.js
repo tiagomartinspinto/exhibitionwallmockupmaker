@@ -18,25 +18,25 @@
         { label: "ID", width: 110 },
         { label: "Name", width: 420 },
         { label: "Type", width: 300 },
-        { label: "Side", width: 160 },
+        { label: "Face", width: 160 },
         { label: "Size", width: 260 },
-        { label: "Position", width: 620 }
+        { label: "Placement", width: 620 }
       ];
       if (hasMountingColumn) columns.push({ label: "Mounting", width: 320 });
       const usedWidth = columns.reduce((sum, column) => sum + column.width, 0);
       const detailWidth = Math.max(460, width - usedWidth);
       if (hasTextColumn && hasNotesColumn) {
-        columns.push({ label: "Visible text", width: Math.floor(detailWidth * 0.48) });
-        columns.push({ label: "Notes", width: detailWidth - Math.floor(detailWidth * 0.48) });
+        columns.push({ label: "Text", width: Math.floor(detailWidth * 0.48) });
+        columns.push({ label: "Install notes", width: detailWidth - Math.floor(detailWidth * 0.48) });
       } else if (hasTextColumn) {
-        columns.push({ label: "Visible text", width: detailWidth });
+        columns.push({ label: "Text", width: detailWidth });
       } else if (hasNotesColumn) {
-        columns.push({ label: "Notes", width: detailWidth });
+        columns.push({ label: "Install notes", width: detailWidth });
       } else {
         columns[5].width += detailWidth;
       }
       let colX = x;
-      drawText(`${sideLabel(activeWallSide())} object schedule`, x, y - 44, { align: "left", color: "#1d1c19", size: 27, halo: null });
+      drawText(`${sideLabel(activeWallSide())} objects`, x, y - 44, { align: "left", color: "#1d1c19", size: 27, halo: null });
       activeCtx.fillStyle = "#f1efe7";
       activeCtx.fillRect(x, y, width, rowH);
       columns.forEach(column => {
@@ -81,12 +81,12 @@
         { label: "Wall", width: 420 },
         { label: "Size", width: 360 },
         { label: "Depth", width: 220 },
-        { label: "Position in space", width: 440 },
+        { label: "Room position", width: 440 },
         { label: "Rotation", width: 220 },
         { label: "Objects", width: width - 1660 }
       ];
       let colX = x;
-      drawText("Wall schedule", x, y - 36, { align: "left", color: "#1d1c19", size: 24, halo: null });
+      drawText("Walls", x, y - 36, { align: "left", color: "#1d1c19", size: 24, halo: null });
       activeCtx.fillStyle = "#f1efe7";
       activeCtx.fillRect(x, y, width, rowH);
       columns.forEach(column => {
@@ -140,7 +140,7 @@
         { label: "Size", width: width - 1620 }
       ];
       let colX = x;
-      drawText("Room placeholders", x, y - 36, { align: "left", color: "#1d1c19", size: 24, halo: null });
+      drawText("Room items", x, y - 36, { align: "left", color: "#1d1c19", size: 24, halo: null });
       activeCtx.fillStyle = "#f1efe7";
       activeCtx.fillRect(x, y, width, rowH);
       columns.forEach(column => {
@@ -213,11 +213,11 @@
           mountingText,
           detailText,
           notesText
-        ].filter(Boolean).join(" | ");
+        ].filter(Boolean).join(" / ");
         if (rowH >= 96) {
           drawText(details, contentX, detailY, { align: "left", color: "#5d5a52", size: 18, weight: 600, halo: null, maxWidth: width - 132, noExportBoost: true });
         } else {
-          drawText(`${itemTypePrintLabel(item.type)} | ${itemPositionLabel(item)}`, contentX, detailY, { align: "left", color: "#5d5a52", size: 16, weight: 600, halo: null, maxWidth: width - 132, noExportBoost: true });
+          drawText(`${itemTypePrintLabel(item.type)} / ${itemPositionLabel(item)}`, contentX, detailY, { align: "left", color: "#5d5a52", size: 16, weight: 600, halo: null, maxWidth: width - 132, noExportBoost: true });
         }
         cardY += rowH;
       });
@@ -248,20 +248,27 @@
 
       state.view = exportView;
       const titles = {
-        elevation: "Measured wall elevation",
+        elevation: "Wall installation sheet",
         space2d: "Room plan"
       };
-      const title = titles[exportView] || "2D preview";
-      const brandTitle = "Exhibition Wall Mockup Maker";
-      const versionX = a3.margin + textWidth(brandTitle, 34, 700, { noExportBoost: true }) + 24;
-      drawText(brandTitle, a3.margin, 72, { align: "left", baseline: "middle", color: "#1d1c19", size: 34, halo: null, noExportBoost: true });
-      drawText("V1.0", versionX, 73, { align: "left", baseline: "middle", color: "#7c766d", size: 15, weight: 700, halo: null, noExportBoost: true });
-      drawText(title, a3.margin, 126, { align: "left", baseline: "middle", color: "#1d1c19", size: 31, weight: 700, halo: null, noExportBoost: true });
-      drawText(`by @tiagomartinspinto | ${state.project.title || "Untitled exhibition"}`, a3.margin, 178, { align: "left", baseline: "middle", color: "#5d5a52", size: 22, weight: 600, halo: null, noExportBoost: true });
+      const title = titles[exportView] || "Preview";
+      const projectTitle = state.project.title || "Untitled exhibition";
+      const generatedAt = new Intl.DateTimeFormat(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date());
+      drawText(projectTitle, a3.margin, 78, { align: "left", baseline: "middle", color: "#1d1c19", size: 40, weight: 800, halo: null, maxWidth: 2600, noExportBoost: true });
+      drawText(title, a3.margin, 136, { align: "left", baseline: "middle", color: "#1d1c19", size: 30, weight: 700, halo: null, noExportBoost: true });
+      drawText("A3 reference", a3.width - a3.margin, 78, { align: "right", baseline: "middle", color: "#5d5a52", size: 19, weight: 700, halo: null, noExportBoost: true });
+      drawText(`Prepared ${generatedAt}`, a3.width - a3.margin, 118, { align: "right", baseline: "middle", color: "#7c766d", size: 17, weight: 600, halo: null, noExportBoost: true });
+      drawText("by @tiagomartinspinto", a3.width - a3.margin, 156, { align: "right", baseline: "middle", color: "#7c766d", size: 17, weight: 600, halo: null, noExportBoost: true });
       const exportMeta = exportView === "space2d"
-        ? `Room ${state.space.width} x ${state.space.depth} mm | ${state.walls.length} walls | ${(state.roomElements || []).length} placeholders | A3 scale reference`
-        : `${activeWallRecord().name} | ${sideLabel(activeWallSide())} side | ${state.wall.width} x ${state.wall.height} mm | depth ${state.wall.depth} mm | A3 scale reference`;
-      drawText(exportMeta, a3.margin, 228, { align: "left", baseline: "middle", color: "#5d5a52", size: 21, weight: 600, halo: null, noExportBoost: true });
+        ? `Room ${state.space.width} x ${state.space.depth} mm / ${state.walls.length} walls / ${(state.roomElements || []).length} room items`
+        : `${activeWallRecord().name} / ${sideLabel(activeWallSide())} face / ${state.wall.width} x ${state.wall.height} mm / ${state.wall.depth} mm depth`;
+      drawText(exportMeta, a3.margin, 210, { align: "left", baseline: "middle", color: "#5d5a52", size: 21, weight: 600, halo: null, noExportBoost: true });
       drawLine(a3.margin, 252, a3.width - a3.margin, 252, "#d8d2c6");
 
       const wallRatio = state.wall.width / Math.max(1, state.wall.height);
@@ -496,16 +503,23 @@
       ctx.fillRect(0, 0, page.width, page.height);
 
       const title = snapshotViewTitle();
-      const statusLine = els.scaleLabel.textContent || title;
       const meta = state.view === "space3d" || state.view === "space2d"
-        ? `${state.project.title || "Untitled exhibition"} | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"}`
-        : `${state.project.title || "Untitled exhibition"} | ${activeWallRecord().name}`;
+        ? `${state.walls.length} wall${state.walls.length === 1 ? "" : "s"}`
+        : activeWallRecord().name;
+      const projectTitle = state.project.title || "Untitled exhibition";
+      const generatedAt = new Intl.DateTimeFormat(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date());
 
-      drawText("Exhibition Wall Mockup Maker", page.margin, 76, { align: "left", baseline: "middle", color: "#1d1c19", size: 32, halo: null, noExportBoost: true });
-      drawText("V1.0", page.margin + textWidth("Exhibition Wall Mockup Maker", 32, 700, { noExportBoost: true }) + 22, 78, { align: "left", baseline: "middle", color: "#7c766d", size: 14, weight: 700, halo: null, noExportBoost: true });
-      drawText(title, page.margin, 124, { align: "left", baseline: "middle", color: "#1d1c19", size: 28, weight: 700, halo: null, noExportBoost: true });
-      drawText(`by @tiagomartinspinto | ${meta}`, page.margin, 170, { align: "left", baseline: "middle", color: "#5d5a52", size: 19, weight: 600, halo: null, noExportBoost: true });
-      drawText(statusLine, page.width - page.margin, 170, { align: "right", baseline: "middle", color: "#7c766d", size: 17, weight: 600, halo: null, noExportBoost: true });
+      drawText(projectTitle, page.margin, 78, { align: "left", baseline: "middle", color: "#1d1c19", size: 36, weight: 800, halo: null, maxWidth: 1900, noExportBoost: true });
+      drawText(title, page.margin, 130, { align: "left", baseline: "middle", color: "#1d1c19", size: 27, weight: 700, halo: null, noExportBoost: true });
+      drawText(meta, page.margin, 174, { align: "left", baseline: "middle", color: "#5d5a52", size: 18, weight: 600, halo: null, noExportBoost: true });
+      drawText(`Prepared ${generatedAt}`, page.width - page.margin, 84, { align: "right", baseline: "middle", color: "#7c766d", size: 17, weight: 600, halo: null, noExportBoost: true });
+      drawText("by @tiagomartinspinto", page.width - page.margin, 126, { align: "right", baseline: "middle", color: "#7c766d", size: 17, weight: 600, halo: null, noExportBoost: true });
       drawLine(page.margin, 198, page.width - page.margin, 198, "#d8d2c6");
 
       const frameX = page.margin;

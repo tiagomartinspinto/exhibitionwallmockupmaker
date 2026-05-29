@@ -221,7 +221,7 @@ function testBrokenJsonShowsFriendlyError() {
   const app = createHarness();
   assert.throws(
     () => app.parseProjectFileText("{broken"),
-    /could not be read as JSON/i
+    /could not be opened/i
   );
 }
 

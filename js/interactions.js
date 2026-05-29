@@ -874,7 +874,7 @@
       try {
         parsed = JSON.parse(text);
       } catch {
-        throw new Error("This file could not be read as JSON. Please choose a valid .ewmm or JSON project file.");
+        throw new Error("This file could not be opened. Please choose a valid project file.");
       }
       const data = parsed && typeof parsed === "object" && parsed.data ? parsed.data : parsed;
       if (!data || typeof data !== "object") {
@@ -895,7 +895,7 @@
       const content = `${JSON.stringify(snapshot, null, 2)}\n`;
       const exportSize = byteSizeForText(content);
       if (!autosave && exportSize >= LARGE_PROJECT_WARNING_BYTES) {
-        const confirmed = window.confirm(`This project file is large (${formatFileSize(exportSize)}). Saved .ewmm / JSON files may contain sensitive project information and can become heavy when images are embedded. Continue saving?`);
+        const confirmed = window.confirm(`This project file is large (${formatFileSize(exportSize)}). Embedded images can make saved files heavy and may include unpublished exhibition details. Continue saving?`);
         if (!confirmed) return false;
       }
       if (typeof window.showSaveFilePicker === "function") {
@@ -961,7 +961,7 @@
         if (!handle) return;
         const file = await handle.getFile();
         if (file.size >= LARGE_PROJECT_WARNING_BYTES) {
-          const confirmed = window.confirm(`This project file is large (${formatFileSize(file.size)}). Large imports often contain embedded images and sensitive project data. Continue opening it?`);
+          const confirmed = window.confirm(`This project file is large (${formatFileSize(file.size)}). It may contain embedded images and unpublished exhibition details. Continue opening it?`);
           if (!confirmed) return;
         }
         loadProjectFileFromText(await file.text(), file.name || "");

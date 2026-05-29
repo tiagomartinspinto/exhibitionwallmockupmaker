@@ -15,7 +15,7 @@ It brings together:
 - measured 2D wall layouts
 - room floor plans
 - 3D wall and room previews
-- room placeholders with width, depth, and height
+- room items with width, depth, and height
 - drag-and-drop editing
 - image placement on wall objects
 - local project save and reopen
@@ -30,10 +30,10 @@ It brings together:
 - zoom and pan in 2D views with a hand tool
 - use rulers and drag-out guides in the 2D wall view
 - inspect the wall in 3D and preview the full exhibition room
-- define room placeholders as simple volumes so the floor plan and room 3D stay in sync
+- define room items as simple volumes so the floor plan and room 3D stay in sync
 - upload images and preview them in both 2D and 3D
 - save a project file locally on your machine and reopen it later
-- keep working with browser autosave in the background
+- keep a local recovery copy while working
 - export measured PDFs for the active wall and room plan
 - export cleaner snapshot PDFs from the current preview
 
@@ -64,14 +64,14 @@ http://127.0.0.1:4175
 
 ## Project files
 
-The app supports explicit project files in addition to browser autosave.
+The app supports explicit project files in addition to a local recovery copy.
 
 - `Save` saves the current project
-- `Save as` lets you choose a new local file
+- `Save copy` lets you choose a new local file
 - `Open` loads a previously saved project
-- `Clear local autosave` removes only this browser's recovery copy after confirmation
-- browser autosave keeps a local working copy in the background
-- when a real project file handle is available, the app also autosaves back to that file on a calmer timer
+- `Clear recovery` removes only this browser's recovery copy after confirmation
+- the local recovery copy keeps a working version in the background
+- when the browser can keep a link to a file, the app can also save back to that file on a calmer timer
 - the interface shows the timestamp of the last save and whether the current project still has unsaved file changes
 - guides are saved per wall and can be reused when reopening a project
 
@@ -87,7 +87,7 @@ This app does not upload project data. Files stay in your browser/local JSON unl
 
 Exported `.ewmm` / JSON / PDF files may contain sensitive project information such as room layouts, object names, dimensions, images, and unpublished exhibition details. Share them carefully.
 
-Browser autosave is local to the current browser profile. Clearing browser storage or using the in-app `Clear local autosave` action removes that recovery copy, but does not delete the project currently open in memory and does not delete any JSON file you already saved to disk.
+The recovery copy is local to the current browser profile. Clearing browser storage or using the in-app `Clear recovery` action removes that recovery copy, but does not delete the project currently open in memory and does not delete any JSON file you already saved to disk.
 
 ## Deployment and repo safety
 
@@ -115,7 +115,7 @@ Recommended local-only directories and project artifacts are excluded in `.gitig
 index.html         App shell and markup
 css/styles.css     Interface styling
 js/core.js         Shared globals and DOM references
-js/course-data.js  Shared object/placeholder config and sample data
+js/course-data.js  Shared object/room item config and sample data
 js/model.js        State model and wall/item helpers
 js/rendering.js    2D and 3D canvas rendering
 js/ui.js           UI rendering helpers
@@ -138,7 +138,7 @@ No framework, no build step, no backend.
 
 - All planning dimensions are handled in millimeters.
 - The live editing view is intentionally cleaner than the export PDF.
-- Working data is stored in browser local storage for autosave.
+- Working data is stored in browser local storage for local recovery.
 - Projects can also be explicitly saved as local JSON files and reopened later.
 - The app does not currently use iframes. If embeds are added later, they should be sandboxed deliberately.
 
@@ -147,12 +147,12 @@ No framework, no build step, no backend.
 - Add an object and rename it.
 - Move and resize the object.
 - Switch wall side and confirm the object/editor state stays stable.
-- Save a project, reopen it, and confirm walls, objects, guides, and room placeholders still match.
+- Save a project, reopen it, and confirm walls, objects, guides, and room items still match.
 - Export a wall PDF and room PDF.
-- Clear local autosave and confirm the current in-memory project stays open.
+- Clear recovery and confirm the current in-memory project stays open.
 - Import an invalid JSON or malformed `.ewmm` file and confirm the app shows a friendly error.
 - Test keyboard shortcuts for delete, duplicate, nudge, and escape.
-- Test undo and redo for object edits, wall changes, and room placeholder changes.
+- Test undo and redo for object edits, wall changes, and room item changes.
 
 ## Repository
 

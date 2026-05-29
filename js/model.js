@@ -167,7 +167,7 @@
     }
 
     function roomElementTypeLabel(type) {
-      return roomElementTypeConfig(type).label || "Other placeholder";
+      return roomElementTypeConfig(type).label || "Other";
     }
 
     function roomElementDefaultColor(type) {
@@ -399,7 +399,7 @@
     function updateProjectHeader() {
       const title = state.project.title || "Untitled exhibition";
       const count = Array.isArray(state.walls) && state.walls.length ? state.walls.length : 1;
-      els.projectName.textContent = `${title} | ${count} wall${count === 1 ? "" : "s"}`;
+      els.projectName.textContent = `${title} / ${count} wall${count === 1 ? "" : "s"}`;
     }
 
     function formatSaveTimestamp(value) {
@@ -421,22 +421,22 @@
       const localSaved = formatSaveTimestamp(state.project.lastLocalSaveAt);
       const fileSaved = formatSaveTimestamp(state.project.lastFileSaveAt);
       if (projectFileHandle && fileName && fileSaved) {
-        els.projectSaveHint.textContent = `Current file: ${fileName} · Autosaved to file ${fileSaved}`;
+        els.projectSaveHint.textContent = `${fileName} saved ${fileSaved}`;
         return;
       }
       if (fileName && fileSaved) {
-        els.projectSaveHint.textContent = `Current file: ${fileName} · Last file save ${fileSaved}`;
+        els.projectSaveHint.textContent = `${fileName} saved ${fileSaved}`;
         return;
       }
       if (fileName && localSaved) {
-        els.projectSaveHint.textContent = `Opened file: ${fileName} · Autosaved in browser ${localSaved}`;
+        els.projectSaveHint.textContent = `${fileName} open. Recovery saved ${localSaved}`;
         return;
       }
       if (localSaved) {
-        els.projectSaveHint.textContent = `Autosaved in browser ${localSaved}. Use Save as to keep a project file on your machine.`;
+        els.projectSaveHint.textContent = `Recovery saved ${localSaved}. Use Save copy for a separate file.`;
         return;
       }
-      els.projectSaveHint.textContent = "Project files are saved as JSON on your machine.";
+      els.projectSaveHint.textContent = "Saved locally in this browser.";
     }
 
     function syncProjectFromInputs() {
@@ -665,7 +665,7 @@
     }
 
     function itemTypeLabel(type) {
-      return itemTypeConfig(type).label || "Object / prototype";
+      return itemTypeConfig(type).label || "Object";
     }
 
     function normalizeItem(item = {}) {

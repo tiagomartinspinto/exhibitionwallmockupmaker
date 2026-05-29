@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; frame-ancestors 'self'">
   <title>Exhibition Wall Mockup Maker by @tiagomartinspinto</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="css/styles.css?v=2026-05-29-2">
+  <link rel="stylesheet" href="css/styles.css?v=2026-05-29-3">
 </head>
 <body>
   <div class="app">
@@ -23,20 +23,23 @@
       </div>
 
       <section class="section">
-        <label>Project title
+        <h2>Project</h2>
+        <label>Title
           <input id="projectTitle" value="Untitled exhibition">
         </label>
         <div class="button-row compact-row project-actions">
           <button id="saveProject" class="secondary" type="button">Save</button>
-          <button id="saveProjectAs" class="secondary" type="button">Save as</button>
           <button id="openProject" class="secondary" type="button">Open</button>
-          <button id="clearLocalAutosave" class="secondary" type="button">Clear autosave</button>
         </div>
-        <p id="projectSaveHint" class="small status-note">Project files are saved as JSON on your machine.</p>
-        <details class="calm-details">
-          <summary>Privacy and file notes</summary>
-          <p class="small note">This app does not upload project data. Files stay in your browser/local JSON unless you manually export or share them.</p>
-          <p class="small warning-note">Exported .ewmm / JSON / PDF files may contain sensitive project information such as room layouts, object names, dimensions, images, and unpublished exhibition details. Share them carefully.</p>
+        <p id="projectSaveHint" class="small status-note">Saved locally in this browser.</p>
+        <details class="calm-details project-more">
+          <summary>Files</summary>
+          <div class="button-row compact-row">
+            <button id="saveProjectAs" class="secondary" type="button">Save copy</button>
+            <button id="clearLocalAutosave" class="secondary" type="button">Clear recovery</button>
+          </div>
+          <p class="small note">Work stays on this machine unless you choose to share a file or PDF.</p>
+          <p class="small warning-note">Shared files can include room plans, object names, dimensions, images, and unpublished exhibition details.</p>
         </details>
         <input id="projectFileInput" type="file" accept=".json,.ewmm" hidden>
       </section>
@@ -66,7 +69,7 @@
       </section>
 
       <section class="section" data-panel="space2d">
-        <h2>Room placeholder</h2>
+        <h2>Room item</h2>
         <label>Name
           <input id="roomElementName" value="Chair">
         </label>
@@ -74,9 +77,9 @@
           <label>Type
             <select id="roomElementType">
               <option value="chair">Chair</option>
-              <option value="projection">Projection screen</option>
+              <option value="projection">Projection</option>
               <option value="table">Table</option>
-              <option value="other">Other placeholder</option>
+              <option value="other">Other</option>
             </select>
           </label>
           <label>Shape
@@ -112,7 +115,7 @@
       </section>
 
       <section class="section" data-panel="space2d">
-        <h2>Room placeholders</h2>
+        <h2>Room items</h2>
         <div id="roomElementList" class="item-list"></div>
         <div class="button-row">
           <button id="clearRoomElements" class="danger" type="button">Clear</button>
@@ -122,13 +125,7 @@
       <section class="section" data-panel="elevation space2d">
         <h2>Wall</h2>
         <div id="wallTabs" class="button-row"></div>
-        <div class="wall-actions">
-          <button id="addWall" class="secondary icon-button" type="button" aria-label="Add wall" title="Add wall">Add</button>
-          <button id="duplicateWall" class="secondary icon-button" type="button" aria-label="Duplicate wall" title="Duplicate wall">Copy</button>
-          <button id="deleteWall" class="danger icon-button" type="button" aria-label="Delete wall" title="Delete wall">Delete</button>
-          <button id="resetWall" class="secondary icon-button" type="button" aria-label="Reset wall" title="Reset wall">Reset</button>
-        </div>
-        <label>Wall name
+        <label>Name
           <input id="wallName" value="Wall A">
         </label>
         <div class="grid-2">
@@ -147,15 +144,24 @@
             <input id="wallColor" type="color" value="#f5f4ea">
           </label>
         </div>
-        <label>Editing side
+        <label>Side
           <select id="wallSide">
             <option value="front">Front</option>
             <option value="back">Back</option>
           </select>
         </label>
         <details class="calm-details advanced-fields">
-          <summary>Placement in room</summary>
-          <p class="small">Used in Plan and Room views.</p>
+          <summary>Wall actions</summary>
+          <div class="wall-actions">
+            <button id="addWall" class="secondary icon-button" type="button" aria-label="Add wall" title="Add wall">Add</button>
+            <button id="duplicateWall" class="secondary icon-button" type="button" aria-label="Duplicate wall" title="Duplicate wall">Copy</button>
+            <button id="deleteWall" class="danger icon-button" type="button" aria-label="Delete wall" title="Delete wall">Delete</button>
+            <button id="resetWall" class="secondary icon-button" type="button" aria-label="Reset wall" title="Reset wall">Reset</button>
+          </div>
+        </details>
+        <details class="calm-details advanced-fields">
+          <summary>Room position</summary>
+          <p class="small">For the floor plan and room view.</p>
           <div class="grid-2">
             <label>Center X mm
               <input id="wallSpaceX" type="number" step="100" value="1000">
@@ -172,17 +178,17 @@
 
       <section class="section" data-panel="elevation">
         <h2>Object</h2>
-        <label>Object name
+        <label>Name
           <input id="itemName" value="Artwork">
         </label>
         <div class="grid-2">
           <label>Type
             <select id="itemType">
-              <option value="mdf">MDF cutout / sticker</option>
-              <option value="object">Object / prototype</option>
+              <option value="mdf">Cutout / sticker</option>
+              <option value="object">Object</option>
               <option value="graphic">Printed graphic</option>
               <option value="screen">Screen</option>
-              <option value="support">Supporting structure / shelf</option>
+              <option value="support">Shelf / support</option>
               <option value="text">Text</option>
             </select>
           </label>
@@ -193,23 +199,25 @@
             </select>
           </label>
         </div>
-        <div class="grid-2">
-          <label>Shape
-            <select id="itemShape">
-              <option value="rect">rectangular</option>
-              <option value="circle">circular</option>
-            </select>
-          </label>
-          <span aria-hidden="true"></span>
-        </div>
-        <label>Color
-          <input id="itemColor" type="color" value="#2f6f9f">
-        </label>
-        <label>Visible text
-          <textarea id="itemText" spellcheck="true" placeholder="Optional words shown on the object"></textarea>
-        </label>
         <details class="calm-details advanced-fields">
-          <summary>Media and install notes</summary>
+          <summary>Appearance</summary>
+          <div class="grid-2">
+            <label>Shape
+              <select id="itemShape">
+                <option value="rect">rectangular</option>
+                <option value="circle">circular</option>
+              </select>
+            </label>
+            <label>Color
+              <input id="itemColor" type="color" value="#2f6f9f">
+            </label>
+          </div>
+        </details>
+        <details class="calm-details advanced-fields">
+          <summary>Text &amp; install</summary>
+          <label>Text
+            <textarea id="itemText" spellcheck="true" placeholder="Optional words shown on the object"></textarea>
+          </label>
           <label>Notes
             <textarea id="itemNotes" spellcheck="true" placeholder="Production notes, materials, or reminders"></textarea>
           </label>
@@ -222,10 +230,10 @@
           </label>
         </details>
         <div class="grid-2">
-          <label>Left mm
+          <label>Left
             <input id="itemX" type="number" step="10" value="900">
           </label>
-          <label>Floor mm
+          <label>Floor
             <input id="itemY" type="number" step="10" value="900">
           </label>
         </div>
@@ -241,11 +249,11 @@
       </section>
 
       <section class="section" data-panel="elevation">
-        <h2>Objects on wall</h2>
+        <h2>Wall objects</h2>
         <div id="itemList" class="item-list"></div>
         <div class="button-row">
-          <button id="clearItems" class="danger">Clear side</button>
-          <button id="sample" class="secondary">Sample objects</button>
+          <button id="clearItems" class="danger">Clear</button>
+          <button id="sample" class="secondary">Demo layout</button>
         </div>
         <p id="overlapSummary" class="small"></p>
       </section>
@@ -261,13 +269,8 @@
         <div class="tabs" role="tablist" aria-label="View mode">
           <button class="tab active" data-view="elevation" title="2D measured wall">2D</button>
           <button class="tab" data-view="perspective" title="Wall 3D preview">3D</button>
-          <button class="tab" data-view="space2d" title="Space floor plan">Floor plan</button>
-          <button class="tab" data-view="space3d" title="Space 3D preview">3D Room</button>
-        </div>
-        <div class="export-controls" aria-label="PDF exports">
-          <button id="exportWallPdf" class="secondary" title="PDF from active wall 2D measured preview">Wall PDF</button>
-          <button id="printAllWallsPdf" class="secondary" title="PDF with every wall side that has objects">Print all walls</button>
-          <button id="exportRoomPdf" class="secondary" title="PDF from exhibition space top view">Room PDF</button>
+          <button class="tab" data-view="space2d" title="Floor plan">Floor plan</button>
+          <button class="tab" data-view="space3d" title="Room 3D preview">Room 3D</button>
         </div>
         <div class="toolbar-tools">
           <div class="view-controls primary-tools" aria-label="Editing controls">
@@ -287,26 +290,26 @@
             </button>
             <button id="undoAction" class="mini-button" type="button" title="Undo object change" aria-label="Undo object change">Undo</button>
             <button id="redoAction" class="mini-button" type="button" title="Redo object change" aria-label="Redo object change">Redo</button>
-            <button id="zoomOut" class="mini-button" type="button" title="Zoom out" aria-label="Zoom out">-</button>
-            <button id="zoomIn" class="mini-button" type="button" title="Zoom in" aria-label="Zoom in">+</button>
-            <button id="resetView" class="mini-button" type="button" title="Reset view" aria-label="Reset view">Reset</button>
-            <button id="rotateXDown" class="mini-button" type="button" title="Rotate X backward" aria-label="Rotate X backward" hidden>X-</button>
-            <button id="rotateXUp" class="mini-button" type="button" title="Rotate X forward" aria-label="Rotate X forward" hidden>X+</button>
-            <button id="rotateYLeft" class="mini-button" type="button" title="Rotate preview left" aria-label="Rotate preview left" hidden>Y-</button>
-            <button id="rotateYRight" class="mini-button" type="button" title="Rotate preview right" aria-label="Rotate preview right" hidden>Y+</button>
-            <button id="rotateZLeft" class="mini-button" type="button" title="Rotate Z left" aria-label="Rotate Z left" hidden>Z-</button>
-            <button id="rotateZRight" class="mini-button" type="button" title="Rotate Z right" aria-label="Rotate Z right" hidden>Z+</button>
           </div>
-          <details class="toolbar-disclosure guides-disclosure">
-            <summary>Guides</summary>
-            <div class="view-controls compact-controls" aria-label="Guide controls">
-              <button id="guideToggle" class="mini-button" type="button" title="Show or hide guides" aria-label="Show or hide guides">Show</button>
-              <button id="clearGuides" class="mini-button" type="button" title="Clear guides" aria-label="Clear guides">Clear</button>
+          <details class="toolbar-disclosure view-disclosure">
+            <summary>View</summary>
+            <div class="view-controls compact-controls" aria-label="View controls">
+              <button id="zoomOut" class="mini-button" type="button" title="Zoom out" aria-label="Zoom out">-</button>
+              <button id="zoomIn" class="mini-button" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+              <button id="resetView" class="mini-button" type="button" title="Reset view" aria-label="Reset view">Reset</button>
+              <button id="rotateXDown" class="mini-button" type="button" title="Rotate X backward" aria-label="Rotate X backward" hidden>X-</button>
+              <button id="rotateXUp" class="mini-button" type="button" title="Rotate X forward" aria-label="Rotate X forward" hidden>X+</button>
+              <button id="rotateYLeft" class="mini-button" type="button" title="Rotate preview left" aria-label="Rotate preview left" hidden>Y-</button>
+              <button id="rotateYRight" class="mini-button" type="button" title="Rotate preview right" aria-label="Rotate preview right" hidden>Y+</button>
+              <button id="rotateZLeft" class="mini-button" type="button" title="Rotate Z left" aria-label="Rotate Z left" hidden>Z-</button>
+              <button id="rotateZRight" class="mini-button" type="button" title="Rotate Z right" aria-label="Rotate Z right" hidden>Z+</button>
             </div>
           </details>
-          <details class="toolbar-disclosure arrange-disclosure">
-            <summary>Arrange</summary>
-            <div class="view-controls compact-controls" aria-label="Alignment controls">
+          <details class="toolbar-disclosure layout-disclosure">
+            <summary>Layout</summary>
+            <div class="view-controls compact-controls" aria-label="Guide and alignment controls">
+              <button id="guideToggle" class="mini-button" type="button" title="Show or hide guides" aria-label="Show or hide guides">Show</button>
+              <button id="clearGuides" class="mini-button" type="button" title="Clear guides" aria-label="Clear guides">Clear</button>
               <button id="alignLeft" class="mini-button" type="button" title="Align left" aria-label="Align left"><span class="align-icon align-left"></span></button>
               <button id="alignCenter" class="mini-button" type="button" title="Align center" aria-label="Align center"><span class="align-icon align-center"></span></button>
               <button id="alignRight" class="mini-button" type="button" title="Align right" aria-label="Align right"><span class="align-icon align-right"></span></button>
@@ -317,23 +320,20 @@
               <button id="distributeV" class="mini-button" type="button" title="Distribute vertically" aria-label="Distribute vertically"><span class="align-icon distribute-v"></span></button>
             </div>
           </details>
-          <details class="toolbar-disclosure export-note">
-            <summary>Export notes</summary>
-            <p class="toolbar-note">Exported .ewmm / JSON / PDF files may contain sensitive project information such as room layouts, object names, dimensions, images, and unpublished exhibition details. Share them carefully.</p>
+          <details class="toolbar-disclosure export-disclosure">
+            <summary>Export</summary>
+            <div class="export-actions" aria-label="Exports">
+              <button id="exportWallPdf" class="secondary" title="Export wall sheet PDF">Wall sheet</button>
+              <button id="printAllWallsPdf" class="secondary" title="Export all wall sheets PDF">All walls</button>
+              <button id="exportRoomPdf" class="secondary" title="Export room plan PDF">Room plan</button>
+              <button id="snapshotView" class="secondary" type="button" title="Export current view" aria-label="Export current view">Snapshot</button>
+            </div>
+            <p class="toolbar-note">Shared files may contain unpublished exhibition details.</p>
           </details>
         </div>
       </div>
       <div class="stage-wrap">
         <div class="stage">
-          <div class="stage-actions" aria-label="Preview actions">
-            <button id="snapshotView" class="stage-snapshot" type="button" title="Snapshot PDF" aria-label="Snapshot PDF">
-              <svg class="tool-icon tool-icon-stroke" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M6 9.2h2.1l1.15-1.7h5.5l1.15 1.7H18a2.2 2.2 0 0 1 2.2 2.2v5.4A2.2 2.2 0 0 1 18 19H6a2.2 2.2 0 0 1-2.2-2.2v-5.4A2.2 2.2 0 0 1 6 9.2z"></path>
-                <circle cx="12" cy="13.1" r="3.15"></circle>
-                <path d="M8.1 9.2l.75-1.1"></path>
-              </svg>
-            </button>
-          </div>
           <canvas id="canvas" width="1400" height="860"></canvas>
           <div class="status">
             <span id="scaleLabel"></span>
@@ -343,13 +343,13 @@
     </main>
   </div>
 
-  <script src="js/course-data.js?v=2026-05-29-2"></script>
-  <script src="js/core.js?v=2026-05-29-2"></script>
-  <script src="js/model.js?v=2026-05-29-2"></script>
-  <script src="js/rendering.js?v=2026-05-29-2"></script>
-  <script src="js/ui.js?v=2026-05-29-2"></script>
-  <script src="js/interactions.js?v=2026-05-29-2"></script>
-  <script src="js/export.js?v=2026-05-29-2"></script>
-  <script src="js/boot.js?v=2026-05-29-2"></script>
+  <script src="js/course-data.js?v=2026-05-29-3"></script>
+  <script src="js/core.js?v=2026-05-29-3"></script>
+  <script src="js/model.js?v=2026-05-29-3"></script>
+  <script src="js/rendering.js?v=2026-05-29-3"></script>
+  <script src="js/ui.js?v=2026-05-29-3"></script>
+  <script src="js/interactions.js?v=2026-05-29-3"></script>
+  <script src="js/export.js?v=2026-05-29-3"></script>
+  <script src="js/boot.js?v=2026-05-29-3"></script>
 </body>
 </html>
