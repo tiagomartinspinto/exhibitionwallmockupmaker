@@ -210,7 +210,7 @@ function createHarness() {
   });
 
   vm.runInContext(
-    "globalThis.__ewmm = { state, els, parseProjectFileText, applySerializedState, activeWallRecord, ensureWalls, setSelection, nudgeSelectedItems };",
+    "globalThis.__ewmm = { state, els, parseProjectFileText, applySerializedState, activeWallRecord, ensureWalls, setSelection, nudgeSelectedItems, projectSnapshot };",
     context
   );
 
@@ -278,6 +278,40 @@ function testMissingFieldsNormalizeSafely() {
   assert.equal(app.state.roomElements[0].height, 760);
 }
 
+function testProductionMetadataSurvivesProjectFiles() {
+  const app = createHarness();
+  app.applySerializedState({
+    data: {
+      project: {
+        title: "Metadata test",
+        venue: "Gallery 3",
+        dates: "June install",
+        preparedBy: "Production team",
+        revision: "Rev B",
+        notes: "Confirm lift access."
+      },
+      walls: [
+        {
+          name: "Wall A",
+          wall: { width: 5000, height: 3000 },
+          items: []
+        }
+      ]
+    }
+  }, { fileName: "metadata.ewmm" });
+
+  assert.equal(app.state.project.venue, "Gallery 3");
+  assert.equal(app.state.project.dates, "June install");
+  assert.equal(app.state.project.preparedBy, "Production team");
+  assert.equal(app.state.project.revision, "Rev B");
+  assert.equal(app.state.project.notes, "Confirm lift access.");
+
+  const snapshot = app.projectSnapshot();
+  assert.equal(snapshot.data.project.venue, "Gallery 3");
+  assert.equal(snapshot.data.project.revision, "Rev B");
+  assert.equal(snapshot.data.project.fileName, undefined);
+}
+
 function testKeyboardNudgeRefreshesEditorValues() {
   const app = createHarness();
   app.ensureWalls();
@@ -297,6 +331,7 @@ function testKeyboardNudgeRefreshesEditorValues() {
 testBrokenJsonShowsFriendlyError();
 testLegacyProjectStillOpens();
 testMissingFieldsNormalizeSafely();
+testProductionMetadataSurvivesProjectFiles();
 testKeyboardNudgeRefreshesEditorValues();
 
 console.log("Import validation tests passed.");

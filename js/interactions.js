@@ -643,7 +643,7 @@
 
     function serializedState() {
       return {
-        version: 5,
+        version: 6,
         view: state.view,
         tool: state.tool === "hand" ? "hand" : "select",
         activeSide: activeWallSide(),
@@ -664,6 +664,11 @@
         },
         project: {
           title: state.project.title || "Untitled exhibition",
+          venue: state.project.venue || "",
+          dates: state.project.dates || "",
+          preparedBy: state.project.preparedBy || "",
+          revision: state.project.revision || "",
+          notes: state.project.notes || "",
           fileName: state.project.fileName || "",
           lastLocalSaveAt: state.project.lastLocalSaveAt || "",
           lastFileSaveAt: state.project.lastFileSaveAt || ""
@@ -685,7 +690,12 @@
     function projectSnapshot() {
       const data = serializedState();
       data.project = {
-        title: data.project.title || "Untitled exhibition"
+        title: data.project.title || "Untitled exhibition",
+        venue: data.project.venue || "",
+        dates: data.project.dates || "",
+        preparedBy: data.project.preparedBy || "",
+        revision: data.project.revision || "",
+        notes: data.project.notes || ""
       };
       return {
         app: "Exhibition Wall Mockup Maker",

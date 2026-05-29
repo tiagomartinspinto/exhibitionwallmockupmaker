@@ -13,6 +13,7 @@ Live site:
 - GitHub Pages deployment is in place.
 - Local recovery and explicit project save/open are in place.
 - Measured wall and room PDF export are in place.
+- Production metadata, object label PDFs, and combined installation package PDFs are in place.
 - 2D wall guides and rulers are in place.
 - 3D wall and room previews are in place.
 - Privacy/data-safety notes are present in the app and README.
@@ -24,6 +25,11 @@ Live site:
 
 ## Latest polish delivered
 
+- Museum-production workflow pass for installation sheets, project metadata, print-ready labels, package exports, production notes, scale confidence, and technician usability
+- Project files now preserve venue, install dates, prepared-by, revision, and project-wide production notes
+- Export menu now includes object label sheets and a combined installation package with cover sheet, room plan, wall sheets, and labels
+- Installation PDFs now carry production metadata, revision/prepared details, and scale-confidence footer guidance for technicians
+- Package cover sheets summarize contents, production flags, site checks, and project notes
 - Final product-design refinement pass focused on clarity, restraint, first-use calm, and canvas dominance
 - Primary flow now reads more clearly as Project, Wall, Object, Export, with rare file, wall, view, layout, and export actions behind disclosures
 - App wording now uses room items, cutouts, shelves/supports, wall sheets, recovery, and install notes instead of placeholder/admin terminology
@@ -46,6 +52,9 @@ Live site:
 
 ## Latest verification
 
+- Import/normalization tests now cover production metadata round-tripping through project snapshots
+- Local browser QA verified production metadata controls, label/package export buttons, cache-busted assets, and no old admin-style labels visible
+- Local browser QA verified 390px mobile production layout without horizontal overflow
 - Local browser QA verified 1000px wide layout with two-column app, no horizontal overflow, disclosure-based export/layout controls, and no old placeholder/admin labels visible
 - Local browser QA verified 390px mobile layout with no horizontal overflow and preserved toolbar disclosure hierarchy
 - Local browser QA verified Export and Layout disclosures reveal the expected controls, and Room 3D hides 2D layout tools while showing rotate controls

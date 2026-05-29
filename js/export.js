@@ -8,6 +8,139 @@
       URL.revokeObjectURL(url);
     }
 
+    function cleanProjectText(value) {
+      return String(value || "").trim();
+    }
+
+    function projectTitle() {
+      return cleanProjectText(state.project.title) || "Untitled exhibition";
+    }
+
+    function generatedTimestamp() {
+      return new Intl.DateTimeFormat(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date());
+    }
+
+    function projectRevisionLabel() {
+      const revision = cleanProjectText(state.project.revision);
+      return revision ? `Revision ${revision}` : "Revision draft";
+    }
+
+    function projectVenueDatesLine() {
+      return [state.project.venue, state.project.dates].map(cleanProjectText).filter(Boolean).join(" / ");
+    }
+
+    function projectPreparedLine() {
+      return [
+        cleanProjectText(state.project.preparedBy) ? `Prepared by ${cleanProjectText(state.project.preparedBy)}` : "",
+        `Prepared ${generatedTimestamp()}`
+      ].filter(Boolean).join(" / ");
+    }
+
+    function drawWrappedText(text, x, y, maxWidth, options = {}) {
+      const size = options.size || 18;
+      const weight = options.weight || 600;
+      const lineHeight = options.lineHeight || Math.ceil(size * 1.45);
+      const paragraphs = String(text || "").split(/\n+/).map(part => part.trim()).filter(Boolean);
+      if (!paragraphs.length) return y;
+      let cursorY = y;
+      paragraphs.forEach((paragraph, paragraphIndex) => {
+        let line = "";
+        paragraph.split(/\s+/).forEach(word => {
+          const next = line ? `${line} ${word}` : word;
+          if (line && textWidth(next, size, weight, options) > maxWidth) {
+            drawText(line, x, cursorY, { ...options, size, weight, align: "left", baseline: "middle", maxWidth });
+            cursorY += lineHeight;
+            line = word;
+          } else {
+            line = next;
+          }
+        });
+        if (line) {
+          drawText(line, x, cursorY, { ...options, size, weight, align: "left", baseline: "middle", maxWidth });
+          cursorY += lineHeight;
+        }
+        if (paragraphIndex < paragraphs.length - 1) cursorY += Math.ceil(lineHeight * 0.45);
+      });
+      return cursorY;
+    }
+
+    function drawA3Footer(a3, contextLabel = "") {
+      const y = a3.height - 92;
+      drawLine(a3.margin, y - 38, a3.width - a3.margin, y - 38, "#d8d2c6");
+      drawText("Scale confidence: dimensions are in millimeters. Use written dimensions and site datums before drilling; printer scaling can vary.", a3.margin, y, {
+        align: "left",
+        baseline: "middle",
+        color: "#5d5a52",
+        size: 17,
+        weight: 600,
+        halo: null,
+        maxWidth: a3.width - a3.margin * 2 - 900,
+        noExportBoost: true
+      });
+      drawText([contextLabel, projectRevisionLabel()].filter(Boolean).join(" / "), a3.width - a3.margin, y, {
+        align: "right",
+        baseline: "middle",
+        color: "#7c766d",
+        size: 16,
+        weight: 600,
+        halo: null,
+        maxWidth: 840,
+        noExportBoost: true
+      });
+    }
+
+    function allWallItemContexts() {
+      return (state.walls || []).flatMap(wallRecord => {
+        const wallItems = (wallRecord.items || []).map(normalizeItem);
+        return wallItems.map(item => ({
+          wallRecord,
+          wallItems,
+          item,
+          code: itemCodeForWallItems(item, wallItems)
+        }));
+      });
+    }
+
+    function itemCodeForWallItems(item, wallItems) {
+      const normalized = normalizeItem(item);
+      const prefixes = { graphic: "PG", mdf: "MS", object: "OP", screen: "SC", support: "SS", text: "TX" };
+      const sameType = wallItems.filter(candidate => normalizeItem(candidate).type === normalized.type);
+      const index = sameType.findIndex(candidate => candidate.id === normalized.id) + 1;
+      return `${prefixes[normalized.type] || "O"}${String(Math.max(1, index)).padStart(2, "0")}`;
+    }
+
+    function countWallOverlaps(wallRecord) {
+      const itemsBySide = ["front", "back"].map(side => (wallRecord.items || []).map(normalizeItem).filter(item => itemSide(item) === side));
+      return itemsBySide.reduce((sum, items) => {
+        let count = 0;
+        for (let a = 0; a < items.length; a += 1) {
+          for (let b = a + 1; b < items.length; b += 1) {
+            const one = items[a];
+            const two = items[b];
+            const overlap = one.x < two.x + two.width && one.x + one.width > two.x && one.y < two.y + two.height && one.y + one.height > two.y;
+            if (overlap) count += 1;
+          }
+        }
+        return sum + count;
+      }, 0);
+    }
+
+    function countOutOfBoundsItems(wallRecord) {
+      const wall = wallRecord.wall || {};
+      return (wallRecord.items || []).map(normalizeItem).filter(item => (
+        item.x < 0 ||
+        item.y < 0 ||
+        item.x + item.width > number(wall.width, 0) ||
+        item.y + item.height > number(wall.height, 0)
+      )).length;
+    }
+
     function drawSchedule(x, y, width) {
       const rowH = 46;
       const items = itemsForSide(activeWallSide()).map(normalizeItem);
@@ -252,18 +385,14 @@
         space2d: "Room plan"
       };
       const title = titles[exportView] || "Preview";
-      const projectTitle = state.project.title || "Untitled exhibition";
-      const generatedAt = new Intl.DateTimeFormat(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      }).format(new Date());
-      drawText(projectTitle, a3.margin, 78, { align: "left", baseline: "middle", color: "#1d1c19", size: 40, weight: 800, halo: null, maxWidth: 2600, noExportBoost: true });
+      const venueDates = projectVenueDatesLine();
+      drawText(projectTitle(), a3.margin, 78, { align: "left", baseline: "middle", color: "#1d1c19", size: 40, weight: 800, halo: null, maxWidth: 2600, noExportBoost: true });
       drawText(title, a3.margin, 136, { align: "left", baseline: "middle", color: "#1d1c19", size: 30, weight: 700, halo: null, noExportBoost: true });
-      drawText("A3 reference", a3.width - a3.margin, 78, { align: "right", baseline: "middle", color: "#5d5a52", size: 19, weight: 700, halo: null, noExportBoost: true });
-      drawText(`Prepared ${generatedAt}`, a3.width - a3.margin, 118, { align: "right", baseline: "middle", color: "#7c766d", size: 17, weight: 600, halo: null, noExportBoost: true });
+      if (venueDates) {
+        drawText(venueDates, a3.margin, 176, { align: "left", baseline: "middle", color: "#5d5a52", size: 19, weight: 600, halo: null, maxWidth: 2600, noExportBoost: true });
+      }
+      drawText(projectRevisionLabel(), a3.width - a3.margin, 78, { align: "right", baseline: "middle", color: "#5d5a52", size: 19, weight: 700, halo: null, noExportBoost: true });
+      drawText(projectPreparedLine(), a3.width - a3.margin, 118, { align: "right", baseline: "middle", color: "#7c766d", size: 17, weight: 600, halo: null, maxWidth: 1250, noExportBoost: true });
       drawText("by @tiagomartinspinto", a3.width - a3.margin, 156, { align: "right", baseline: "middle", color: "#7c766d", size: 17, weight: 600, halo: null, noExportBoost: true });
       const exportMeta = exportView === "space2d"
         ? `Room ${state.space.width} x ${state.space.depth} mm / ${state.walls.length} walls / ${(state.roomElements || []).length} room items`
@@ -314,6 +443,7 @@
       } else {
         drawSchedule(drawingX, drawingY + drawingH + 110, drawingW);
       }
+      drawA3Footer(a3, title);
 
       state.view = previousView;
       state.view2d.zoom = previousZoom2d;
@@ -436,6 +566,20 @@
       return sidesWithObjects.length ? sidesWithObjects : ["front"];
     }
 
+    function captureWallExportState() {
+      return {
+        view: state.view,
+        activeWallId: state.activeWallId,
+        activeSide: activeWallSide(),
+        selectedId: state.selectedId,
+        selectedIds: [...selectedIds()],
+        selectedSpaceIds: [...selectedSpaceIds()],
+        selectedRoomElementId: state.selectedRoomElementId,
+        view2d: { ...state.view2d },
+        view3d: { ...state.view3d }
+      };
+    }
+
     function restoreWallExportState(previous) {
       state.view = previous.view;
       state.activeWallId = previous.activeWallId;
@@ -455,17 +599,7 @@
 
     function exportAllWallsPdf() {
       syncActiveWallRecord();
-      const previous = {
-        view: state.view,
-        activeWallId: state.activeWallId,
-        activeSide: activeWallSide(),
-        selectedId: state.selectedId,
-        selectedIds: [...selectedIds()],
-        selectedSpaceIds: [...selectedSpaceIds()],
-        selectedRoomElementId: state.selectedRoomElementId,
-        view2d: { ...state.view2d },
-        view3d: { ...state.view3d }
-      };
+      const previous = captureWallExportState();
       const jobs = (state.walls || []).flatMap(wall => printableWallSides(wall).map(side => ({ wall, side })));
       const canvases = [];
       try {
@@ -482,6 +616,208 @@
       }
       if (!canvases.length) return;
       download(`${slug(state.project.title)}-all-walls.pdf`, makePdfFromCanvases(canvases), "application/pdf");
+    }
+
+    function createBlankA3Canvas() {
+      const a3 = {
+        width: 4961,
+        height: 3508,
+        margin: 220,
+        header: 250
+      };
+      const previousCanvas = activeCanvas;
+      const previousCtx = activeCtx;
+      const exportCanvas = document.createElement("canvas");
+      exportCanvas.width = a3.width;
+      exportCanvas.height = a3.height;
+      activeCanvas = exportCanvas;
+      activeCtx = exportCanvas.getContext("2d");
+      activeCtx.setTransform(1, 0, 0, 1, 0, 0);
+      activeCtx.fillStyle = "#ffffff";
+      activeCtx.fillRect(0, 0, a3.width, a3.height);
+      return { a3, exportCanvas, previousCanvas, previousCtx };
+    }
+
+    function restoreCanvasContext(previousCanvas, previousCtx) {
+      activeCanvas = previousCanvas;
+      activeCtx = previousCtx;
+    }
+
+    function createPackageCoverCanvas() {
+      const { a3, exportCanvas, previousCanvas, previousCtx } = createBlankA3Canvas();
+      const contentW = a3.width - a3.margin * 2;
+      const leftX = a3.margin;
+      const rightX = a3.margin + Math.floor(contentW * 0.54);
+      const colW = Math.floor(contentW * 0.42);
+      const projectRows = [
+        ["Venue", cleanProjectText(state.project.venue) || "Not set"],
+        ["Dates", cleanProjectText(state.project.dates) || "Not set"],
+        ["Prepared by", cleanProjectText(state.project.preparedBy) || "Not set"],
+        ["Revision", cleanProjectText(state.project.revision) || "Draft"]
+      ];
+      const itemContexts = allWallItemContexts();
+      const wallCount = (state.walls || []).length;
+      const objectCount = itemContexts.length;
+      const roomItemCount = (state.roomElements || []).length;
+      const wallSides = (state.walls || []).reduce((sum, wall) => sum + printableWallSides(wall).length, 0);
+      const overlapCount = (state.walls || []).reduce((sum, wall) => sum + countWallOverlaps(wall), 0);
+      const outOfBoundsCount = (state.walls || []).reduce((sum, wall) => sum + countOutOfBoundsItems(wall), 0);
+      const powerMedia = itemContexts.filter(context => context.item.type === "screen" || context.item.illuminated).length;
+      const hanging = itemContexts.filter(context => context.item.hanging).length;
+      const noted = itemContexts.filter(context => cleanProjectText(context.item.notes)).length;
+
+      drawText(projectTitle(), leftX, 86, { align: "left", baseline: "middle", color: "#1d1c19", size: 44, weight: 800, halo: null, maxWidth: 2700, noExportBoost: true });
+      drawText("Installation package", leftX, 154, { align: "left", baseline: "middle", color: "#1d1c19", size: 31, weight: 700, halo: null, noExportBoost: true });
+      drawText(projectRevisionLabel(), a3.width - a3.margin, 86, { align: "right", baseline: "middle", color: "#5d5a52", size: 19, weight: 700, halo: null, noExportBoost: true });
+      drawText(projectPreparedLine(), a3.width - a3.margin, 126, { align: "right", baseline: "middle", color: "#7c766d", size: 17, weight: 600, halo: null, maxWidth: 1250, noExportBoost: true });
+      drawLine(a3.margin, 230, a3.width - a3.margin, 230, "#d8d2c6");
+
+      let y = 330;
+      drawText("Project metadata", leftX, y, { align: "left", color: "#1d1c19", size: 26, weight: 800, halo: null, noExportBoost: true });
+      y += 56;
+      projectRows.forEach(([label, value]) => {
+        drawText(label, leftX, y, { align: "left", color: "#7c766d", size: 17, weight: 700, halo: null, noExportBoost: true });
+        drawText(value, leftX + 360, y, { align: "left", color: "#2c2a25", size: 19, weight: 700, halo: null, maxWidth: colW - 360, noExportBoost: true });
+        y += 46;
+      });
+      y += 54;
+      drawText("Package contents", leftX, y, { align: "left", color: "#1d1c19", size: 26, weight: 800, halo: null, noExportBoost: true });
+      y += 54;
+      [
+        `Cover sheet / ${wallCount} wall${wallCount === 1 ? "" : "s"} / ${objectCount} wall object${objectCount === 1 ? "" : "s"}`,
+        `Room plan / ${roomItemCount} room item${roomItemCount === 1 ? "" : "s"}`,
+        `${wallSides} wall installation sheet${wallSides === 1 ? "" : "s"}`,
+        `Object label sheets for print and wall staging`
+      ].forEach(line => {
+        drawText(line, leftX, y, { align: "left", color: "#2c2a25", size: 19, weight: 650, halo: null, maxWidth: colW, noExportBoost: true });
+        y += 42;
+      });
+
+      let rightY = 330;
+      drawText("Technician checks", rightX, rightY, { align: "left", color: "#1d1c19", size: 26, weight: 800, halo: null, noExportBoost: true });
+      rightY += 56;
+      [
+        "Confirm wall dimensions and floor datum on site.",
+        "Use written millimeter dimensions over print scaling.",
+        "Match object IDs to wall sheets before fixing.",
+        "Confirm power, media, load, and hanging requirements.",
+        "Record revision/date on any marked-up print."
+      ].forEach(line => {
+        drawText(line, rightX, rightY, { align: "left", color: "#2c2a25", size: 19, weight: 650, halo: null, maxWidth: colW, noExportBoost: true });
+        rightY += 42;
+      });
+      rightY += 56;
+      drawText("Production flags", rightX, rightY, { align: "left", color: "#1d1c19", size: 26, weight: 800, halo: null, noExportBoost: true });
+      rightY += 54;
+      [
+        `${hanging} hanging item${hanging === 1 ? "" : "s"}`,
+        `${powerMedia} screen, media, or illuminated item${powerMedia === 1 ? "" : "s"}`,
+        `${noted} item${noted === 1 ? "" : "s"} with install notes`,
+        overlapCount ? `${overlapCount} object overlap${overlapCount === 1 ? "" : "s"} to review` : "No object overlaps detected",
+        outOfBoundsCount ? `${outOfBoundsCount} item${outOfBoundsCount === 1 ? "" : "s"} outside wall bounds` : "No objects outside wall bounds"
+      ].forEach(line => {
+        drawText(line, rightX, rightY, { align: "left", color: "#2c2a25", size: 19, weight: 650, halo: null, maxWidth: colW, noExportBoost: true });
+        rightY += 42;
+      });
+
+      const notes = cleanProjectText(state.project.notes);
+      const notesY = Math.max(y + 90, rightY + 120);
+      drawText("Production notes", leftX, notesY, { align: "left", color: "#1d1c19", size: 26, weight: 800, halo: null, noExportBoost: true });
+      drawWrappedText(notes || "No project-wide production notes entered.", leftX, notesY + 58, contentW, {
+        color: "#2c2a25",
+        size: 19,
+        weight: 600,
+        lineHeight: 34,
+        halo: null,
+        noExportBoost: true
+      });
+      drawA3Footer(a3, "Installation package");
+      restoreCanvasContext(previousCanvas, previousCtx);
+      return exportCanvas;
+    }
+
+    function drawObjectLabelCard(context, x, y, width, height) {
+      const item = context.item;
+      activeCtx.fillStyle = "#fffdf8";
+      activeCtx.fillRect(x, y, width, height);
+      activeCtx.strokeStyle = "#d8d2c6";
+      activeCtx.lineWidth = 2;
+      activeCtx.strokeRect(x, y, width, height);
+      drawText(context.code, x + 28, y + 46, { align: "left", color: "#1d1c19", size: 28, weight: 850, halo: null, noExportBoost: true });
+      drawText(item.name, x + 28, y + 94, { align: "left", color: "#1d1c19", size: 24, weight: 800, halo: null, maxWidth: width - 56, noExportBoost: true });
+      drawText(`${context.wallRecord.name} / ${itemSideLabel(item)} face`, x + 28, y + 142, { align: "left", color: "#5d5a52", size: 17, weight: 700, halo: null, maxWidth: width - 56, noExportBoost: true });
+      drawText(`${itemTypePrintLabel(item.type)} / ${itemSizeLabel(item)}`, x + 28, y + 184, { align: "left", color: "#2c2a25", size: 17, weight: 650, halo: null, maxWidth: width - 56, noExportBoost: true });
+      drawText(itemPositionLabel(item), x + 28, y + 226, { align: "left", color: "#2c2a25", size: 16, weight: 650, halo: null, maxWidth: width - 56, noExportBoost: true });
+      const notes = [item.hanging ? "Hanging from top" : "", item.illuminated ? "Power/illumination" : "", exportNotesLabel(item)].filter(Boolean).join(" / ");
+      if (notes) {
+        drawText(notes, x + 28, y + height - 42, { align: "left", color: "#5d5a52", size: 15, weight: 650, halo: null, maxWidth: width - 56, noExportBoost: true });
+      }
+    }
+
+    function createLabelSheetCanvases() {
+      const contexts = allWallItemContexts();
+      const perPage = 12;
+      const pages = Math.max(1, Math.ceil(contexts.length / perPage));
+      const canvases = [];
+      for (let pageIndex = 0; pageIndex < pages; pageIndex += 1) {
+        const { a3, exportCanvas, previousCanvas, previousCtx } = createBlankA3Canvas();
+        const contentW = a3.width - a3.margin * 2;
+        const headerY = 88;
+        drawText(projectTitle(), a3.margin, headerY, { align: "left", color: "#1d1c19", size: 36, weight: 800, halo: null, maxWidth: 2600, noExportBoost: true });
+        drawText(`Object labels / page ${pageIndex + 1} of ${pages}`, a3.margin, 148, { align: "left", color: "#1d1c19", size: 27, weight: 700, halo: null, noExportBoost: true });
+        drawText(projectRevisionLabel(), a3.width - a3.margin, headerY, { align: "right", color: "#5d5a52", size: 18, weight: 700, halo: null, noExportBoost: true });
+        drawText("Cut labels only after matching IDs to wall sheets.", a3.width - a3.margin, 148, { align: "right", color: "#7c766d", size: 16, weight: 600, halo: null, maxWidth: 1500, noExportBoost: true });
+        drawLine(a3.margin, 218, a3.width - a3.margin, 218, "#d8d2c6");
+        const cols = 3;
+        const rows = 4;
+        const gap = 34;
+        const cardW = Math.floor((contentW - gap * (cols - 1)) / cols);
+        const cardH = Math.floor((a3.height - 520 - gap * (rows - 1)) / rows);
+        const startY = 300;
+        const pageContexts = contexts.slice(pageIndex * perPage, pageIndex * perPage + perPage);
+        if (!pageContexts.length) {
+          drawText("No wall objects to label yet.", a3.margin, startY + 80, { align: "left", color: "#5d5a52", size: 24, weight: 700, halo: null, noExportBoost: true });
+        }
+        pageContexts.forEach((context, index) => {
+          const col = index % cols;
+          const row = Math.floor(index / cols);
+          const x = a3.margin + col * (cardW + gap);
+          const y = startY + row * (cardH + gap);
+          drawObjectLabelCard(context, x, y, cardW, cardH);
+        });
+        drawA3Footer(a3, "Object labels");
+        restoreCanvasContext(previousCanvas, previousCtx);
+        canvases.push(exportCanvas);
+      }
+      return canvases;
+    }
+
+    function exportLabelsPdf() {
+      syncActiveWallRecord();
+      const canvases = createLabelSheetCanvases();
+      download(`${slug(state.project.title)}-object-labels.pdf`, makePdfFromCanvases(canvases), "application/pdf");
+    }
+
+    function exportInstallationPackagePdf() {
+      syncActiveWallRecord();
+      const previous = captureWallExportState();
+      const canvases = [createPackageCoverCanvas()];
+      const jobs = (state.walls || []).flatMap(wall => printableWallSides(wall).map(side => ({ wall, side })));
+      try {
+        canvases.push(createA3Canvas("space2d"));
+        jobs.forEach(({ wall, side }) => {
+          state.activeWallId = wall.id;
+          loadActiveWall();
+          state.activeSide = normalizeWallSide(side);
+          if (els.wallSide) els.wallSide.value = state.activeSide;
+          syncInputsFromWall();
+          canvases.push(createA3Canvas("elevation"));
+        });
+        canvases.push(...createLabelSheetCanvases());
+      } finally {
+        restoreWallExportState(previous);
+      }
+      download(`${slug(state.project.title)}-installation-package.pdf`, makePdfFromCanvases(canvases), "application/pdf");
     }
 
     function createSnapshotPdfCanvas() {
@@ -506,20 +842,12 @@
       const meta = state.view === "space3d" || state.view === "space2d"
         ? `${state.walls.length} wall${state.walls.length === 1 ? "" : "s"}`
         : activeWallRecord().name;
-      const projectTitle = state.project.title || "Untitled exhibition";
-      const generatedAt = new Intl.DateTimeFormat(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      }).format(new Date());
 
-      drawText(projectTitle, page.margin, 78, { align: "left", baseline: "middle", color: "#1d1c19", size: 36, weight: 800, halo: null, maxWidth: 1900, noExportBoost: true });
+      drawText(projectTitle(), page.margin, 78, { align: "left", baseline: "middle", color: "#1d1c19", size: 36, weight: 800, halo: null, maxWidth: 1900, noExportBoost: true });
       drawText(title, page.margin, 130, { align: "left", baseline: "middle", color: "#1d1c19", size: 27, weight: 700, halo: null, noExportBoost: true });
       drawText(meta, page.margin, 174, { align: "left", baseline: "middle", color: "#5d5a52", size: 18, weight: 600, halo: null, noExportBoost: true });
-      drawText(`Prepared ${generatedAt}`, page.width - page.margin, 84, { align: "right", baseline: "middle", color: "#7c766d", size: 17, weight: 600, halo: null, noExportBoost: true });
-      drawText("by @tiagomartinspinto", page.width - page.margin, 126, { align: "right", baseline: "middle", color: "#7c766d", size: 17, weight: 600, halo: null, noExportBoost: true });
+      drawText(projectRevisionLabel(), page.width - page.margin, 84, { align: "right", baseline: "middle", color: "#7c766d", size: 17, weight: 650, halo: null, noExportBoost: true });
+      drawText(projectPreparedLine(), page.width - page.margin, 126, { align: "right", baseline: "middle", color: "#7c766d", size: 17, weight: 600, halo: null, maxWidth: 1240, noExportBoost: true });
       drawLine(page.margin, 198, page.width - page.margin, 198, "#d8d2c6");
 
       const frameX = page.margin;

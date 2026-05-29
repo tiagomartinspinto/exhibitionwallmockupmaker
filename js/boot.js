@@ -57,7 +57,7 @@
       resetWallSpecs();
     });
 
-    document.querySelectorAll("#projectTitle").forEach(input => {
+    document.querySelectorAll("#projectTitle,#projectVenue,#projectDates,#projectPreparedBy,#projectRevision,#projectNotes").forEach(input => {
       input.addEventListener("input", syncProjectFromInputs);
     });
 
@@ -366,6 +366,8 @@
     on(exportRoomPdfButton, "click", () => {
       exportA3Pdf("space2d");
     });
+    on(els.exportLabelsPdf, "click", exportLabelsPdf);
+    on(els.exportPackagePdf, "click", exportInstallationPackagePdf);
     on(els.snapshotView, "click", exportSnapshotPdf);
 
     on(els.themeToggle, "click", toggleTheme);

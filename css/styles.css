@@ -138,6 +138,10 @@
       line-height: 1.45;
     }
 
+    .project-notes {
+      min-height: 86px;
+    }
+
     input[type="checkbox"] {
       width: auto;
       min-height: auto;

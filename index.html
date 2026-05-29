@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; frame-ancestors 'self'">
   <title>Exhibition Wall Mockup Maker by @tiagomartinspinto</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="css/styles.css?v=2026-05-29-3">
+  <link rel="stylesheet" href="css/styles.css?v=2026-05-29-4">
 </head>
 <body>
   <div class="app">
@@ -32,6 +32,28 @@
           <button id="openProject" class="secondary" type="button">Open</button>
         </div>
         <p id="projectSaveHint" class="small status-note">Saved locally in this browser.</p>
+        <details class="calm-details project-production">
+          <summary>Production details</summary>
+          <div class="grid-2">
+            <label>Venue
+              <input id="projectVenue" placeholder="Museum or gallery">
+            </label>
+            <label>Install dates
+              <input id="projectDates" placeholder="Install / opening / strike">
+            </label>
+          </div>
+          <div class="grid-2">
+            <label>Prepared by
+              <input id="projectPreparedBy" placeholder="Name or team">
+            </label>
+            <label>Revision
+              <input id="projectRevision" placeholder="Draft, Rev A, final">
+            </label>
+          </div>
+          <label>Production notes
+            <textarea id="projectNotes" class="project-notes" spellcheck="true" placeholder="Access, datums, power, handling, approvals, or on-site constraints"></textarea>
+          </label>
+        </details>
         <details class="calm-details project-more">
           <summary>Files</summary>
           <div class="button-row compact-row">
@@ -326,6 +348,8 @@
               <button id="exportWallPdf" class="secondary" title="Export wall sheet PDF">Wall sheet</button>
               <button id="printAllWallsPdf" class="secondary" title="Export all wall sheets PDF">All walls</button>
               <button id="exportRoomPdf" class="secondary" title="Export room plan PDF">Room plan</button>
+              <button id="exportLabelsPdf" class="secondary" title="Export object labels PDF">Labels</button>
+              <button id="exportPackagePdf" class="secondary" title="Export full installation package PDF">Package</button>
               <button id="snapshotView" class="secondary" type="button" title="Export current view" aria-label="Export current view">Snapshot</button>
             </div>
             <p class="toolbar-note">Shared files may contain unpublished exhibition details.</p>
@@ -343,13 +367,13 @@
     </main>
   </div>
 
-  <script src="js/course-data.js?v=2026-05-29-3"></script>
-  <script src="js/core.js?v=2026-05-29-3"></script>
-  <script src="js/model.js?v=2026-05-29-3"></script>
-  <script src="js/rendering.js?v=2026-05-29-3"></script>
-  <script src="js/ui.js?v=2026-05-29-3"></script>
-  <script src="js/interactions.js?v=2026-05-29-3"></script>
-  <script src="js/export.js?v=2026-05-29-3"></script>
-  <script src="js/boot.js?v=2026-05-29-3"></script>
+  <script src="js/course-data.js?v=2026-05-29-4"></script>
+  <script src="js/core.js?v=2026-05-29-4"></script>
+  <script src="js/model.js?v=2026-05-29-4"></script>
+  <script src="js/rendering.js?v=2026-05-29-4"></script>
+  <script src="js/ui.js?v=2026-05-29-4"></script>
+  <script src="js/interactions.js?v=2026-05-29-4"></script>
+  <script src="js/export.js?v=2026-05-29-4"></script>
+  <script src="js/boot.js?v=2026-05-29-4"></script>
 </body>
 </html>

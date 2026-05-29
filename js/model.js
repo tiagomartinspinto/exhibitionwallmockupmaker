@@ -441,6 +441,11 @@
 
     function syncProjectFromInputs() {
       state.project.title = els.projectTitle.value || "Untitled exhibition";
+      state.project.venue = els.projectVenue.value || "";
+      state.project.dates = els.projectDates.value || "";
+      state.project.preparedBy = els.projectPreparedBy.value || "";
+      state.project.revision = els.projectRevision.value || "";
+      state.project.notes = els.projectNotes.value || "";
       updateProjectHeader();
       updateProjectSaveHint();
       save();
@@ -449,6 +454,11 @@
 
     function syncInputsFromProject() {
       els.projectTitle.value = state.project.title || "";
+      els.projectVenue.value = state.project.venue || "";
+      els.projectDates.value = state.project.dates || "";
+      els.projectPreparedBy.value = state.project.preparedBy || "";
+      els.projectRevision.value = state.project.revision || "";
+      els.projectNotes.value = state.project.notes || "";
       updateProjectHeader();
       updateProjectSaveHint();
     }

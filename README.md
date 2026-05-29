@@ -19,7 +19,7 @@ It brings together:
 - drag-and-drop editing
 - image placement on wall objects
 - local project save and reopen
-- PDF export for technical and presentation use
+- PDF export for installation sheets, labels, package documents, and presentation use
 
 ## What you can do
 
@@ -35,6 +35,8 @@ It brings together:
 - save a project file locally on your machine and reopen it later
 - keep a local recovery copy while working
 - export measured PDFs for the active wall and room plan
+- add production metadata such as venue, install dates, preparer, revision, and project-wide notes
+- export all wall sheets, object labels, and a combined installation package
 - export cleaner snapshot PDFs from the current preview
 
 ## Who it is for
@@ -77,9 +79,21 @@ The app supports explicit project files in addition to a local recovery copy.
 
 Project files are stored as JSON on the user's machine.
 
+Production metadata is saved inside project files and exported into PDFs. This includes venue, install dates, prepared-by, revision, and project-wide production notes.
+
 On Chromium-based browsers, the app can use the browser's native file picker for a smoother save/open flow. On browsers without that support, it falls back to download/upload behavior.
 
 Very large images can make project files heavy because embedded images are saved inside the project JSON. The app warns before embedding very large uploads and before opening or saving unusually large project files. Resizing or compressing images before embedding them usually keeps saves and exports easier to share.
+
+## Production exports
+
+- `Wall sheet` exports the active wall and side with dimensions, object IDs, and install notes.
+- `All walls` exports each printable wall side as a measured installation sheet.
+- `Room plan` exports the floor plan with wall and room-item schedules.
+- `Labels` exports print-ready object labels keyed to the wall sheets.
+- `Package` exports a combined installation package with a cover sheet, room plan, wall sheets, and object labels.
+
+PDFs include millimeter dimensions and scale-confidence notes. Technicians should use the written dimensions and site datums for installation, not printer or screen scaling alone.
 
 ## Privacy and data safety
 
@@ -148,7 +162,8 @@ No framework, no build step, no backend.
 - Move and resize the object.
 - Switch wall side and confirm the object/editor state stays stable.
 - Save a project, reopen it, and confirm walls, objects, guides, and room items still match.
-- Export a wall PDF and room PDF.
+- Add project production metadata, save/reopen, and confirm venue, dates, revision, preparer, and notes still match.
+- Export a wall PDF, room PDF, object labels PDF, and installation package PDF.
 - Clear recovery and confirm the current in-memory project stays open.
 - Import an invalid JSON or malformed `.ewmm` file and confirm the app shows a friendly error.
 - Test keyboard shortcuts for delete, duplicate, nudge, and escape.
