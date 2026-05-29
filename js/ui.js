@@ -4,11 +4,11 @@
       const count = selectedIds().length;
       const visibleItems = itemsForSide(activeWallSide());
       const overlapText = overlaps.size ? `${overlaps.size} object${overlaps.size === 1 ? "" : "s"} need overlap attention.` : "No overlaps detected.";
-      els.overlapSummary.textContent = `${sideLabel(activeWallSide())} side. ${overlapText} ${count} selected. Shift-click objects to select more than one.`;
+      els.overlapSummary.textContent = `${sideLabel(activeWallSide())} side. ${overlapText} ${count} selected.`;
       if (!visibleItems.length) {
         const empty = document.createElement("p");
-        empty.className = "small";
-        empty.textContent = `No ${sideLabel(activeWallSide()).toLowerCase()} objects yet.`;
+        empty.className = "small empty-state";
+        empty.textContent = `No ${sideLabel(activeWallSide()).toLowerCase()} objects on this side yet.`;
         els.itemList.append(empty);
         return;
       }
@@ -35,7 +35,7 @@
       const elements = (state.roomElements || []).map(normalizeRoomElement);
       if (!elements.length) {
         const empty = document.createElement("p");
-        empty.className = "small";
+        empty.className = "small empty-state";
         empty.textContent = "No room placeholders yet.";
         els.roomElementList.append(empty);
         return;
@@ -190,7 +190,9 @@
       setHidden(els.toolHand, !is2dView());
       setHidden(els.guideToggle, !is2dView());
       setHidden(els.clearGuides, !is2dView());
-      const alignGroup = els.alignLeft?.closest(".view-controls");
+      const guideGroup = els.guideToggle?.closest(".toolbar-disclosure") || els.guideToggle?.closest(".view-controls");
+      if (guideGroup) guideGroup.hidden = !is2dView();
+      const alignGroup = els.alignLeft?.closest(".toolbar-disclosure") || els.alignLeft?.closest(".view-controls");
       if (alignGroup) alignGroup.hidden = !is2dView();
     }
 
@@ -232,7 +234,7 @@
 
     function isEditableTarget(target) {
       if (!target || !(target instanceof Element)) return false;
-      return Boolean(target.closest("input, textarea, select, button, [contenteditable='true']"));
+      return Boolean(target.closest("input, textarea, select, button, summary, [contenteditable='true']"));
     }
 
     function zoomView(amount) {

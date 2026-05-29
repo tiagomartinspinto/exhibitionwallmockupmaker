@@ -24,6 +24,10 @@ Live site:
 
 ## Latest polish delivered
 
+- Calm design refinement pass for sidebar hierarchy, toolbar grouping, starter/empty states, wording, and PDF styling
+- Advanced wall placement, media/install notes, guide tools, arrange tools, and export notes now use progressive disclosure
+- Keyboard nudge UI refresh fix so selected object X/Y fields and object list update immediately after arrow-key moves
+- Regression coverage for keyboard nudge editor sync
 - Undo/redo for wall objects, room placeholders, and wall-level changes
 - Undo/Redo UI buttons in the view toolbar
 - Keyboard shortcuts for delete, duplicate, nudge, escape, and undo/redo
@@ -35,6 +39,15 @@ Live site:
 - Accessibility label/title pass for icon-only controls
 - README manual QA checklist and public-repo safety notes
 
+## Latest verification
+
+- Local import/normalization regression tests pass
+- Browser script syntax checks pass for all app scripts
+- Local browser QA verified duplicate, delete, escape, nudge, undo, and redo keyboard flows
+- Local browser QA verified canvas drag and resize with undo/redo
+- Local browser QA verified wall add, wall switching, and toolbar undo/redo around wall history
+- Local browser design QA verified desktop layout, 390px mobile layout without horizontal overflow, toolbar disclosures, and guide/arrange visibility across 2D/3D views
+
 ## Public repo safety
 
 - Local-only project artifacts are excluded through `.gitignore`
@@ -43,8 +56,7 @@ Live site:
 
 ## Recommended next checks
 
-- Verify the latest keyboard shortcuts in the live app
-- Verify undo/redo around drag, resize, and wall switching
-- Verify large-image warnings with an intentionally big embedded image
-- Verify project open/save on GitHub Pages in a Chromium-based browser
+- Verify the latest keyboard, drag, resize, and wall-switching flows once more on the deployed GitHub Pages site after pushing
+- Verify large-image warnings with an intentionally big embedded image in a desktop browser
+- Verify project open/save on GitHub Pages in a Chromium-based browser with native file picker support
 - Verify confirmation prompts on clear/reset/delete flows in the live app

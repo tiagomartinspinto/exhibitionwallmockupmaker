@@ -971,7 +971,7 @@
         item.y = Math.max(0, Math.min(state.wall.height - item.height, Math.round(item.y + dy)));
       });
       save();
-      render({ canvasOnly: true });
+      render();
       return true;
     }
 

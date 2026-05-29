@@ -44,6 +44,7 @@ function makeContext2d() {
     translate: noop,
     rotate: noop,
     scale: noop,
+    setTransform: noop,
     clip: noop,
     arc: noop,
     ellipse: noop,
@@ -51,6 +52,12 @@ function makeContext2d() {
     fillText: noop,
     strokeText: noop,
     drawImage: noop,
+    createLinearGradient() {
+      return { addColorStop: noop };
+    },
+    createRadialGradient() {
+      return { addColorStop: noop };
+    },
     measureText(text = "") {
       const width = String(text).length * 7;
       return {
@@ -81,6 +88,9 @@ function makeElement(tagName = "div") {
     className: "",
     classList: makeClassList(),
     children: [],
+    append(...nodes) {
+      this.children.push(...nodes);
+    },
     appendChild(child) {
       this.children.push(child);
       return child;
@@ -190,6 +200,7 @@ function createHarness() {
     "js/course-data.js",
     "js/core.js",
     "js/model.js",
+    "js/rendering.js",
     "js/ui.js",
     "js/interactions.js"
   ].forEach(file => {
@@ -199,7 +210,7 @@ function createHarness() {
   });
 
   vm.runInContext(
-    "globalThis.__ewmm = { state, parseProjectFileText, applySerializedState, activeWallRecord, ensureWalls };",
+    "globalThis.__ewmm = { state, els, parseProjectFileText, applySerializedState, activeWallRecord, ensureWalls, setSelection, nudgeSelectedItems };",
     context
   );
 
@@ -267,8 +278,25 @@ function testMissingFieldsNormalizeSafely() {
   assert.equal(app.state.roomElements[0].height, 760);
 }
 
+function testKeyboardNudgeRefreshesEditorValues() {
+  const app = createHarness();
+  app.ensureWalls();
+  const item = app.activeWallRecord().items[0];
+  app.setSelection([item.id]);
+
+  const originalX = item.x;
+  const originalY = item.y;
+
+  assert.equal(app.nudgeSelectedItems(10, 50), true);
+  assert.equal(item.x, originalX + 10);
+  assert.equal(item.y, originalY + 50);
+  assert.equal(String(app.els.itemX.value), String(originalX + 10));
+  assert.equal(String(app.els.itemY.value), String(originalY + 50));
+}
+
 testBrokenJsonShowsFriendlyError();
 testLegacyProjectStillOpens();
 testMissingFieldsNormalizeSafely();
+testKeyboardNudgeRefreshesEditorValues();
 
 console.log("Import validation tests passed.");

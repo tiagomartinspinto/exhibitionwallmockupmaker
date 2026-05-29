@@ -36,18 +36,18 @@
         columns[5].width += detailWidth;
       }
       let colX = x;
-      drawText(`${sideLabel(activeWallSide())} object schedule`, x, y - 44, { align: "left", color: "#161616", size: 29, halo: null });
-      activeCtx.fillStyle = "#edf2ec";
+      drawText(`${sideLabel(activeWallSide())} object schedule`, x, y - 44, { align: "left", color: "#1d1c19", size: 27, halo: null });
+      activeCtx.fillStyle = "#f1efe7";
       activeCtx.fillRect(x, y, width, rowH);
       columns.forEach(column => {
-        drawText(column.label, colX + 12, y + rowH / 2, { align: "left", color: "#161616", size: 18, halo: null });
+        drawText(column.label, colX + 12, y + rowH / 2, { align: "left", color: "#1d1c19", size: 18, halo: null });
         colX += column.width;
       });
       items.slice(0, 12).forEach((item, index) => {
         const rowY = y + rowH * (index + 1);
-        activeCtx.fillStyle = index % 2 ? "#ffffff" : "#f8faf6";
+        activeCtx.fillStyle = index % 2 ? "#fffdf8" : "#faf9f4";
         activeCtx.fillRect(x, rowY, width, rowH);
-        activeCtx.strokeStyle = "#d6ddd4";
+        activeCtx.strokeStyle = "#ded8ce";
         activeCtx.strokeRect(x, rowY, width, rowH);
         const values = [
           itemCode(item),
@@ -64,7 +64,7 @@
         columns.forEach((column, columnIndex) => {
           drawText(values[columnIndex], colX + 10, rowY + rowH / 2, {
             align: "left",
-            color: "#26312b",
+            color: "#2c2a25",
             size: 17,
             weight: 600,
             halo: null,
@@ -86,11 +86,11 @@
         { label: "Objects", width: width - 1660 }
       ];
       let colX = x;
-      drawText("Wall schedule", x, y - 36, { align: "left", color: "#161616", size: 25, halo: null });
-      activeCtx.fillStyle = "#edf2ec";
+      drawText("Wall schedule", x, y - 36, { align: "left", color: "#1d1c19", size: 24, halo: null });
+      activeCtx.fillStyle = "#f1efe7";
       activeCtx.fillRect(x, y, width, rowH);
       columns.forEach(column => {
-        drawText(column.label, colX + 10, y + rowH / 2, { align: "left", color: "#161616", size: 16, halo: null });
+        drawText(column.label, colX + 10, y + rowH / 2, { align: "left", color: "#1d1c19", size: 16, halo: null });
         colX += column.width;
       });
       const rows = state.walls;
@@ -100,9 +100,9 @@
         const frontCount = (wallRecord.items || []).filter(item => itemSide(item) === "front").length;
         const backCount = (wallRecord.items || []).filter(item => itemSide(item) === "back").length;
         const rowY = y + rowH * (index + 1);
-        activeCtx.fillStyle = index % 2 ? "#ffffff" : "#f8faf6";
+        activeCtx.fillStyle = index % 2 ? "#fffdf8" : "#faf9f4";
         activeCtx.fillRect(x, rowY, width, rowH);
-        activeCtx.strokeStyle = "#d6ddd4";
+        activeCtx.strokeStyle = "#ded8ce";
         activeCtx.strokeRect(x, rowY, width, rowH);
         const values = [
           wallRecord.name,
@@ -116,7 +116,7 @@
         columns.forEach((column, columnIndex) => {
           drawText(values[columnIndex], colX + 10, rowY + rowH / 2, {
             align: "left",
-            color: "#26312b",
+            color: "#2c2a25",
             size: 15,
             weight: 600,
             halo: null,
@@ -140,18 +140,18 @@
         { label: "Size", width: width - 1620 }
       ];
       let colX = x;
-      drawText("Room placeholders", x, y - 36, { align: "left", color: "#161616", size: 25, halo: null });
-      activeCtx.fillStyle = "#edf2ec";
+      drawText("Room placeholders", x, y - 36, { align: "left", color: "#1d1c19", size: 24, halo: null });
+      activeCtx.fillStyle = "#f1efe7";
       activeCtx.fillRect(x, y, width, rowH);
       columns.forEach(column => {
-        drawText(column.label, colX + 10, y + rowH / 2, { align: "left", color: "#161616", size: 16, halo: null });
+        drawText(column.label, colX + 10, y + rowH / 2, { align: "left", color: "#1d1c19", size: 16, halo: null });
         colX += column.width;
       });
       elements.forEach((element, index) => {
         const rowY = y + rowH * (index + 1);
-        activeCtx.fillStyle = index % 2 ? "#ffffff" : "#f8faf6";
+        activeCtx.fillStyle = index % 2 ? "#fffdf8" : "#faf9f4";
         activeCtx.fillRect(x, rowY, width, rowH);
-        activeCtx.strokeStyle = "#d6ddd4";
+        activeCtx.strokeStyle = "#ded8ce";
         activeCtx.strokeRect(x, rowY, width, rowH);
         const values = [
           element.name,
@@ -164,7 +164,7 @@
         columns.forEach((column, columnIndex) => {
           drawText(values[columnIndex], colX + 10, rowY + rowH / 2, {
             align: "left",
-            color: "#26312b",
+            color: "#2c2a25",
             size: 15,
             weight: 600,
             halo: null,
@@ -178,25 +178,25 @@
 
     function drawObjectListSidebar(x, y, width, height) {
       const items = itemsForSide(activeWallSide()).map(normalizeItem);
-      drawText(`${sideLabel(activeWallSide())} objects (${items.length})`, x, y - 38, { align: "left", color: "#161616", size: 42, halo: null, noExportBoost: true });
+      drawText(`${sideLabel(activeWallSide())} objects (${items.length})`, x, y - 38, { align: "left", color: "#1d1c19", size: 36, halo: null, noExportBoost: true });
       if (!items.length) return;
       const headerH = 54;
       const rowH = clamp(Math.floor((height - headerH) / items.length), 82, 126);
-      activeCtx.fillStyle = "#edf2ec";
+      activeCtx.fillStyle = "#f1efe7";
       activeCtx.fillRect(x, y, width, headerH);
-      activeCtx.strokeStyle = "#d6ddd4";
+      activeCtx.strokeStyle = "#ded8ce";
       activeCtx.strokeRect(x, y, width, headerH);
-      drawText("ID", x + 16, y + headerH / 2, { align: "left", color: "#161616", size: 22, weight: 800, halo: null, noExportBoost: true });
-      drawText("Object", x + 116, y + headerH / 2, { align: "left", color: "#161616", size: 22, weight: 800, halo: null, noExportBoost: true });
-      drawText("Size / position", x + width - 16, y + headerH / 2, { align: "right", color: "#161616", size: 22, weight: 800, halo: null, noExportBoost: true });
+      drawText("ID", x + 16, y + headerH / 2, { align: "left", color: "#1d1c19", size: 21, weight: 800, halo: null, noExportBoost: true });
+      drawText("Object", x + 116, y + headerH / 2, { align: "left", color: "#1d1c19", size: 21, weight: 800, halo: null, noExportBoost: true });
+      drawText("Size / position", x + width - 16, y + headerH / 2, { align: "right", color: "#1d1c19", size: 21, weight: 800, halo: null, noExportBoost: true });
       let cardY = y + headerH;
       items.forEach((item, index) => {
         const detailText = exportTextLabel(item);
         const notesText = exportNotesLabel(item);
         const mountingText = exportMountingLabel(item);
-        activeCtx.fillStyle = index % 2 ? "#ffffff" : "#f8faf6";
+        activeCtx.fillStyle = index % 2 ? "#fffdf8" : "#faf9f4";
         activeCtx.fillRect(x, cardY, width, rowH);
-        activeCtx.strokeStyle = "#d6ddd4";
+        activeCtx.strokeStyle = "#ded8ce";
         activeCtx.strokeRect(x, cardY, width, rowH);
         const codeX = x + 16;
         const contentX = x + 116;
@@ -204,9 +204,9 @@
         const nameWidth = Math.max(170, width - 360);
         const titleY = cardY + Math.min(42, rowH * 0.36);
         const detailY = cardY + Math.min(rowH - 24, titleY + 42);
-        drawText(itemCode(item), codeX, titleY, { align: "left", color: "#26312b", size: 20, weight: 800, halo: null, noExportBoost: true });
-        drawText(item.name, contentX, titleY, { align: "left", color: "#161616", size: 24, weight: 800, halo: null, maxWidth: nameWidth, noExportBoost: true });
-        drawText(itemSizeLabel(item), rightX, titleY, { align: "right", color: "#26312b", size: 20, weight: 700, halo: null, maxWidth: 240, noExportBoost: true });
+        drawText(itemCode(item), codeX, titleY, { align: "left", color: "#2c2a25", size: 20, weight: 800, halo: null, noExportBoost: true });
+        drawText(item.name, contentX, titleY, { align: "left", color: "#1d1c19", size: 23, weight: 800, halo: null, maxWidth: nameWidth, noExportBoost: true });
+        drawText(itemSizeLabel(item), rightX, titleY, { align: "right", color: "#2c2a25", size: 20, weight: 700, halo: null, maxWidth: 240, noExportBoost: true });
         const details = [
           itemTypePrintLabel(item.type),
           itemPositionLabel(item),
@@ -215,9 +215,9 @@
           notesText
         ].filter(Boolean).join(" | ");
         if (rowH >= 96) {
-          drawText(details, contentX, detailY, { align: "left", color: "#4b5750", size: 18, weight: 600, halo: null, maxWidth: width - 132, noExportBoost: true });
+          drawText(details, contentX, detailY, { align: "left", color: "#5d5a52", size: 18, weight: 600, halo: null, maxWidth: width - 132, noExportBoost: true });
         } else {
-          drawText(`${itemTypePrintLabel(item.type)} | ${itemPositionLabel(item)}`, contentX, detailY, { align: "left", color: "#4b5750", size: 16, weight: 600, halo: null, maxWidth: width - 132, noExportBoost: true });
+          drawText(`${itemTypePrintLabel(item.type)} | ${itemPositionLabel(item)}`, contentX, detailY, { align: "left", color: "#5d5a52", size: 16, weight: 600, halo: null, maxWidth: width - 132, noExportBoost: true });
         }
         cardY += rowH;
       });
@@ -248,21 +248,21 @@
 
       state.view = exportView;
       const titles = {
-        elevation: "Active wall 2D measured preview",
-        space2d: "Exhibition space 2D top view"
+        elevation: "Measured wall elevation",
+        space2d: "Room plan"
       };
       const title = titles[exportView] || "2D preview";
       const brandTitle = "Exhibition Wall Mockup Maker";
-      const versionX = a3.margin + textWidth(brandTitle, 42, 700, { noExportBoost: true }) + 28;
-      drawText(brandTitle, a3.margin, 78, { align: "left", baseline: "middle", color: "#161616", size: 42, halo: null, noExportBoost: true });
-      drawText("V1.0", versionX, 80, { align: "left", baseline: "middle", color: "#7c8580", size: 17, weight: 700, halo: null, noExportBoost: true });
-      drawText(`by @tiagomartinspinto | ${title}`, a3.margin, 134, { align: "left", baseline: "middle", color: "#5d655f", size: 27, weight: 600, halo: null, noExportBoost: true });
-      drawText(state.project.title || "Untitled exhibition", a3.margin, 184, { align: "left", baseline: "middle", color: "#5d655f", size: 24, weight: 600, halo: null, noExportBoost: true });
+      const versionX = a3.margin + textWidth(brandTitle, 34, 700, { noExportBoost: true }) + 24;
+      drawText(brandTitle, a3.margin, 72, { align: "left", baseline: "middle", color: "#1d1c19", size: 34, halo: null, noExportBoost: true });
+      drawText("V1.0", versionX, 73, { align: "left", baseline: "middle", color: "#7c766d", size: 15, weight: 700, halo: null, noExportBoost: true });
+      drawText(title, a3.margin, 126, { align: "left", baseline: "middle", color: "#1d1c19", size: 31, weight: 700, halo: null, noExportBoost: true });
+      drawText(`by @tiagomartinspinto | ${state.project.title || "Untitled exhibition"}`, a3.margin, 178, { align: "left", baseline: "middle", color: "#5d5a52", size: 22, weight: 600, halo: null, noExportBoost: true });
       const exportMeta = exportView === "space2d"
-        ? `Space ${state.space.width} x ${state.space.depth} mm | ${state.walls.length} walls | ${(state.roomElements || []).length} placeholders | Print on A3 for scale/readability`
-        : `${activeWallRecord().name} | ${sideLabel(activeWallSide())} side | ${state.wall.width} x ${state.wall.height} mm | depth ${state.wall.depth} mm | Print on A3 for scale/readability`;
-      drawText(exportMeta, a3.margin, 228, { align: "left", baseline: "middle", color: "#5d655f", size: 23, weight: 600, halo: null, noExportBoost: true });
-      drawLine(a3.margin, 242, a3.width - a3.margin, 242, "#c8cfc8");
+        ? `Room ${state.space.width} x ${state.space.depth} mm | ${state.walls.length} walls | ${(state.roomElements || []).length} placeholders | A3 scale reference`
+        : `${activeWallRecord().name} | ${sideLabel(activeWallSide())} side | ${state.wall.width} x ${state.wall.height} mm | depth ${state.wall.depth} mm | A3 scale reference`;
+      drawText(exportMeta, a3.margin, 228, { align: "left", baseline: "middle", color: "#5d5a52", size: 21, weight: 600, halo: null, noExportBoost: true });
+      drawLine(a3.margin, 252, a3.width - a3.margin, 252, "#d8d2c6");
 
       const wallRatio = state.wall.width / Math.max(1, state.wall.height);
       const activeItems = itemsForSide(activeWallSide());
@@ -501,12 +501,12 @@
         ? `${state.project.title || "Untitled exhibition"} | ${state.walls.length} wall${state.walls.length === 1 ? "" : "s"}`
         : `${state.project.title || "Untitled exhibition"} | ${activeWallRecord().name}`;
 
-      drawText("Exhibition Wall Mockup Maker", page.margin, 82, { align: "left", baseline: "middle", color: "#161616", size: 38, halo: null, noExportBoost: true });
-      drawText("V1.0", page.margin + textWidth("Exhibition Wall Mockup Maker", 38, 700, { noExportBoost: true }) + 26, 84, { align: "left", baseline: "middle", color: "#7c8580", size: 16, weight: 700, halo: null, noExportBoost: true });
-      drawText(`by @tiagomartinspinto | ${title}`, page.margin, 132, { align: "left", baseline: "middle", color: "#5d655f", size: 23, weight: 600, halo: null, noExportBoost: true });
-      drawText(meta, page.margin, 174, { align: "left", baseline: "middle", color: "#5d655f", size: 20, weight: 600, halo: null, noExportBoost: true });
-      drawText(statusLine, page.width - page.margin, 174, { align: "right", baseline: "middle", color: "#7c8580", size: 18, weight: 600, halo: null, noExportBoost: true });
-      drawLine(page.margin, 198, page.width - page.margin, 198, "#d7ddd6");
+      drawText("Exhibition Wall Mockup Maker", page.margin, 76, { align: "left", baseline: "middle", color: "#1d1c19", size: 32, halo: null, noExportBoost: true });
+      drawText("V1.0", page.margin + textWidth("Exhibition Wall Mockup Maker", 32, 700, { noExportBoost: true }) + 22, 78, { align: "left", baseline: "middle", color: "#7c766d", size: 14, weight: 700, halo: null, noExportBoost: true });
+      drawText(title, page.margin, 124, { align: "left", baseline: "middle", color: "#1d1c19", size: 28, weight: 700, halo: null, noExportBoost: true });
+      drawText(`by @tiagomartinspinto | ${meta}`, page.margin, 170, { align: "left", baseline: "middle", color: "#5d5a52", size: 19, weight: 600, halo: null, noExportBoost: true });
+      drawText(statusLine, page.width - page.margin, 170, { align: "right", baseline: "middle", color: "#7c766d", size: 17, weight: 600, halo: null, noExportBoost: true });
+      drawLine(page.margin, 198, page.width - page.margin, 198, "#d8d2c6");
 
       const frameX = page.margin;
       const frameY = page.header + 36;
@@ -519,9 +519,9 @@
       const drawX = frameX + (frameW - drawW) / 2;
       const drawY = frameY + (frameH - drawH) / 2;
 
-      ctx.fillStyle = "#f3f5f2";
+      ctx.fillStyle = "#f5f2ea";
       ctx.fillRect(drawX - 16, drawY - 16, drawW + 32, drawH + 32);
-      ctx.strokeStyle = "#d7ddd6";
+      ctx.strokeStyle = "#d8d2c6";
       ctx.lineWidth = 1.5;
       ctx.strokeRect(drawX - 16, drawY - 16, drawW + 32, drawH + 32);
       ctx.drawImage(source, drawX, drawY, drawW, drawH);
