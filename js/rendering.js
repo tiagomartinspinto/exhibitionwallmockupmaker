@@ -1051,7 +1051,8 @@
       });
 
       drawRulers(geom, width, height);
-      els.scaleLabel.textContent = `2D ${sideLabel(activeWallSide()).toLowerCase()} ${Math.round(state.view2d.zoom * 100)}% / scale 1 px = ${Math.round(1 / geom.scale)} mm`;
+      const emptySideHint = itemsForSide(activeWallSide()).length ? "" : " / Empty side: add an object from the Object panel";
+      els.scaleLabel.textContent = `2D ${sideLabel(activeWallSide()).toLowerCase()} ${Math.round(state.view2d.zoom * 100)}% / scale 1 px = ${Math.round(1 / geom.scale)} mm${emptySideHint}`;
     }
 
     function validHexColor(value, fallback) {

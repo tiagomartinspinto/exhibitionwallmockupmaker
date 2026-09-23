@@ -190,11 +190,27 @@
       element.y = clamp(number(element.y, state.space.depth / 2), halfD, Math.max(halfD, state.space.depth - halfD));
     }
 
+    function safeId(value) {
+      const id = String(value || "").trim();
+      return id && id.length <= 128 ? id : uid();
+    }
+
+    function safeColor(value, fallback) {
+      return /^#[0-9a-f]{6}$/i.test(String(value || "")) ? value : fallback;
+    }
+
+    // Project files are shared between people, so only embedded images are accepted.
+    // A remote URL here would make the browser contact another server when the file is opened.
+    function safeImageSource(value) {
+      const src = String(value || "");
+      return /^data:image\/[a-z0-9.+-]+[;,]/i.test(src) ? src : "";
+    }
+
     function normalizeRoomElement(element = {}) {
       const type = canonicalRoomElementType(element.type);
       const config = roomElementTypeConfig(type);
       const normalized = {
-        id: element.id || uid(),
+        id: safeId(element.id),
         name: element.name || config.defaultName,
         type,
         shape: validRoomElementShape(type, element.shape || config.defaultShape),
@@ -203,7 +219,7 @@
         width: Math.max(50, number(element.width, config.defaultWidth)),
         depth: Math.max(50, number(element.depth, config.defaultDepth)),
         height: Math.max(50, number(element.height, config.defaultHeight)),
-        color: element.color || config.color
+        color: safeColor(element.color, config.color)
       };
       clampRoomElementToSpace(normalized);
       return normalized;
@@ -539,7 +555,8 @@
     function toggleTheme() {
       state.theme = state.theme === "dark" ? "light" : "dark";
       applyTheme();
-      save();
+      // Theme is a viewing preference: remember it locally without marking the exhibition as changed.
+      save({ immediate: true, skipProjectAutosave: true });
       render({ canvasOnly: true });
     }
 
@@ -559,6 +576,7 @@
       guides.visible = !(guides.visible !== false);
       setCurrentGuides(guides);
       save();
+      updateToolButtons();
       render({ canvasOnly: true });
     }
 
@@ -684,7 +702,7 @@
       const config = itemTypeConfig(type);
       const shape = validShapeForType(type, item.shape || config.defaultShape);
       return {
-        id: item.id || uid(),
+        id: safeId(item.id),
         name: item.name || config.defaultName,
         type,
         side: normalizeWallSide(item.side),
@@ -692,13 +710,13 @@
         text: item.text || "",
         notes: item.notes || "",
         hanging: Boolean(item.hanging),
-        image: item.image || "",
+        image: safeImageSource(item.image),
         illuminated: Boolean(item.illuminated || legacyType === "illumination"),
         x: Math.max(0, number(item.x, 0)),
         y: Math.max(0, number(item.y, 0)),
         width: Math.max(10, number(item.width, config.defaultWidth)),
         height: Math.max(10, number(item.height, config.defaultHeight)),
-        color: item.color || config.color
+        color: safeColor(item.color, config.color)
       };
     }
 

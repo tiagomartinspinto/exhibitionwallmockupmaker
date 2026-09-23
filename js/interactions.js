@@ -716,10 +716,14 @@
       return `${base}.ewmm.json`;
     }
 
+    function isRecord(value) {
+      return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+    }
+
     function applySerializedState(source, options = {}) {
       const parsed = source && typeof source === "object" && source.data ? source.data : source;
       const nextFileName = options.fileName || "";
-      state.view = parsed.view || state.view;
+      state.view = ["elevation", "perspective", "space2d", "space3d"].includes(parsed.view) ? parsed.view : state.view;
       state.tool = parsed.tool === "hand" ? "hand" : "select";
       state.activeSide = normalizeWallSide(parsed.activeSide || state.activeSide);
       state.handOverride = false;
@@ -753,21 +757,29 @@
       delete state.view3d.pitch;
       delete state.view3d.roll;
       state.space = { ...state.space, ...parsed.space };
+      state.space.width = Math.max(1000, number(state.space.width, 12000));
+      state.space.depth = Math.max(1000, number(state.space.depth, 8000));
+      state.space.floorColor = safeColor(state.space.floorColor, "#101113");
+      state.space.surroundColor = safeColor(state.space.surroundColor, "#070708");
       if (state.space.floorColor === "#1d2a23") state.space.floorColor = "#101113";
       if (state.space.surroundColor === "#202821") state.space.surroundColor = "#070708";
       state.spaceGuides = normalizeGuides(parsed.spaceGuides || parsed.space?.guides || state.spaceGuides || defaultGuides());
       state.roomElements = Array.isArray(parsed.roomElements)
-        ? parsed.roomElements.map(normalizeRoomElement)
+        ? parsed.roomElements.filter(isRecord).map(normalizeRoomElement)
         : Array.isArray(parsed.space?.elements)
-          ? parsed.space.elements.map(normalizeRoomElement)
+          ? parsed.space.elements.filter(isRecord).map(normalizeRoomElement)
           : (state.roomElements || []).map(normalizeRoomElement);
       state.project = {
         ...state.project,
         ...parsed.project,
         fileName: nextFileName || parsed.project?.fileName || ""
       };
+      ["title", "venue", "dates", "preparedBy", "revision", "notes", "fileName"].forEach(key => {
+        const value = state.project[key];
+        state.project[key] = typeof value === "string" || typeof value === "number" ? String(value) : "";
+      });
       state.activeWallId = parsed.activeWallId || state.activeWallId;
-      state.walls = Array.isArray(parsed.walls) ? parsed.walls.map((wall, index) => {
+      state.walls = Array.isArray(parsed.walls) ? parsed.walls.filter(isRecord).map((wall, index) => {
         const wallSpec = { width: 6000, height: 3000, depth: 120, color: "#f5f4ea", ...wall.wall };
         const placement = { x: 1000, y: 1000, rotation: 0, ...wall.placement };
         if (placement.anchor !== "center" || number(parsed.version, 1) < 3) {
@@ -780,22 +792,36 @@
           id: wall.id || uid(),
           name: wall.name || `Wall ${index + 1}`,
           wall: wallSpec,
-          items: Array.isArray(wall.items) ? wall.items.map(normalizeItem) : [],
+          items: Array.isArray(wall.items) ? wall.items.filter(isRecord).map(normalizeItem) : [],
           guides: normalizeGuides(wall.guides || defaultGuides()),
           placement
         };
-      }) : state.walls;
+      }) : (parsed.wall || Array.isArray(parsed.items)) ? [] : state.walls;
       if (!state.walls.length) {
-        state.wall = { ...state.wall, ...parsed.wall };
-        state.items = Array.isArray(parsed.items) ? parsed.items.map(normalizeItem) : state.items;
-        state.guides = normalizeGuides(parsed.guides || defaultGuides());
-        if (number(parsed.version, 1) < 3 && parsed.placement) {
-          const angle = number(parsed.placement.rotation, 0) * Math.PI / 180;
-          parsed.placement.x = number(parsed.placement.x, 1000) + Math.cos(angle) * number(state.wall.width, 6000) / 2;
-          parsed.placement.y = number(parsed.placement.y, 1000) + Math.sin(angle) * number(state.wall.width, 6000) / 2;
-          parsed.placement.anchor = "center";
+        // Single-wall files from before multi-wall support keep wall, items, and placement at the top level.
+        const legacyWall = makeWall("Wall A", parsed.wall || {}, Array.isArray(parsed.items) ? parsed.items.filter(isRecord) : [], { x: state.space.width / 2, y: 1200, rotation: 0 }, parsed.guides || defaultGuides());
+        if (parsed.placement) {
+          const placement = { x: number(parsed.placement.x, 1000), y: number(parsed.placement.y, 1000), rotation: number(parsed.placement.rotation, 0), anchor: "center" };
+          if (number(parsed.version, 1) < 3) {
+            const angle = placement.rotation * Math.PI / 180;
+            placement.x += Math.cos(angle) * number(legacyWall.wall.width, 6000) / 2;
+            placement.y += Math.sin(angle) * number(legacyWall.wall.width, 6000) / 2;
+          }
+          legacyWall.placement = placement;
         }
+        legacyWall.id = "wall-a";
+        state.walls = [legacyWall];
+        state.activeWallId = legacyWall.id;
       }
+      state.walls.forEach(wall => {
+        wall.wall.width = Math.max(100, number(wall.wall.width, 6000));
+        wall.wall.height = Math.max(100, number(wall.wall.height, 3000));
+        wall.wall.depth = Math.max(40, number(wall.wall.depth, 120));
+        wall.wall.color = safeColor(wall.wall.color, "#f5f4ea");
+        wall.placement.x = number(wall.placement.x, 1000);
+        wall.placement.y = number(wall.placement.y, 1000);
+        wall.placement.rotation = number(wall.placement.rotation, 0);
+      });
       ensureWalls();
       loadActiveWall();
       setSelection([]);
@@ -808,12 +834,18 @@
       state.snapLines = [];
     }
 
+    // After "Clear recovery", no new recovery copy is written (not even when the tab closes)
+    // until the project is edited or another project is opened.
+    let recoverySuspended = false;
+
     function flushSave() {
       if (persistTimer) clearTimeout(persistTimer);
       persistTimer = null;
       syncActiveWallRecord();
-      state.project.lastLocalSaveAt = new Date().toISOString();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(serializedState()));
+      if (!recoverySuspended) {
+        state.project.lastLocalSaveAt = new Date().toISOString();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(serializedState()));
+      }
       updateProjectSaveHint();
       if (typeof updateUnsavedIndicator === "function") updateUnsavedIndicator();
     }
@@ -821,6 +853,7 @@
     function clearLocalAutosave() {
       if (persistTimer) clearTimeout(persistTimer);
       persistTimer = null;
+      recoverySuspended = true;
       localStorage.removeItem(STORAGE_KEY);
       state.project.lastLocalSaveAt = "";
       updateProjectSaveHint();
@@ -846,6 +879,7 @@
         return;
       }
       state.unsavedChanges = true;
+      recoverySuspended = false;
       if (typeof updateUnsavedIndicator === "function") updateUnsavedIndicator();
       if (persistTimer) clearTimeout(persistTimer);
       persistTimer = setTimeout(() => {
@@ -946,9 +980,19 @@
     function loadProjectFileFromText(text, fileName = "") {
       let parsed;
       parsed = parseProjectFileText(text);
-      applySerializedState(parsed, { fileName });
+      syncActiveWallRecord();
+      const previous = serializedState();
+      try {
+        applySerializedState(parsed, { fileName });
+      } catch (error) {
+        // Keep the project that was open instead of leaving it half-replaced by a damaged file.
+        applySerializedState(previous);
+        console.error(error);
+        throw new Error("This project file could not be opened because some of its data is damaged.");
+      }
       clearObjectHistory();
       state.unsavedChanges = false;
+      recoverySuspended = false;
       syncInputsFromProject();
       syncInputsFromSpace();
       syncInputsFromWall();

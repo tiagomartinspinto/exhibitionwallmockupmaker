@@ -210,7 +210,7 @@ function createHarness() {
   });
 
   vm.runInContext(
-    "globalThis.__ewmm = { state, els, parseProjectFileText, applySerializedState, activeWallRecord, ensureWalls, setSelection, nudgeSelectedItems, projectSnapshot };",
+    "globalThis.__ewmm = { state, els, parseProjectFileText, applySerializedState, activeWallRecord, ensureWalls, setSelection, nudgeSelectedItems, projectSnapshot, loadProjectFileFromText, toggleTheme, toggleGuides, save, clearLocalAutosave, renderItemList, storageKey: STORAGE_KEY, localStorage };",
     context
   );
 
@@ -328,10 +328,169 @@ function testKeyboardNudgeRefreshesEditorValues() {
   assert.equal(String(app.els.itemY.value), String(originalY + 50));
 }
 
+function testHostileProjectValuesAreNeutralized() {
+  const app = createHarness();
+  app.applySerializedState({
+    data: {
+      project: { title: "Hostile file" },
+      walls: [
+        {
+          name: "Wall H",
+          items: [
+            {
+              id: "x\"><img src=x>",
+              type: "graphic",
+              color: "red\" onmouseover=\"alert(1)",
+              image: "https://example.invalid/pixel.png"
+            },
+            { id: "kept", type: "graphic", color: "#abcdef", image: "data:image/png;base64,AAAA" }
+          ]
+        }
+      ],
+      roomElements: [{ id: "seat", type: "chair", color: "url(https://example.invalid/x)" }]
+    }
+  }, { fileName: "hostile.ewmm" });
+
+  const [hostile, kept] = app.activeWallRecord().items;
+  assert.equal(hostile.color, "#2f6f9f");
+  assert.equal(hostile.image, "");
+  assert.equal(hostile.id, "x\"><img src=x>");
+  assert.equal(kept.color, "#abcdef");
+  assert.equal(kept.image, "data:image/png;base64,AAAA");
+  assert.match(app.state.roomElements[0].color, /^#[0-9a-f]{6}$/i);
+}
+
+function openCurrentProject(app) {
+  app.loadProjectFileFromText(JSON.stringify({
+    data: {
+      version: 6,
+      project: { title: "Current show" },
+      space: { width: 12000, depth: 8000 },
+      activeWallId: "wall-1",
+      walls: [
+        { id: "wall-1", name: "Wall 1", wall: { width: 4000, height: 2500 }, items: [{ id: "keep", type: "graphic", name: "Keep me" }] },
+        { id: "wall-2", name: "Wall 2", wall: { width: 3000, height: 2500 }, items: [] }
+      ]
+    }
+  }), "current.ewmm");
+}
+
+function testLegacySingleWallReplacesOpenProject() {
+  const app = createHarness();
+  openCurrentProject(app);
+  app.loadProjectFileFromText(JSON.stringify({
+    version: 1,
+    wall: { width: 5200, height: 2800, depth: 90, color: "#ffffff" },
+    items: [{ id: "legacy-art", type: "artwork", image: "data:image/png;base64,AAAA" }, null],
+    guides: { vertical: [1000], horizontal: [], visible: true },
+    placement: { x: 1000, y: 1200, rotation: 0 }
+  }), "legacy.ewmm");
+
+  assert.equal(app.state.walls.length, 1);
+  const wall = app.activeWallRecord();
+  assert.equal(wall.wall.width, 5200);
+  assert.deepEqual(wall.items.map(item => item.id), ["legacy-art"]);
+  assert.equal(wall.items[0].image, "data:image/png;base64,AAAA");
+  assert.deepEqual(wall.guides.vertical, [1000]);
+  assert.equal(wall.placement.x, 1000 + 5200 / 2);
+}
+
+function testDamagedFileKeepsOpenProject() {
+  const app = createHarness();
+  openCurrentProject(app);
+  const unconvertible = { toString: 1, valueOf: 1 };
+  const consoleError = console.error;
+  console.error = () => {};
+  try {
+    assert.throws(
+      () => app.loadProjectFileFromText(JSON.stringify({ project: { title: "Damaged" }, space: { width: 20000 }, walls: [{ items: [{ type: unconvertible, side: unconvertible }] }] }), "damaged.ewmm"),
+      /could not be opened/
+    );
+  } finally {
+    console.error = consoleError;
+  }
+  assert.equal(app.state.project.title, "Current show");
+  assert.equal(app.state.space.width, 12000);
+  assert.equal(app.state.walls.length, 2);
+  assert.equal(app.state.project.fileName, "current.ewmm");
+}
+
+function testOpenedWallAndRoomValuesAreValidated() {
+  const app = createHarness();
+  app.applySerializedState({
+    view: "elevation\"><b>",
+    project: { title: 42, venue: { html: "<b>" } },
+    space: { width: "wide", floorColor: "url(https://example.invalid/floor.png)" },
+    roomElements: [null, 5, { id: "bench", type: "bench" }],
+    walls: [null, { name: "W", wall: { width: "abc", color: "url(https://example.invalid/wall.png)" }, placement: { x: "left", rotation: "90deg" }, items: [null] }]
+  });
+  assert.equal(app.state.view, "elevation");
+  assert.equal(app.state.project.title, "42");
+  assert.equal(app.state.project.venue, "");
+  assert.equal(app.state.space.width, 12000);
+  assert.equal(app.state.space.floorColor, "#101113");
+  assert.deepEqual(app.state.roomElements.map(element => element.id), ["bench"]);
+  const wall = app.activeWallRecord();
+  assert.equal(app.state.walls.length, 1);
+  assert.equal(wall.wall.width, 6000);
+  assert.equal(wall.wall.color, "#f5f4ea");
+  assert.equal(wall.placement.rotation, 0);
+  assert.equal(wall.items.length, 0);
+}
+
+function testThemeToggleDoesNotDirtyProject() {
+  const app = createHarness();
+  openCurrentProject(app);
+  assert.equal(app.state.unsavedChanges, false);
+  const before = app.state.theme;
+  app.toggleTheme();
+  assert.notEqual(app.state.theme, before);
+  assert.equal(app.state.unsavedChanges, false);
+  assert.equal(JSON.parse(app.localStorage.getItem(app.storageKey)).theme, app.state.theme);
+}
+
+function testClearedRecoveryStaysClearedUntilNextEdit() {
+  const app = createHarness();
+  openCurrentProject(app);
+  assert.ok(app.localStorage.getItem(app.storageKey));
+  app.clearLocalAutosave();
+  app.save({ immediate: true });
+  assert.equal(app.localStorage.getItem(app.storageKey), null);
+  app.save();
+  assert.ok(app.localStorage.getItem(app.storageKey));
+}
+
+function testGuideToggleUpdatesButtonState() {
+  const app = createHarness();
+  openCurrentProject(app);
+  app.toggleGuides();
+  assert.equal(app.els.guideToggle["aria-pressed"], "false");
+  app.toggleGuides();
+  assert.equal(app.els.guideToggle["aria-pressed"], "true");
+}
+
+function testUnchangedItemListIsNotRebuilt() {
+  const app = createHarness();
+  openCurrentProject(app);
+  app.renderItemList();
+  const rows = [...app.els.itemList.children];
+  app.renderItemList();
+  assert.equal(app.els.itemList.children.length, rows.length);
+  assert.ok(app.els.itemList.children.every((row, index) => row === rows[index]));
+}
+
 testBrokenJsonShowsFriendlyError();
 testLegacyProjectStillOpens();
 testMissingFieldsNormalizeSafely();
 testProductionMetadataSurvivesProjectFiles();
 testKeyboardNudgeRefreshesEditorValues();
+testHostileProjectValuesAreNeutralized();
+testLegacySingleWallReplacesOpenProject();
+testDamagedFileKeepsOpenProject();
+testOpenedWallAndRoomValuesAreValidated();
+testThemeToggleDoesNotDirtyProject();
+testClearedRecoveryStaysClearedUntilNextEdit();
+testGuideToggleUpdatesButtonState();
+testUnchangedItemListIsNotRebuilt();
 
 console.log("Import validation tests passed.");

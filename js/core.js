@@ -1,9 +1,10 @@
     window.addEventListener("error", event => {
       document.body.innerHTML = `<main style="padding:24px;font-family:system-ui,sans-serif;line-height:1.45">
         <h1 style="font-size:22px;margin:0 0 12px">Exhibition Wall Mockup Maker could not start</h1>
-        <p>${String(event.message || "Unknown error")}</p>
+        <p data-error-message></p>
         <p style="color:#5d655f">Try refreshing once. If this stays here, share this message with the maintainer.</p>
       </main>`;
+      document.body.querySelector("[data-error-message]").textContent = String(event.message || "Unknown error");
     });
 
     function uid() {

@@ -81,7 +81,7 @@ Project files are stored as JSON on the user's machine.
 
 Production metadata is saved inside project files and exported into PDFs. This includes venue, install dates, prepared-by, revision, and project-wide production notes.
 
-On Chromium-based browsers, the app can use the browser's native file picker for a smoother save/open flow. On browsers without that support, it falls back to download/upload behavior.
+On Chromium-based browsers, the app can use the browser's native file picker for a smoother save/open flow. On browsers without that support, it falls back to a regular download and file chooser. Nothing is sent to a server.
 
 Very large images can make project files heavy because embedded images are saved inside the project JSON. The app warns before embedding very large uploads and before opening or saving unusually large project files. Resizing or compressing images before embedding them usually keeps saves and exports easier to share.
 
@@ -99,9 +99,11 @@ PDFs include millimeter dimensions and scale-confidence notes. Technicians shoul
 
 This app does not upload project data. Files stay in your browser/local JSON unless you manually export or share them.
 
+The app makes no network requests beyond loading its own files. Images are embedded in the project file; opened project files cannot load images from remote URLs, and colors, IDs, dimensions, and image fields are validated when a project is opened. A damaged file is rejected without replacing the project that is already open.
+
 Exported `.ewmm` / JSON / PDF files may contain sensitive project information such as room layouts, object names, dimensions, images, and unpublished exhibition details. Share them carefully.
 
-The recovery copy is local to the current browser profile. Clearing browser storage or using the in-app `Clear recovery` action removes that recovery copy, but does not delete the project currently open in memory and does not delete any JSON file you already saved to disk.
+The recovery copy is local to the current browser profile. Clearing browser storage or using the in-app `Clear recovery` action removes that recovery copy, but does not delete the project currently open in memory and does not delete any JSON file you already saved to disk. After clearing, no new recovery copy is written (including when the tab closes) until you edit or open a project again. The light/dark theme is remembered in this browser and does not count as an unsaved project change.
 
 ## Deployment and repo safety
 

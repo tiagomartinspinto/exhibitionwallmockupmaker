@@ -1,56 +1,84 @@
+    // Rebuilding a list while a Remove button is being pressed swallows the click
+    // (a field's change event fires on blur, before mouseup), so unchanged lists are left alone.
+    const renderedListKeys = new WeakMap();
+
+    function listNeedsRender(list, rows) {
+      const key = JSON.stringify(rows);
+      if (renderedListKeys.get(list) === key) return false;
+      renderedListKeys.set(list, key);
+      list.innerHTML = "";
+      return true;
+    }
+
     function renderItemList() {
-      els.itemList.innerHTML = "";
       const overlaps = overlapIds();
       const count = selectedIds().length;
       const visibleItems = itemsForSide(activeWallSide());
       const overlapText = overlaps.size ? `${overlaps.size} object${overlaps.size === 1 ? "" : "s"} need overlap attention.` : "No overlaps detected.";
       els.overlapSummary.textContent = `${sideLabel(activeWallSide())} side. ${overlapText} ${count} selected.`;
       if (!visibleItems.length) {
+        const emptyText = `No ${sideLabel(activeWallSide()).toLowerCase()} objects yet. Add the first piece above.`;
+        if (!listNeedsRender(els.itemList, [emptyText])) return;
         const empty = document.createElement("p");
         empty.className = "small empty-state";
-        empty.textContent = `No ${sideLabel(activeWallSide()).toLowerCase()} objects yet. Add the first piece above.`;
+        empty.textContent = emptyText;
         els.itemList.append(empty);
         return;
       }
 
-      visibleItems.forEach(item => {
+      const rows = visibleItems.map(item => {
         item = normalizeItem(item);
-        const row = document.createElement("article");
-        row.className = `item-row${isSelected(item.id) ? " selected" : ""}${overlaps.has(item.id) ? " overlap" : ""}`;
-        row.dataset.select = item.id;
-        row.innerHTML = `
+        return {
+          id: item.id,
+          className: `item-row${isSelected(item.id) ? " selected" : ""}${overlaps.has(item.id) ? " overlap" : ""}`,
+          html: `
           <header>
-            <strong><span class="swatch" style="background:${item.color}"></span>${itemCode(item)} ${escapeHtml(item.name)}</strong>
-            <button class="danger" type="button" data-remove="${item.id}">Remove</button>
+            <strong><span class="swatch" style="background:${escapeHtml(item.color)}"></span>${itemCode(item)} ${escapeHtml(item.name)}</strong>
+            <button class="danger" type="button" data-remove="${escapeHtml(item.id)}">Remove</button>
           </header>
           <div class="small">${itemSideLabel(item)} / ${itemTypeLabel(item.type)}, ${item.shape === "circle" ? "circular" : "rectangular"}${item.illuminated ? ", illuminated" : ""}${item.hanging ? ", hanging" : ""} / ${itemPositionLabel(item)} / ${itemSizeLabel(item)}${item.notes ? ` / ${escapeHtml(item.notes)}` : ""}${overlaps.has(item.id) ? " / Overlap" : ""}</div>
-        `;
+        `
+        };
+      });
+      if (!listNeedsRender(els.itemList, rows)) return;
+      rows.forEach(({ id, className, html }) => {
+        const row = document.createElement("article");
+        row.className = className;
+        row.dataset.select = id;
+        row.innerHTML = html;
         els.itemList.append(row);
       });
     }
 
     function renderRoomElementList() {
       if (!els.roomElementList) return;
-      els.roomElementList.innerHTML = "";
       const elements = (state.roomElements || []).map(normalizeRoomElement);
       if (!elements.length) {
+        const emptyText = "No room items yet. Add furniture, projection, or reference volumes when needed.";
+        if (!listNeedsRender(els.roomElementList, [emptyText])) return;
         const empty = document.createElement("p");
         empty.className = "small empty-state";
-        empty.textContent = "No room items yet. Add furniture, projection, or reference volumes when needed.";
+        empty.textContent = emptyText;
         els.roomElementList.append(empty);
         return;
       }
-      elements.forEach(element => {
-        const row = document.createElement("article");
-        row.className = `item-row${isSpaceEntitySelected("room", element.id) || element.id === state.selectedRoomElementId ? " selected" : ""}`;
-        row.dataset.roomSelect = element.id;
-        row.innerHTML = `
+      const rows = elements.map(element => ({
+        id: element.id,
+        className: `item-row${isSpaceEntitySelected("room", element.id) || element.id === state.selectedRoomElementId ? " selected" : ""}`,
+        html: `
           <header>
-            <strong><span class="swatch" style="background:${element.color}"></span>${escapeHtml(element.name)}</strong>
-            <button class="danger" type="button" data-room-remove="${element.id}">Remove</button>
+            <strong><span class="swatch" style="background:${escapeHtml(element.color)}"></span>${escapeHtml(element.name)}</strong>
+            <button class="danger" type="button" data-room-remove="${escapeHtml(element.id)}">Remove</button>
           </header>
           <div class="small">${roomElementTypeLabel(element.type)}, ${element.shape === "circle" ? "circular" : "rectangular"} / center ${Math.round(element.x)}, ${Math.round(element.y)} mm / ${Math.round(element.width)} x ${Math.round(element.depth)} x ${Math.round(element.height)} mm</div>
-        `;
+        `
+      }));
+      if (!listNeedsRender(els.roomElementList, rows)) return;
+      rows.forEach(({ id, className, html }) => {
+        const row = document.createElement("article");
+        row.className = className;
+        row.dataset.roomSelect = id;
+        row.innerHTML = html;
         els.roomElementList.append(row);
       });
     }
@@ -150,8 +178,12 @@
       const isHand = activeTool() === "hand";
       els.toolSelect.classList.toggle("active", !isHand);
       els.toolHand.classList.toggle("active", isHand);
+      els.toolSelect.setAttribute("aria-pressed", String(!isHand));
+      els.toolHand.setAttribute("aria-pressed", String(isHand));
       if (els.guideToggle) {
-        els.guideToggle.classList.toggle("active", currentGuides().visible !== false);
+        const guidesVisible = currentGuides().visible !== false;
+        els.guideToggle.classList.toggle("active", guidesVisible);
+        els.guideToggle.setAttribute("aria-pressed", String(guidesVisible));
       }
       if (state.panDrag && is2dView()) {
         els.canvas.style.cursor = "grabbing";

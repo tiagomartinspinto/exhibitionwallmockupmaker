@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; frame-ancestors 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'">
   <title>Exhibition Wall Mockup Maker by @tiagomartinspinto</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="css/styles.css?v=2026-05-29-4">
+  <link rel="stylesheet" href="css/styles.css?v=2026-09-23-3">
 </head>
 <body>
   <div class="app">
@@ -221,6 +221,22 @@
             </select>
           </label>
         </div>
+        <div class="grid-2">
+          <label>Left edge mm
+            <input id="itemX" type="number" step="10" value="900">
+          </label>
+          <label>Bottom edge mm
+            <input id="itemY" type="number" step="10" value="900">
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>Width mm
+            <input id="itemW" type="number" min="10" step="10" value="1200">
+          </label>
+          <label>Height mm
+            <input id="itemH" type="number" min="10" step="10" value="800">
+          </label>
+        </div>
         <details class="calm-details advanced-fields">
           <summary>Appearance</summary>
           <div class="grid-2">
@@ -251,31 +267,15 @@
             Hanging from top
           </label>
         </details>
-        <div class="grid-2">
-          <label>Left
-            <input id="itemX" type="number" step="10" value="900">
-          </label>
-          <label>Floor
-            <input id="itemY" type="number" step="10" value="900">
-          </label>
-        </div>
-        <div class="grid-2">
-          <label>Width mm
-            <input id="itemW" type="number" min="10" step="10" value="1200">
-          </label>
-          <label>Height mm
-            <input id="itemH" type="number" min="10" step="10" value="800">
-          </label>
-        </div>
-        <button id="addItem">Add to wall</button>
+        <button id="addItem" type="button">Add to wall</button>
       </section>
 
       <section class="section" data-panel="elevation">
         <h2>Wall objects</h2>
         <div id="itemList" class="item-list"></div>
         <div class="button-row">
-          <button id="clearItems" class="danger">Clear</button>
-          <button id="sample" class="secondary">Demo layout</button>
+          <button id="clearItems" class="danger" type="button">Clear</button>
+          <button id="sample" class="secondary" type="button">Demo layout</button>
         </div>
         <p id="overlapSummary" class="small"></p>
       </section>
@@ -288,21 +288,21 @@
           <strong id="projectName">Exhibition Wall Mockup Maker</strong>
           <span id="unsavedIndicator" class="unsaved-indicator" aria-live="polite" hidden>Unsaved changes</span>
         </div>
-        <div class="tabs" role="tablist" aria-label="View mode">
-          <button class="tab active" data-view="elevation" title="2D measured wall">2D</button>
-          <button class="tab" data-view="perspective" title="Wall 3D preview">3D</button>
-          <button class="tab" data-view="space2d" title="Floor plan">Floor plan</button>
-          <button class="tab" data-view="space3d" title="Room 3D preview">Room 3D</button>
+        <div class="tabs" role="group" aria-label="View mode">
+          <button class="tab active" type="button" data-view="elevation" aria-pressed="true" title="2D measured wall">2D</button>
+          <button class="tab" type="button" data-view="perspective" aria-pressed="false" title="Wall 3D preview">3D</button>
+          <button class="tab" type="button" data-view="space2d" aria-pressed="false" title="Floor plan">Floor plan</button>
+          <button class="tab" type="button" data-view="space3d" aria-pressed="false" title="Room 3D preview">Room 3D</button>
         </div>
         <div class="toolbar-tools">
           <div class="view-controls primary-tools" aria-label="Editing controls">
             <span class="control-label">Tools</span>
-            <button id="toolSelect" class="mini-button active" type="button" title="Select and move objects" aria-label="Select and move objects">
+            <button id="toolSelect" class="mini-button active" type="button" title="Select and move objects" aria-label="Select and move objects" aria-pressed="true">
               <svg class="tool-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M4 3v17l4.9-4.6 3 5.7 2.3-1.2-2.9-5.6 6.7-.9L4 3z"></path>
               </svg>
             </button>
-            <button id="toolHand" class="mini-button" type="button" title="Pan the 2D preview (or hold Space)" aria-label="Pan the 2D preview">
+            <button id="toolHand" class="mini-button" type="button" title="Pan the 2D preview (or hold Space)" aria-label="Pan the 2D preview" aria-pressed="false">
               <svg class="tool-icon tool-icon-stroke" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M18 11V7a1 1 0 0 0-2 0v4"></path>
                 <path d="M14 10V5a1 1 0 0 0-2 0v5"></path>
@@ -316,7 +316,7 @@
           <details class="toolbar-disclosure view-disclosure">
             <summary>View</summary>
             <div class="view-controls compact-controls" aria-label="View controls">
-              <button id="zoomOut" class="mini-button" type="button" title="Zoom out" aria-label="Zoom out">-</button>
+              <button id="zoomOut" class="mini-button" type="button" title="Zoom out" aria-label="Zoom out">&minus;</button>
               <button id="zoomIn" class="mini-button" type="button" title="Zoom in" aria-label="Zoom in">+</button>
               <button id="resetView" class="mini-button" type="button" title="Reset view" aria-label="Reset view">Reset</button>
               <button id="rotateXDown" class="mini-button" type="button" title="Rotate X backward" aria-label="Rotate X backward" hidden>X-</button>
@@ -345,11 +345,11 @@
           <details class="toolbar-disclosure export-disclosure">
             <summary>Export</summary>
             <div class="export-actions" aria-label="Exports">
-              <button id="exportWallPdf" class="secondary" title="Export wall sheet PDF">Wall sheet</button>
-              <button id="printAllWallsPdf" class="secondary" title="Export all wall sheets PDF">All walls</button>
-              <button id="exportRoomPdf" class="secondary" title="Export room plan PDF">Room plan</button>
-              <button id="exportLabelsPdf" class="secondary" title="Export object labels PDF">Labels</button>
-              <button id="exportPackagePdf" class="secondary" title="Export full installation package PDF">Package</button>
+              <button id="exportWallPdf" class="secondary" type="button" title="Export wall sheet PDF">Wall sheet</button>
+              <button id="printAllWallsPdf" class="secondary" type="button" title="Export all wall sheets PDF">All walls</button>
+              <button id="exportRoomPdf" class="secondary" type="button" title="Export room plan PDF">Room plan</button>
+              <button id="exportLabelsPdf" class="secondary" type="button" title="Export object labels PDF">Labels</button>
+              <button id="exportPackagePdf" class="secondary" type="button" title="Export full installation package PDF">Package</button>
               <button id="snapshotView" class="secondary" type="button" title="Export current view" aria-label="Export current view">Snapshot</button>
             </div>
             <p class="toolbar-note">Shared files may contain unpublished exhibition details.</p>
@@ -367,13 +367,13 @@
     </main>
   </div>
 
-  <script src="js/course-data.js?v=2026-05-29-4"></script>
-  <script src="js/core.js?v=2026-05-29-4"></script>
-  <script src="js/model.js?v=2026-05-29-4"></script>
-  <script src="js/rendering.js?v=2026-05-29-4"></script>
-  <script src="js/ui.js?v=2026-05-29-4"></script>
-  <script src="js/interactions.js?v=2026-05-29-4"></script>
-  <script src="js/export.js?v=2026-05-29-4"></script>
-  <script src="js/boot.js?v=2026-05-29-4"></script>
+  <script src="js/course-data.js?v=2026-09-23-3"></script>
+  <script src="js/core.js?v=2026-09-23-3"></script>
+  <script src="js/model.js?v=2026-09-23-3"></script>
+  <script src="js/rendering.js?v=2026-09-23-3"></script>
+  <script src="js/ui.js?v=2026-09-23-3"></script>
+  <script src="js/interactions.js?v=2026-09-23-3"></script>
+  <script src="js/export.js?v=2026-09-23-3"></script>
+  <script src="js/boot.js?v=2026-09-23-3"></script>
 </body>
 </html>

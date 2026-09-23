@@ -6,3 +6,13 @@ Thumbs.db
 exports/
 private/
 local-projects/
+
+# Exported sheets and local artifacts
+*.pdf
+*.tmp
+*.swp
+.env
+.env.*
+node_modules/
+.vscode/
+.idea/

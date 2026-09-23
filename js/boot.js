@@ -323,7 +323,10 @@
     document.querySelectorAll(".tab[data-view]").forEach(button => {
       button.addEventListener("click", () => {
         state.view = button.dataset.view;
-        document.querySelectorAll(".tab[data-view]").forEach(tab => tab.classList.toggle("active", tab === button));
+        document.querySelectorAll(".tab[data-view]").forEach(tab => {
+          tab.classList.toggle("active", tab === button);
+          tab.setAttribute("aria-pressed", String(tab === button));
+        });
         state.selectedRoomElementId = null;
         if (state.view !== "space2d") state.selectedSpaceIds = [];
         save();
@@ -463,5 +466,8 @@
     syncInputsFromProject();
     syncRoomElementInputs();
     updateContextPanels();
-    document.querySelectorAll(".tab[data-view]").forEach(tab => tab.classList.toggle("active", tab.dataset.view === state.view));
+    document.querySelectorAll(".tab[data-view]").forEach(tab => {
+      tab.classList.toggle("active", tab.dataset.view === state.view);
+      tab.setAttribute("aria-pressed", String(tab.dataset.view === state.view));
+    });
     resizeCanvas();
